@@ -1,18 +1,16 @@
 # PERPL (Pattern Extraction from Relative Positions of Localisations) 
 
-# 2022-12-20 : NOTE! Development has migrated to Github today. 
-
 This project provides functions for finding relative positions between points in 3D space and plotting as distance histograms for single molecule localisation data e.g. direct stochastic optical reconstruction microscopy (dSTORM) or photoactivated light microscopy (PALM). It also provides functions for fitting in silico model relative position distributions to those obtained from experimental localisations and allows the user to select the most likely structural model to describe the experimental data.
 
 The software uses a file containing localisation data, analyses the distribution of relative positions between them within a certain maximum distance ('filter distance') and outputs and saves these relative positions. The filter distance is applied in 3D (or in 2D, as required). The software compares these outputs to relative position distributions obtained from synthetic localisation data models based on hypotheses of structural features. It outputs model fits and relative likelihoods for these models.
 
 This algorithm was developed by **Alistair Curd** of the University of Leeds on 30 July 2018.
 
-
 Copyright 2018 Peckham Lab
 
-
 It was ported from Python 2 to Python 3 and made more user friendly by **Joanna Leng** at the University of Leeds who is funded by EPSRC as a Research Software Engineering Fellow (EP/R025819/1).
+
+**History before 2022-12-20:** On 2022-12-20 this project was migrated from Bitbucket ([https://bitbucket.org/apcurd/perpl-python3/](https://bitbucket.org/apcurd/perpl-python3/)). We were unable to port the whole history because it included files that were too large for Github. The current repository ([https://github.com/AlistairCurd/PERPL-Python3](https://github.com/AlistairCurd/PERPL-Python3)) holds development of the master branch from that point.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
 
