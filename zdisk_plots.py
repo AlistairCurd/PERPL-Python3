@@ -409,13 +409,14 @@ def plot_model_components_5peaks_variable(
 
 def actn_mEos_x_plot():
     # Get 2D (axial, transverse) relative positions
-    relpos = pd.read_pickle('../data-perpl/ACTN2-mEos2_PERPL-relpos_200.0filter_6FOVs_aligned_len1229656.pkl')
+    relpos = pd.read_pickle('../perpl_test_data/ACTN2-mEos2_PERPL-relpos_200.0filter_6FOVs_aligned_len1229656.pkl')
 
     # Get subset of axial relative positions
     relpos.axial = abs(relpos.axial)
     fitlength = 100.
-    loc_precision = 3.4
-    separation_precision = np.sqrt(2) * loc_precision
+    # loc_precision = 3.4
+    # separation_precision = np.sqrt(2) * loc_precision
+    separation_precision = 6
     # The smoothing is used like this so that points beyond those not
     # included would only have 1.1% effect on the values of the kernal
     # density estimate (KDE) at fitlength.
@@ -442,23 +443,25 @@ def actn_mEos_x_plot():
                                             bins=bin_vals)
 
     # Centre and width values for histogram bars
-    ax_plot_points = (bin_values[:-1] + bin_values[1:]) / 2
+    ax_bar_points = (bin_values[:-1] + bin_values[1:]) / 2
+    ax_fit_points = bin_vals[0:-1]
     bar_width = 1.
 
     # Get Churchman-smoothed distribution of cell-axial distances
     smoothed_1d_rpd = estimate_rpd_churchman_1d(axpoints,
-                                                ax_plot_points,
+                                                ax_fit_points,
                                                 separation_precision)
 
     # Plot histogram and kde for axial separations
-    plt.figure(figsize=[3/2.54, 2/2.54])
+    plt.figure(figsize=[3*2.54, 2*2.54])
     axes = plt.subplot(111)
-    axes.bar(ax_plot_points,
+    axes.bar(ax_bar_points,
              ax_histogram,
              align='center',
              width=bar_width,
-             color='lightblue', alpha=0.5)
-    axes.fill_between(ax_plot_points,
+             color='lightblue', alpha=0.5,
+             edgecolor='none')
+    axes.fill_between(ax_fit_points,
                       0, smoothed_1d_rpd,
                       lw=0.5, color='blue', alpha=0.5)
     # axes.plot(kde_x_values, kde,
@@ -469,9 +472,9 @@ def actn_mEos_x_plot():
 
     # Set up models and fit:
     # model_with_info = set_up_model_5_variable_peaks_with_fit_settings()
-    model_with_info = zdisk_modelling.set_up_model_5_variable_peaks_with_fit_settings()
+    # model_with_info = zdisk_modelling.set_up_model_5_variable_peaks_with_fit_settings()
     # model_with_info = zdisk_modelling.set_up_model_5_variable_peaks_bg_flat_with_fit_settings()
-    # model_with_info = zdisk_modelling.set_up_model_5_variable_peaks_with_replocs_bg_flat_with_fit_settings()
+    model_with_info = zdisk_modelling.set_up_model_5_variable_peaks_with_replocs_bg_flat_with_fit_settings()
     # model_with_info = zdisk_modelling.set_up_model_5_peaks_fixed_ratio_with_fit_settings()
     # model_with_info = zdisk_modelling.set_up_model_5_peaks_fixed_ratio_no_replocs_with_fit_settings()
     # model_with_info = zdisk_modelling.set_up_model_linear_fit_plusreplocs_with_fit_settings()
@@ -481,7 +484,7 @@ def actn_mEos_x_plot():
 
     (params_optimised,
      params_covar,
-     params_1sd_error) = fitmodel_to_hist(ax_plot_points,
+     params_1sd_error) = fitmodel_to_hist(ax_fit_points,
                                           smoothed_1d_rpd,
                                           model_with_info.model_rpd,
                                           model_with_info.initial_params,
@@ -489,24 +492,24 @@ def actn_mEos_x_plot():
                                           )
     del(params_1sd_error)
 
-    axes.plot(ax_plot_points,
-              model_with_info.model_rpd(ax_plot_points, *params_optimised),
+    axes.plot(ax_fit_points,
+              model_with_info.model_rpd(ax_fit_points, *params_optimised),
               color='xkcd:red', lw=0.5)
     axes.set_xlim([0, 100])
 
     # Get 1 SD uncertainty on model result from uncertainty on parameters.
-    stdev = stdev_of_model(ax_plot_points,
+    stdev = stdev_of_model(ax_fit_points,
                            params_optimised,
                            params_covar,
                            model_with_info.vector_input_model
                            )
 
     # Plot 95% confidence interval on model
-    axes.fill_between(ax_plot_points,
-                      model_with_info.model_rpd(ax_plot_points,
+    axes.fill_between(ax_fit_points,
+                      model_with_info.model_rpd(ax_fit_points,
                                                 *params_optimised)
                       - stdev * 1.96,
-                      model_with_info.model_rpd(ax_plot_points,
+                      model_with_info.model_rpd(ax_fit_points,
                                                 *params_optimised)
                       + stdev * 1.96,
                       color='xkcd:red', alpha=0.25
