@@ -522,7 +522,7 @@ def lasp_mEos_plot():
     """Fit axial KDE of relative positions of myopalladin:mEos localisations.
     """
     # Get 2D (axial, transverse) relative positions
-    relpos = pd.read_pickle('../data-perpl/mEos3-LASP2_PERPL-relpos_200.0filter_5FOVs_aligned.pkl')
+    relpos = pd.read_pickle('../perpl_test_data/mEos3-LASP2_PERPL-relpos_200.0filter_5FOVs_aligned_len533140.pkl')
         
     # 'S:/Peckham/Bioimaging/Alistair/PALM-STORM'
     # '/AlexasNearestNeighbours/LASP2'
@@ -574,9 +574,10 @@ def lasp_mEos_plot():
     # model_with_info = set_up_model_5_variable_peaks_with_fit_settings()
     # model_with_info = set_up_model_5_variable_peaks_after_offset_with_fit_settings()
     # model_with_info = set_up_model_linear_fit_with_fit_settings()
+    model_with_info = zdisk_modelling.set_up_model_5_variable_peaks_after_offset_flat_bg_with_fit_settings()
 
     # Plot histogram and kde for axial separations
-    plt.figure(figsize=[3/2.54, 2/2.54])
+    plt.figure(figsize=[3*2.54, 2*2.54])
     axes = plt.subplot(111)
     axes.bar(ax_plot_points,
              ax_histogram,
@@ -586,48 +587,48 @@ def lasp_mEos_plot():
     axes.fill_between(ax_plot_points,
                       0, smoothed_1d_rpd,
                       lw=0, color='blue', alpha=0.5)
-    # axes.plot(kde_x_values, kde, lw=0.5, color='blue')
+    axes.plot(ax_plot_points, smoothed_1d_rpd, lw=0.5, color='blue')
 
     axes.set_xlim([0, 100])
 
-    # print('\n'+ model_with_info.model_rpd.__name__)
-    # print('________________________________')
+    print('\n'+ model_with_info.model_rpd.__name__)
+    print('________________________________')
 
-    #(params_optimised,
-    # params_covar,
-    # params_1sd_error) = fitmodel_to_hist(kde_x_values,
-    #                                      kde,
-    #                                      model_with_info.model_rpd,
-    #                                      model_with_info.initial_params,
-    #                                      model_with_info.param_bounds,
-    #                                      )
-    #del(params_1sd_error)
+    (params_optimised,
+    params_covar,
+    params_1sd_error) = fitmodel_to_hist(ax_plot_points,
+                                         smoothed_1d_rpd,
+                                         model_with_info.model_rpd,
+                                         model_with_info.initial_params,
+                                         model_with_info.param_bounds,
+                                         )
+    del(params_1sd_error)
 
-    #axes.plot(kde_x_values,
-    #          model_with_info.model_rpd(kde_x_values, *params_optimised),
-    #          color='xkcd:red', lw=0.5)
+    axes.plot(ax_plot_points,
+              model_with_info.model_rpd(ax_plot_points, *params_optimised),
+              '--', color='xkcd:red', lw=0.5)
 
     # Get 1 SD uncertainty on model result from uncertainty on parameters.
-    #stdev = stdev_of_model(kde_x_values,
-    #                       params_optimised,
-    #                       params_covar,
-    #                       model_with_info.vector_input_model
-    #                       )
+    stdev = stdev_of_model(ax_plot_points,
+                           params_optimised,
+                           params_covar,
+                           model_with_info.vector_input_model
+                           )
 
     # Plot 95% confidence interval on model
-    #axes.fill_between(kde_x_values,
-    #                  model_with_info.model_rpd(kde_x_values,
-    #                                            *params_optimised)
-    #                                            - stdev * 1.96,
-    #                  model_with_info.model_rpd(kde_x_values,
-    #                                            *params_optimised)
-    #                                            + stdev * 1.96,
-    #                  color='xkcd:red', alpha=0.25
-    #                  )
+    axes.fill_between(ax_plot_points,
+                      model_with_info.model_rpd(ax_plot_points,
+                                                *params_optimised)
+                                                - stdev * 1.96,
+                      model_with_info.model_rpd(ax_plot_points,
+                                                *params_optimised)
+                                                + stdev * 1.96,
+                      color='xkcd:red', alpha=0.25
+                      )
 
-    #axes.set_title(model_with_info.model_rpd.__name__)
-    #axes.set_xlabel('Axial separation (nm)')
-    #axes.set_ylabel('Counts')
+    axes.set_title(model_with_info.model_rpd.__name__)
+    axes.set_xlabel('Axial separation (nm)')
+    axes.set_ylabel('Counts')
 
     plt.savefig('LASP2_Xfit.pdf')
 
@@ -636,17 +637,14 @@ def mypn_mEos_plot():
     """Fit axial KDE of relative positions of myopalladin:mEos localisations.
     """
     # Get 2D (axial, transverse) relative positions
-    relpos = pd.read_pickle('../data-perpl/MYPN_NNS_aligned_5_FOVs_len1445698.pkl')
-    
-    # ('S:/Peckham/Bioimaging/Alistair/PALM-STORM'
-    #                        '/AlexasNearestNeighbours/Myopalladin'
-    #                        '/MYPN_NNS_aligned_5_FOVs_len1445698.pkl')
+    relpos = pd.read_pickle('../perpl_test_data/mEos3-MYPN_NNS_aligned_5_FOVs_len1445698.pkl')
 
     # Get subset of axial relative positions
     relpos.axial = abs(relpos.axial)
     fitlength = 100.
     loc_precision = 3.4
     separation_precision = np.sqrt(2) * loc_precision
+
     # The smoothing is used like this so that points beyond those not
     # included would only have 0.03% effect on the values of the kernal
     # density estimate (KDE) at fitlength.
@@ -659,14 +657,6 @@ def mypn_mEos_plot():
     # Remove duplicates
     axpoints = remove_duplicates(axpoints)
 
-    # Find kernel density estimate using localisation precision * sqrt(2)
-    # as the Gaussian kernel.
-    # Ues mean localisation precision estimate for mEos2:ACTN2,
-    # after filtering to < 5 nm.
-    # kde_x_values, kde = kde_1nm(axpoints,
-    #                            locprec=loc_precision,
-    #                            fitlength=fitlength)
-
     # Histogram of axial separation, in 1-nm bins
     bin_vals = np.arange(fitlength + 1)
     ax_histogram, bin_values = np.histogram(axpoints,
@@ -675,63 +665,62 @@ def mypn_mEos_plot():
     # Centre and width values for histogram bars
     ax_plot_points = (bin_values[:-1] + bin_values[1:]) / 2
     bar_width = 1.
-    
+
     # Get Churchman-smoothed distribution of cell-axial distances
     smoothed_1d_rpd = estimate_rpd_churchman_1d(axpoints,
                                                 ax_plot_points,
                                                 separation_precision)
 
     # Plot histogram and kde for axial separations
-    plt.figure(figsize=[3/2.54, 2/2.54])
+    plt.figure(figsize=[3*2.54, 2*2.54])
     axes = plt.subplot(111)
     axes.bar(ax_plot_points,
              ax_histogram,
              align='center',
              width=bar_width,
              color='lightblue', alpha=0.5)
-    # axes.plot(kde_x_values, kde, lw=0.5, color='blue')
+    axes.plot(ax_plot_points, smoothed_1d_rpd, lw=0.5, color='blue')
 
     axes.fill_between(ax_plot_points,
                       0, smoothed_1d_rpd,
                       lw=0, color='blue', alpha=0.5)
-    # axes.plot(kde_x_values, kde, lw=0.5, color='blue')
 
     axes.set_xlim([0, 100])
-    
-    plt.savefig('MYPN_Xfit.pdf')
 
     # Set up models and fit:
-    # model_with_info = set_up_model_5_variable_peaks_with_fit_settings()
+    model_with_info = set_up_model_5_variable_peaks_with_fit_settings()
     # model_with_info = set_up_model_linear_fit_with_fit_settings()
 
-    # (params_optimised,
-    # params_covar,
-    # params_1sd_error) = fitmodel_to_hist(kde_x_values,
-    #                                      kde,
-    #                                      model_with_info.model_rpd,
-    #                                      model_with_info.initial_params,
-    #                                      model_with_info.param_bounds,
-    #                                      )
-    # del(params_1sd_error)
+    (params_optimised,
+     params_covar,
+     params_1sd_error) = fitmodel_to_hist(ax_plot_points,
+                                          smoothed_1d_rpd,
+                                          model_with_info.model_rpd,
+                                          model_with_info.initial_params,
+                                          model_with_info.param_bounds,
+                                          )
+    del params_1sd_error
 
-    # axes.plot(kde_x_values,
-    #          model_with_info.model_rpd(kde_x_values, *params_optimised),
-    #          color='xkcd:red', lw=0.5)
+    axes.plot(ax_plot_points,
+              model_with_info.model_rpd(ax_plot_points, *params_optimised),
+              '--', color='xkcd:red', lw=0.5)
 
     # Get 1 SD uncertainty on model result from uncertainty on parameters.
-    # stdev = stdev_of_model(kde_x_values,
-    #                       params_optimised,
-    #                       params_covar,
-    #                       model_with_info.vector_input_model
-    #                       )
+    stdev = stdev_of_model(ax_plot_points,
+                           params_optimised,
+                           params_covar,
+                           model_with_info.vector_input_model
+                           )
 
     # Plot 95% confidence interval on model
-    #axes.fill_between(kde_x_values,
-    #                  model_with_info.model_rpd(kde_x_values,
-    #                                            *params_optimised)
-    #                  - stdev * 1.96,
-    #                  model_with_info.model_rpd(kde_x_values,
-    #                                            *params_optimised)
-    #                  + stdev * 1.96,
-    #                  color='xkcd:red', alpha=0.25
-    #                  )
+    axes.fill_between(ax_plot_points,
+                      model_with_info.model_rpd(ax_plot_points,
+                                                *params_optimised)
+                      - stdev * 1.96,
+                      model_with_info.model_rpd(ax_plot_points,
+                                                *params_optimised)
+                      + stdev * 1.96,
+                      color='xkcd:red', alpha=0.25
+                      )
+    
+    plt.savefig('MYPN_Xfit.pdf')
