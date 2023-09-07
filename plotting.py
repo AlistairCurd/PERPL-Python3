@@ -11,7 +11,8 @@ University of Leeds
 
 Software Engineering practices applied
 
-Joanna Leng (an EPSRC funded Research Software Engineering Fellow (EP/R025819/1)
+Joanna Leng
+(an EPSRC funded Research Software Engineering Fellow (EP/R025819/1))
 University of Leeds
 January 2019
 
@@ -38,32 +39,36 @@ import matplotlib.pyplot as plt
 import matplotlib
 from scipy.ndimage.filters import gaussian_filter1d
 from scipy.ndimage.filters import gaussian_filter
-from skimage.external.tifffile import TiffWriter
+from tifffile import TiffWriter
 import modelling_general as models
+
 # information on backends is here
 # https://matplotlib.org/3.1.1/tutorials/introductory/usage.html#backends
-#if _platform == "linux" or _platform == "linux2":
+# if _platform == "linux" or _platform == "linux2":
 
-   # linux
+# # linux
 #   matplotlib.use('TkAgg')
-#elif _platform == "darwin":
-   # MAC OS X
+
+# elif _platform == "darwin":
+# # MAC OS X
 #   matplotlib.use('MacOSX')
-#elif _platform == "win32":
-   # Windows
+
+# elif _platform == "win32":
+# # Windows
 #   matplotlib.use('TkAgg')
-#elif _platform == "win64":
-    # Windows 64-bit
+
+# elif _platform == "win64":
+# # Windows 64-bit
 #    matplotlib.use('TkAgg')
 
 if _platform == "darwin":
-       # MAC OS X
+    # MAC OS X
     matplotlib.use('MacOSX')
 
 
-def draw_2d_scatter_plots(xyzcolour_values, dims, info, zoom): # xyz_values
-    """Farms out the scatter plots that need to be plotted to the draw_2d_scatter_plot
-    function.
+def draw_2d_scatter_plots(xyzcolour_values, dims, info, zoom):  # xyz_values
+    """Farms out the scatter plots that need to be plotted to the
+    draw_2d_scatter_plot function.
 
     Args:
        xyz_values (numpy array): A numpy array of the localizations.
@@ -92,7 +97,6 @@ def draw_2d_scatter_plots(xyzcolour_values, dims, info, zoom): # xyz_values
             draw_2col_2d_scatter_plot(xyzcolour_values,
                 title, filename, 'X (nm)', 'Z (nm)', info, axes=(0, 2))
 
-
             title = "Scatter plot of localisations in YZ"
             fig_name = r'scatter_plot_yz_localisations.png'
             filename = info['results_dir']+r'/'+fig_name
@@ -102,7 +106,7 @@ def draw_2d_scatter_plots(xyzcolour_values, dims, info, zoom): # xyz_values
                 title, filename, 'X (nm)', 'Z (nm)', info, axes=(1, 2))
 
     # Zoomed-in xy-plot
-    if zoom > 0: # FIX ZOOM!!!!!
+    if zoom > 0:  # FIX ZOOM!!!!!
         # Find total data ranges, zoom area and data subset
         x_range = np.max(xyzcolour_values[:, 0]) - np.min(xyzcolour_values[:, 0])
         x_centre = np.min(xyzcolour_values[:, 0] + x_range / 2)
@@ -364,9 +368,9 @@ def plot_histogram(data_values, data_description, filterdist, info, binsize=1, s
 
     plt.xlabel(data_description.upper()+r' separation (nm)')
     plt.ylabel('Counts')
-    if standardise is '2d':
+    if standardise == '2d':
         plt.ylabel('Counts / distance (nm)')
-    if standardise is '3d':
+    if standardise == '3d':
         plt.ylabel('Counts / distance ^ 2 (nm ^ 2)')
 
     # Get histogram count values and bin positions
@@ -374,9 +378,9 @@ def plot_histogram(data_values, data_description, filterdist, info, binsize=1, s
     bin_centres = (bin_edges[0:len(bin_edges) - 1] + bin_edges[1:len(bin_edges)]) / 2
 
     # Standardise bin counts if desired
-    if standardise is '2d':
+    if standardise == '2d':
         bin_heights = bin_heights / bin_centres[0:len(bin_centres)]
-    if standardise is '3d':
+    if standardise == '3d':
         bin_heights = bin_heights / bin_centres[0:len(bin_centres)] ** 2
 
     # PREVIOUS VERSION
