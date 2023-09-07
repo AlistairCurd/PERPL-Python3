@@ -18,7 +18,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 
 ## DEVELOPED WITH: 
-This was developed using Python 3.7.3 and Anaconda, Inc. on a Centos 7 and a Windows 10 system. The software was exectuted a limited number of times on an Apple Mac.
+The latest version was developed using Python 3.11.4 and Anaconda, Inc. on a Windows 10 system. The software was exectuted a limited number of times on an Apple Mac.
 
 
 ## QUICK START: 
