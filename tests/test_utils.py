@@ -21,8 +21,7 @@ specific language governing permissions and limitations under the License.
 """
 
 import unittest
-import utils as ut
-
+import perpl.utils as ut
 
 
 class TestFindExponent(unittest.TestCase):
