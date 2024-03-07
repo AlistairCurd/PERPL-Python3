@@ -34,7 +34,11 @@ Also clone or download this repository.
 
     `mamba create -n perpl python=3.11`
 
-2. Navigate to your copy of this repository, then
+2. Activate the environment:
+
+    e.g., `mamba activate perpl`
+
+4. Navigate to your copy of this repository, then
 
     `pip install .`
 
