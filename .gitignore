@@ -12,6 +12,8 @@ dist/
 # Distribution / Packaging #
 ############################
 dist/
+build/
+*.egg*
 
 # Packages #
 ############
