@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "perpl"
+version = "0.3.0-alpha"
+authors = [
+    { name="Alistair Curd", email="a.curd@leeds.ac.uk" }
+]
+description = "A package for point pattern analysis: Pattern Extraction from Relative Positions of Localisations"
+readme = "README.md"
+requires-python = "3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "numpy",
+    "scipy",
+    "numdifftools",
+    "pandas",
+    "matplotlib",
+    "scikit-image"
+    "jupyter",
+    "jupytext",
+]
+
+[project.scripts]
+relpos = "perpl.relative_positions.py:main"
+rotsym2d = "perpl.rot_2d_symm_fit.py:main"
+
+[project.urls]
+Homepage = "https://github.com/AlistairCurd/PERPL-Python3"
+Issues = "https://github.com/AlistairCurd/PERPL-Python3/issues"
+
+# [tool.tox], [tox] ?
