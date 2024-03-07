@@ -10,7 +10,7 @@ authors = [
 ]
 description = "A package for point pattern analysis: Pattern Extraction from Relative Positions of Localisations"
 readme = "README.md"
-requires-python = "3.11"
+requires-python = ">=3.11"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: Apache Software License",
@@ -22,7 +22,7 @@ dependencies = [
     "numdifftools",
     "pandas",
     "matplotlib",
-    "scikit-image"
+    "scikit-image",
     "jupyter",
     "jupytext",
 ]
