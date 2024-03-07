@@ -34,7 +34,7 @@ import numpy as np
 import numdifftools as nd
 import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation
-from scipy import i0
+from scipy.special import i0
 from scipy import stats
 from scipy.optimize import curve_fit
 
