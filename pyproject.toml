@@ -28,8 +28,8 @@ dependencies = [
 ]
 
 [project.scripts]
-relpos = "perpl.relative_positions.py:main"
-rotsym2d = "perpl.rot_2d_symm_fit.py:main"
+relpos = "perpl.relative_positions:main"
+rotsym2d = "perpl.rot_2d_symm_fit:main"
 
 [project.urls]
 Homepage = "https://github.com/AlistairCurd/PERPL-Python3"

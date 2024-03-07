@@ -37,15 +37,13 @@ from tkinter.filedialog import askopenfilename
 import numpy as np
 import matplotlib.pyplot as plt
 
-from background_models import zero_to_constant_gradient
-import modelling_general as models
-from modelling_general import ModelWithFitSettings
-from modelling_general import stdev_of_model
-import modelstats as stats
-from relative_positions import getdistances
-import utils
-import plotting
-import reports
+from perpl.background_models import zero_to_constant_gradient
+import perpl.modelling_general as models
+from perpl.modelling_general import ModelWithFitSettings
+from perpl.modelling_general import stdev_of_model
+import perpl.modelstats as stats
+from perpl.relative_positions import getdistances
+from perpl import utils, plotting, reports
 
 
 class Number:

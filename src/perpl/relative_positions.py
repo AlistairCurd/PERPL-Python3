@@ -41,10 +41,8 @@ import time
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 import numpy as np
-import plotting
-import utils
-import reports
 
+from perpl import plotting, utils, reports
 
 
 def get_inputs(info):
