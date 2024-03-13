@@ -8,7 +8,7 @@ The algorithms were developed by **Alistair Curd** of the University of Leeds, f
 
 Copyright 2018 Peckham Lab
 
-It was ported from Python 2 to Python 3 and made more user friendly by **Joanna Leng** at the University of Leeds who wa funded by EPSRC as a Research Software Engineering Fellow (EP/R025819/1).
+It was ported from Python 2 to Python 3 and made more user friendly by **Joanna Leng** at the University of Leeds who was funded by EPSRC as a Research Software Engineering Fellow (EP/R025819/1).
 
 **History before 2022-12-20:** On 2022-12-20 this project was migrated from Bitbucket ([https://bitbucket.org/apcurd/perpl-python3/](https://bitbucket.org/apcurd/perpl-python3/)). We were unable to port the whole history because it included files that were too large for Github. The current repository ([https://github.com/AlistairCurd/PERPL-Python3](https://github.com/AlistairCurd/PERPL-Python3)) holds development of the master branch from that point.
 
@@ -18,12 +18,12 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 
 ## DEVELOPED WITH: 
-The latest version was developed using Python 3.11 and Conda/Mamba on a Windows 10 system, and with Windows Subsystem for Linux 2 (WSL2) with Ubuntu 22.04.3 LTS.  Previous versions have also been developed on a Centos system and exectuted a limited number of times on an Apple Mac.
+The latest version was developed using Python 3.11 and Mamba on a Windows 10 system, and with Windows Subsystem for Linux 2 (WSL2) with Ubuntu 22.04.3 LTS.  Previous versions have also been developed on a Centos system and exectuted a limited number of times on an Apple Mac.
 
 ## QUICK START: 
 
 ### Prerequisites
-You will need Anaconda or Miniconda or Mamba. We recommend [Mamba](https://mamba.readthedocs.io/en/latest/)).
+You will need to be able to create a Python 3.11 environment, e.g. with Anaconda or Miniconda or Mamba. We recommend [Mamba](https://mamba.readthedocs.io/en/latest/)).
 
 Also clone or download this repository.
 
@@ -38,9 +38,10 @@ Also clone or download this repository.
 
     e.g., `mamba activate perpl`
 
-4. Navigate to your copy of this repository, then
-
-    `pip install .`
+3. Install perpl:
+   * To use without downloading this repository: `pip install perpl`
+  
+   * To use notebooks or develop: Navigate to your copy of this repository, then `pip install .`
 
 ### Run scripts
 
