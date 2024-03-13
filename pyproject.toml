@@ -1,10 +1,13 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=64.0", "setuptools-scm>=8.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
 
 [project]
 name = "perpl"
-version = "0.3.0-alpha"
+version = "0.3.0"
+# dynamic = ["version"]
 authors = [
     { name="Alistair Curd", email="a.curd@leeds.ac.uk" }
 ]
@@ -17,14 +20,14 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "numpy",
-    "scipy",
-    "numdifftools",
-    "pandas",
-    "matplotlib",
-    "scikit-image",
-    "jupyter",
-    "jupytext",
+    "numpy~=1.26",
+    "scipy~=1.12",
+    "numdifftools~=0.9",
+    "pandas~=2.2",
+    "matplotlib~=3.8",
+    "scikit-image~=0.22",
+    "jupyter~=1.0",
+    "jupytext~=1.16",
 ]
 
 [project.scripts]
