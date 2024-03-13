@@ -25,8 +25,6 @@ The latest version was developed using Python 3.11 and Mamba on a Windows 10 sys
 ### Prerequisites
 You will need to be able to create a Python 3.11 environment, e.g. with Anaconda or Miniconda or Mamba. We recommend [Mamba](https://mamba.readthedocs.io/en/latest/)).
 
-Also clone or download this repository.
-
 ### Installation
 1. Create a Python 3.11 environment:
 
@@ -39,9 +37,10 @@ Also clone or download this repository.
     e.g., `mamba activate perpl`
 
 3. Install perpl:
-   * To use without downloading this repository: `pip install perpl`
-  
-   * To use notebooks or develop: Navigate to your copy of this repository, then `pip install .`
+    * To use without downloading this repository: `pip install perpl`
+    * To use notebooks or develop:
+        a. Clone or download this repository
+        b. Navigate to your copy of this repository, then `pip install .`
 
 ### Run scripts
 
