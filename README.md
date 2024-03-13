@@ -39,8 +39,8 @@ You will need to be able to create a Python 3.11 environment, e.g. with Anaconda
 3. Install perpl:
     * To use without downloading this repository: `pip install perpl`
     * To use notebooks or develop:
-        a. Clone or download this repository
-        b. Navigate to your copy of this repository, then `pip install .`
+        1. Clone or download this repository
+        2. Navigate to your copy of this repository, then `pip install .`
 
 ### Run scripts
 
