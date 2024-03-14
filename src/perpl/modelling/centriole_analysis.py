@@ -30,10 +30,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-import modelling_general as models
-from modelling_general import ModelWithFitSettings
+import perpl.modelling.modelling_general as models
+from perpl.modelling.modelling_general import ModelWithFitSettings
 from relative_positions import getdistances
-from background_models import pair_correlation_disk
+from perpl.modelling.background_models import pair_correlation_disk
 
 
 def get_input_data(infile='S:/Peckham/Bioimaging2/Alistair/Centriole-EPFL'

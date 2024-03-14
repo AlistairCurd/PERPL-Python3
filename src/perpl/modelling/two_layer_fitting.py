@@ -38,10 +38,10 @@ from tkinter.filedialog import askopenfilename
 from scipy.optimize import curve_fit
 import numpy as np
 import matplotlib.pyplot as plt
-from background_models import exponential_decay_1d_pair_corr as expo_bg
-from modelling_general import pairwise_correlation_1d
-from modelling_general import stdev_of_model
-from utils import find_hostname_and_ip
+from perpl.modelling.background_models import exponential_decay_1d_pair_corr as expo_bg
+from perpl.modelling.modelling_general import pairwise_correlation_1d
+from perpl.modelling.modelling_general import stdev_of_model
+from perpl.io.utils import find_hostname_and_ip
 
 
 def get_input(info):

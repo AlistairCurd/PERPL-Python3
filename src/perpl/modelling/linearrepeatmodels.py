@@ -30,8 +30,8 @@ specific language governing permissions and limitations under the License.
 """
 
 import numpy as np
-import modelling_general as model
-from modelling_general import pairwise_correlation_1d
+import perpl.modelling.modelling_general as model
+from perpl.modelling.modelling_general import pairwise_correlation_1d
 
 
 def noslope(x_values, mean):

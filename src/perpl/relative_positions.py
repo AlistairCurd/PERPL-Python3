@@ -42,7 +42,8 @@ from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 import numpy as np
 
-from perpl import plotting, utils, reports
+from perpl.io import utils
+from perpl.io import plotting, reports
 
 
 def get_inputs(info):

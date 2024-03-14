@@ -22,7 +22,7 @@ specific language governing permissions and limitations under the License.
 #import tempfile
 import unittest
 import numpy as np
-import relative_positions as rp
+import perpl.relative_positions as rp
 
 
 
