@@ -22,7 +22,7 @@ specific language governing permissions and limitations under the License.
 import unittest
 from unittest import mock
 import numpy as np
-import plotting as plots
+import perpl.io.plotting as plots
 
 
 class TestDraw2dScatterPlot(unittest.TestCase):

@@ -23,7 +23,7 @@ specific language governing permissions and limitations under the License.
 """
 
 import numpy as np
-import modelling_general as model
+import perpl.modelling.modelling_general as model
 
 """Various models for the relative position distribution (hence
 *returns* **rpd**).

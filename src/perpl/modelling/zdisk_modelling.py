@@ -33,9 +33,9 @@ specific language governing permissions and limitations under the License.
 import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
-import linearrepeatmodels as linmods
-import models_2d_distances_normalised as mods2d
-from modelling_general import ModelWithFitSettings
+import perpl.modelling.linearrepeatmodels as linmods
+import perpl.modelling.models_2d_distances_normalised as mods2d
+from perpl.modelling.modelling_general import ModelWithFitSettings
 
 
 def read_relpos_from_pickles(input_files):

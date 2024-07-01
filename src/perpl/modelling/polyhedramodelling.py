@@ -30,7 +30,7 @@ specific language governing permissions and limitations under the License.
 """
 
 import numpy as np
-import modelling_general as model
+import perpl.modelling.modelling_general as model
 
 
 def tri_prism_vertices(a, b):

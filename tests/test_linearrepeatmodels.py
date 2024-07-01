@@ -21,7 +21,7 @@ specific language governing permissions and limitations under the License.
 """
 import unittest
 import numpy as np
-import linearrepeatmodels as lin
+import perpl.modelling.linearrepeatmodels as lin
 
 
 

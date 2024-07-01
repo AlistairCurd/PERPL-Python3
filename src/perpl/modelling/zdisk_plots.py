@@ -26,18 +26,18 @@ specific language governing permissions and limitations under the License.
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import linearrepeatmodels as linmods
-import zdisk_modelling
-from modelling_general import kde_1nm
-from modelling_general import pairwise_correlation_1d
-from modelling_general import stdev_of_model
-from plotting import estimate_rpd_churchman_1d
-from zdisk_modelling import read_relpos_from_pickles
-from zdisk_modelling import getaxialseparations_no_smoothing
-from zdisk_modelling import remove_duplicates
-from zdisk_modelling import set_up_model_4_variable_peaks_with_fit_settings
-from zdisk_modelling import set_up_model_5_variable_peaks_with_fit_settings
-from zdisk_modelling import fitmodel_to_hist
+import perpl.modelling.linearrepeatmodels as linmods
+import perpl.modelling.zdisk_modelling as zdisk_modelling
+from perpl.modelling.modelling_general import kde_1nm
+from perpl.modelling.modelling_general import pairwise_correlation_1d
+from perpl.modelling.modelling_general import stdev_of_model
+from perpl.io.plotting import estimate_rpd_churchman_1d
+from perpl.modelling.zdisk_modelling import read_relpos_from_pickles
+from perpl.modelling.zdisk_modelling import getaxialseparations_no_smoothing
+from perpl.modelling.zdisk_modelling import remove_duplicates
+from perpl.modelling.zdisk_modelling import set_up_model_4_variable_peaks_with_fit_settings
+from perpl.modelling.zdisk_modelling import set_up_model_5_variable_peaks_with_fit_settings
+from perpl.modelling.zdisk_modelling import fitmodel_to_hist
 
 
 def plot_distance_hist(distances, fitlength, color='gray'):

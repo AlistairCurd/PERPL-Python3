@@ -36,11 +36,11 @@ specific language governing permissions and limitations under the License.
 from scipy.optimize import curve_fit
 import numpy as np
 import matplotlib.pyplot as plt
-import polyhedramodelling as poly
-import modelstats as stats
-import modelling_general as models
-from modelling_general import ModelWithFitSettings
-from modelling_general import stdev_of_model
+import perpl.modelling.polyhedramodelling as poly
+import perpl.statistics.modelstats as stats
+import perpl.modelling.modelling_general as models
+from perpl.modelling.modelling_general import ModelWithFitSettings
+from perpl.modelling.modelling_general import stdev_of_model
 
 
 def create_default_fitting_params_dicts():
