@@ -40,7 +40,7 @@ import matplotlib
 from scipy.ndimage.filters import gaussian_filter1d
 from scipy.ndimage.filters import gaussian_filter
 from tifffile import TiffWriter
-import perpl.modelling_general as models
+import perpl.modelling.modelling_general as models
 
 # information on backends is here
 # https://matplotlib.org/3.1.1/tutorials/introductory/usage.html#backends
