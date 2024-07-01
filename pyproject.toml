@@ -6,8 +6,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "perpl"
-# version = "0.3.1"
-dynamic = ["version"]
+version = "0.3.2"
+# dynamic = ["version"]
 authors = [
     { name="Alistair Curd", email="a.curd@leeds.ac.uk" }
 ]
