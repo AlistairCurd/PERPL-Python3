@@ -674,6 +674,7 @@ def save_relative_positions(d_values, filterdist, dims, info):
             info['short_filename_without_extension'] + \
             '_PERPL-relpos_%.1ffilter.csv' % filterdist
 
+    head = None
     if dims == 2:
         head = "xx_separation,yy_separation, ,xy_separation"
     elif dims == 3:
@@ -866,6 +867,7 @@ def main():
             sys.exit("Could not create directory for the results.")
 
     # GET RELATIVE POSITIONS!
+    d_values = []
     # For single channel
     if info['colours_analysed'] is None:
         xyz_values_start = xyzcolour_values[:, 0:info['dims']]
@@ -895,14 +897,12 @@ def main():
     plotting.draw_2d_scatter_plots(xyzcolour_values, info['dims'], info, 0)
     plotting.draw_2d_scatter_plots(xyzcolour_values, info['dims'], info, info['zoom'])
 
-    try:
-        len(d_values)
-    except TypeError:
+    # Get vector components of relative positions.
+    if len(d_values):
+        d_values = get_vectors(d_values, info['dims'])
+    else:
         print("No data found so we are exiting.")
         sys.exit("No data found so we are exiting.")
-
-    # Get vector components of relative positions.
-    d_values = get_vectors(d_values, info['dims'])
 
     # Summarise
     if info['verbose']:
