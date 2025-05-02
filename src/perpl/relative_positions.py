@@ -257,7 +257,8 @@ def read_data_in(info):
                 '\nExiting because these are unlikely to be the correct channel values.')
         # Print channel options if not specified in shell command arguments.
         if info['start_channel'] is None:
-            print('\nThe colour channels present are: ' +repr(info['unique_colour_values'].tolist()))
+            print('\nThe colour channels present are: '
+                  +repr(info['unique_colour_values'].tolist()))
 
     return xyzcolour_values
 
@@ -603,8 +604,9 @@ def getdistances_two_colours(
 
 
 def get_vectors(d_values, dims):
-    """Calculates the vector components of relative positions. This
-    function saves both 2D and 3D data.
+    """Calculates the distances in 2D and 3D for relative position vectors.
+    This function saves both 2D and 3D data.
+    NOTE: THIS FUNCTION HAS AN UNHELPFUL FILE NAME AT THE MOMENT.
 
     Args:
         d_values: numpy array of localisations with distances between the
@@ -897,8 +899,10 @@ def main():
     plotting.draw_2d_scatter_plots(xyzcolour_values, info['dims'], info, 0)
     plotting.draw_2d_scatter_plots(xyzcolour_values, info['dims'], info, info['zoom'])
 
-    # Get vector components of relative positions.
-    if len(d_values):
+    # Get distances in 2D and 3D for relative positions.
+    # Note, get_vectors() is an unhelpful name as it takes the vectors we already have
+    # and calculates distances.
+    if len(d_values) > 0:
         d_values = get_vectors(d_values, info['dims'])
     else:
         print("No data found so we are exiting.")
