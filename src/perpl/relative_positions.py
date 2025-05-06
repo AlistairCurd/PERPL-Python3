@@ -476,7 +476,7 @@ def getdistances_two_colours(
     return separation_values
 
 
-def get_relposns_kdtree(kdtree, filterdist, verbose=False):
+def get_distances(kdtree, filterdist, verbose=False):
     """Calculates relative positions from positions in a scipy KDTree object,
     up to a maximum distance.
     
@@ -506,6 +506,55 @@ def get_relposns_kdtree(kdtree, filterdist, verbose=False):
         print('in %i seconds.' % (time.time() - start_time))
 
     return loc_pairs, separation_values
+
+
+def getdistances_two_colours_kdtree(
+    xyz_values_start, filterdist, kdtree_end,
+    verbose=False
+    ):
+    """Store all vectors (relative positions) between points within a chosen
+    distance of each other in 3D from a list of points in one numpy array
+    to another.
+    Also works for 2D.
+
+    Args:
+        xyz_values_start (numpy array):
+            Numpy array of localisations with one row per localisation and
+            spatial coordinates in 2 or 3 columns,
+            to calculate relative positions 'from'.
+        filterdist (float):
+            Distance (in all three dimensions) between points within
+            which relative positions are calculated. This can be chosen by
+            user input as the function runs, or by specifying when calling
+            the function from a script.
+        kdtree_end (scipy KDTree object):
+            The kdtree from points to calculate relative positions
+            'to', from the xyz_values_start values.
+            Defaults to None.
+        verbose (Boolean):
+            Choice whether to print updates to screen. Defaults to False.
+
+    Returns:
+        relposns_list (list of numpy arrays):
+            A list with each element being a numpy array of vectors to neighbours
+            from a start point to an end point within the filter distance.
+    """
+
+    start_time = time.time()  # Start timing it.
+
+    end_points_within_distance = kdtree_end.query_ball_point(
+        xyz_values_start, filterdist)
+    relposns_list = []
+    for i, start_point in xyz_values_start:
+        relposns_list.append(
+            end_points_within_distance[i] - start_point)
+
+    if verbose:
+        print('Found vectors between %i start and %i end localisations'
+              % (len(xyz_values_start), len(kdtree_end.data)))
+        print('in %i seconds.' % (time.time() - start_time))
+
+    return relposns_list
 
 
 def get_vectors(d_values, dims):
@@ -780,13 +829,13 @@ def main():
     if info['colours_analysed'] is None:
         xyz_values_start = xyzcolour_values[:, 0:info['dims']]
         kdtree = spatial.KDTree(xyz_values_start)
-        d_values = get_relposns_kdtree(kdtree, info['filter_dist'], verbose=info['verbose'])[1]
+        d_values = get_distances(kdtree, info['filter_dist'], verbose=info['verbose'])[1]
 
     if info['colours_analysed'] == 1:
         xyz_values_start = \
             xyzcolour_values[:, 0:info['dims']][xyzcolour_values[:, -1] == info['start_channel']]
         kdtree = spatial.KDTree(xyz_values_start)
-        d_values = get_relposns_kdtree(kdtree, info['filter_dist'], verbose=info['verbose'])[1]
+        d_values = get_distances(kdtree, info['filter_dist'], verbose=info['verbose'])[1]
 
     # For two channels
     if info['colours_analysed'] == 2:
@@ -794,9 +843,13 @@ def main():
             xyzcolour_values[:, 0:info['dims']][xyzcolour_values[:, -1] == info['start_channel']]
         xyz_values_end = \
             xyzcolour_values[:, 0:info['dims']][xyzcolour_values[:, -1] == info['end_channel']]
-        d_values = getdistances_two_colours(
-            xyz_values_start, info['filter_dist'], xyz_values_end, verbose=info['verbose']
-            )
+        kdtree_end = spatial.KDTree(xyz_values_end)
+        d_values = getdistances_two_colours_kdtree(
+            xyz_values_start, info['filter_dist'], kdtree_end, verbose=info['verbose'])
+        d_values = np.vstack(d_values)
+        # d_values = getdistances_two_colours(
+        #     xyz_values_start, info['filter_dist'], xyz_values_end, verbose=info['verbose']
+        #     )
 
 
     # Draw scatterplot and zoomed region
