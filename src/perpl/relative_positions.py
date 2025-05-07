@@ -340,142 +340,6 @@ def choose_channels(info):
     return start_channel, end_channel
 
 
-def getdistances_two_colours(
-    xyz_values_start, filterdist, xyz_values_end,
-    verbose=False
-    ):
-    """Store all vectors (relative positions) between points within a chosen
-    distance of each other in 3D from a list of points in one numpy array
-    to another.
-    Also works for 2D.
-
-    Args:
-        xyz_values_start (numpy array):
-            Numpy array of localisations with one row per localisation and
-            spatial coordinates in 2 or 3 columns,
-            to calculate relative positions 'from'.
-        filterdist (float):
-            Distance (in all three dimensions) between points within
-            which relative positions are calculated. This can be chosen by
-            user input as the function runs, or by specifying when calling
-            the function from a script.
-        xyz_values_end (float):
-            A second, optional set of points to calculate relative positions
-            'to', from the xyz_values_start values.
-            Defaults to None.
-        verbose (Boolean):
-            Choice whether to print updates to screen. Defaults to False.
-
-    Returns:
-        d (numpy array):
-            A numpy array of vectors of neighbours within the filter distance
-            for every localisation.
-    """
-
-    start_time = time.time()  # Start timing it.
-
-    # If two set of points are in use:
-    # REMOVE THIS AND PUT IN MAIN AS WILL SLOW DOWN FITTING LATER
-    if xyz_values_end is not None:
-        # Check they have the same dimensionality. Exit if not.
-        if xyz_values_start.shape[1] != xyz_values_end.shape[1]:
-            sys.exit(
-                '\nYour start and end sets of posistions must have '
-                'the same dimensionality.\n'
-                'They currently have ' +repr(xyz_values_start.shape[1])+
-                ' and ' +repr(xyz_values_end.shape[1])+ 'dimensions, '
-                'respectively.\n')
-        # Add 3rd column to 2D localisations
-        if xyz_values_end.shape[1] == 2:
-            xyz_values_end = np.column_stack((xyz_values_end, np.zeros(xyz_values_end.shape[0])))
-
-    # Set up distance filter
-    xyz_filter_values = np.array([filterdist, filterdist, filterdist])
-
-    if verbose:
-        print('\nFinding vectors to nearby localisations:\n')
-
-    # Add 3rd column to 2D 'from' localisations
-    if xyz_values_start.shape[1] == 2:
-        xyz_values_start = np.column_stack((xyz_values_start, np.zeros(xyz_values_start.shape[0])))
-
-    # Initialise d (array of relative positions)
-    separation_values = []
-
-    # Find relative positions of near neighbours in 'from' to the first point
-    # in the 'from' set. Keep going through the list of points until at least
-    # one near neighbour is found.
-    xyz_index = 0
-
-    # Find all the separtions in x, y (and z) from the first 'from'
-    # localisation to the 'to' localisations.
-    while len(separation_values) == 0:
-        if xyz_index > len(xyz_values_start) -1:
-            break
-
-        one_xyz_value = xyz_values_start[xyz_index]  # Reference 'from' loc
-
-        # A filter to find 'to' localisation coordinates within filterdist of
-        # 'from' loc. Gives np.array of True / False
-        boolean_test_results = np.logical_and(
-            xyz_values_end > one_xyz_value - xyz_filter_values,
-            xyz_values_end < one_xyz_value + xyz_filter_values
-            )
-
-        # Find indices of 'to' locs within filterdist of 'from'
-        # loc in all three dimensions (all True) and select these.
-        test_results_indices = np.all(boolean_test_results, axis=1)
-        subxyz_end = xyz_values_end[test_results_indices]
-
-        sys.stdout.flush()
-
-        # Populate separation_values with any near neighbours.
-        # len(subxyz) == 1 would mean the reference 'from' loc was
-        # duplicated in the 'to' set and was the only locs within
-        # filterdist of itself.
-        # Remove [0,0,0], these are duplicates and can overwhelm the result
-        # when there is not a second 'to' dataset.
-        # Very unlikely that [0,0,0] occurs at all when there are different
-        # from and two datasets.
-        # Store the vectors from the reference 'from' loc to the filtered subset
-        # of all 'from' locs.
-        if len(subxyz_end) != 1:
-            separation_values = subxyz_end - one_xyz_value
-            selectnonzeros = np.any(separation_values != 0, axis=1)
-            separation_values = np.compress(selectnonzeros, separation_values, axis=0)
-
-        # Increment reference 'from' localisation
-        # in search of next 'from' localisation with near neighbours.
-        xyz_index = xyz_index + 1
-
-    # Continue appending to the array separation_values
-    # with vectors to the near-enough neighbours of other localisations.
-    for xyz_index in range(xyz_index, len(xyz_values_start)):
-        one_xyz_value = xyz_values_start[xyz_index]
-        boolean_test_results = np.logical_and(
-            xyz_values_end > one_xyz_value - xyz_filter_values,
-            xyz_values_end < one_xyz_value + xyz_filter_values)
-        test_results_indices = np.all(boolean_test_results, axis=1)
-        subxyz_end = xyz_values_end[test_results_indices]
-        if len(subxyz_end) != 1:
-            subd = subxyz_end - one_xyz_value  #  Array of vectors to near-enough neighbours
-            selectnonzeros = np.any(subd != 0, axis=1)
-            subd = np.compress(selectnonzeros, subd, axis=0)
-            separation_values = np.append(separation_values, subd, axis=0)
-
-        # Progress message
-        if verbose and xyz_index % 5000 == 0:
-            print('Found neighbours for localisation', xyz_index, 'of',
-                repr(len(xyz_values_start)) +'.')
-            print(f'{time.time() - start_time} seconds so far.')
-
-    if verbose:
-        print(f'Found {len(separation_values)} vectors between all localisations')
-        print(f'in {time.time() - start_time} seconds.')
-
-    return separation_values
-
-
 def getdistances(kdtree, filterdist, verbose=False):
     """Calculates relative positions from positions in a scipy KDTree object,
     up to a maximum distance.
@@ -508,7 +372,7 @@ def getdistances(kdtree, filterdist, verbose=False):
     return loc_pairs, separation_values
 
 
-def getdistances_two_colours_kdtree(
+def getdistances_two_colours(
     xyz_values_start, filterdist, kdtree_end,
     verbose=False
     ):
@@ -846,7 +710,7 @@ def main():
         xyz_values_end = \
             xyzcolour_values[:, 0:info['dims']][xyzcolour_values[:, -1] == info['end_channel']]
         kdtree_end = spatial.KDTree(xyz_values_end)
-        d_values = getdistances_two_colours_kdtree(
+        d_values = getdistances_two_colours(
             xyz_values_start, info['filter_dist'], kdtree_end, verbose=info['verbose'])
         d_values = np.vstack(d_values)
         # d_values = getdistances_two_colours(
