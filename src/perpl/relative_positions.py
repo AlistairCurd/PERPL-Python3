@@ -340,15 +340,15 @@ def choose_channels(info):
     return start_channel, end_channel
 
 
-def getdistances(kdtree, filterdist, verbose=False):
+def getdistances(xyz_values, filterdist, verbose=False):
     """Calculates relative positions from positions in a scipy KDTree object,
     up to a maximum distance.
     
     The relative positions do not contain duplicates (for calculating both ways) between a pair.
     
     Args:
-        kdtree (scipy KDTree):
-            kdtree from input localisations.
+        xyz_values (numpy array):
+            Array of localisations, one localisation (x, y(, z)) per row
         filterdist (float):
             Maximum distance up to which to calculate relative positions.
         verbose (bool):
@@ -362,6 +362,8 @@ def getdistances(kdtree, filterdist, verbose=False):
     """
     start_time = time.time()
 
+    kdtree = spatial.KDTree(xyz_values)
+
     loc_pairs = kdtree.query_pairs(r=filterdist, output_type='ndarray')
     separation_values = kdtree.data[loc_pairs[:, 0]] - kdtree.data[loc_pairs[:, 1]]
 
@@ -373,7 +375,7 @@ def getdistances(kdtree, filterdist, verbose=False):
 
 
 def getdistances_two_colours(
-    xyz_values_start, filterdist, kdtree_end,
+    xyz_values_start, filterdist, xyz_values_end,
     verbose=False
     ):
     """Store all vectors (relative positions) between points within a chosen
@@ -391,10 +393,10 @@ def getdistances_two_colours(
             which relative positions are calculated. This can be chosen by
             user input as the function runs, or by specifying when calling
             the function from a script.
-        kdtree_end (scipy KDTree object):
-            The kdtree from points to calculate relative positions
-            'to', from the xyz_values_start values.
-            Defaults to None.
+        xyz_values_end (numpy array):
+            Numpy array of localisations with one row per localisation and
+            spatial coordinates in 2 or 3 columns,
+            to calculate relative positions 'to'.
         verbose (Boolean):
             Choice whether to print updates to screen. Defaults to False.
 
@@ -405,6 +407,8 @@ def getdistances_two_colours(
     """
 
     start_time = time.time()  # Start timing it.
+
+    kdtree_end = spatial.KDTree(xyz_values_end)
 
     end_points_within_distance = kdtree_end.query_ball_point(
         xyz_values_start, filterdist)
@@ -693,15 +697,13 @@ def main():
     d_values = []
     # For single channel
     if info['colours_analysed'] is None:
-        xyz_values_start = xyzcolour_values[:, 0:info['dims']]
-        kdtree = spatial.KDTree(xyz_values_start)
-        d_values = getdistances(kdtree, info['filter_dist'], verbose=info['verbose'])[1]
+        xyz_values = xyzcolour_values[:, 0:info['dims']]
+        d_values = getdistances(xyz_values, info['filter_dist'], verbose=info['verbose'])[1]
 
     if info['colours_analysed'] == 1:
-        xyz_values_start = \
+        xyz_values = \
             xyzcolour_values[:, 0:info['dims']][xyzcolour_values[:, -1] == info['start_channel']]
-        kdtree = spatial.KDTree(xyz_values_start)
-        d_values = getdistances(kdtree, info['filter_dist'], verbose=info['verbose'])[1]
+        d_values = getdistances(xyz_values, info['filter_dist'], verbose=info['verbose'])[1]
 
     # For two channels
     if info['colours_analysed'] == 2:
@@ -709,9 +711,8 @@ def main():
             xyzcolour_values[:, 0:info['dims']][xyzcolour_values[:, -1] == info['start_channel']]
         xyz_values_end = \
             xyzcolour_values[:, 0:info['dims']][xyzcolour_values[:, -1] == info['end_channel']]
-        kdtree_end = spatial.KDTree(xyz_values_end)
         d_values = getdistances_two_colours(
-            xyz_values_start, info['filter_dist'], kdtree_end, verbose=info['verbose'])
+            xyz_values_start, info['filter_dist'], xyz_values_end, verbose=info['verbose'])
         d_values = np.vstack(d_values)
         # d_values = getdistances_two_colours(
         #     xyz_values_start, info['filter_dist'], xyz_values_end, verbose=info['verbose']
