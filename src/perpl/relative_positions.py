@@ -467,11 +467,11 @@ def getdistances_two_colours(
         if verbose and xyz_index % 5000 == 0:
             print('Found neighbours for localisation', xyz_index, 'of',
                 repr(len(xyz_values_start)) +'.')
-            print('%i seconds so far.' % (time.time() - start_time))
+            print(f'{time.time() - start_time} seconds so far.')
 
     if verbose:
-        print('Found %i vectors between all localisations' % len(separation_values))
-        print('in %i seconds.' % (time.time() - start_time))
+        print(f'Found {len(separation_values)} vectors between all localisations')
+        print(f'in {time.time() - start_time} seconds.')
 
     return separation_values
 
@@ -502,8 +502,8 @@ def getdistances(kdtree, filterdist, verbose=False):
     separation_values = kdtree.data[loc_pairs[:, 0]] - kdtree.data[loc_pairs[:, 1]]
 
     if verbose:
-        print('Found %i vectors between all localisations' % len(separation_values))
-        print('in %i seconds.' % (time.time() - start_time))
+        print(f'Found {len(separation_values)} vectors between all localisations')
+        print(f'in {int(time.time() - start_time):d} seconds.')
 
     return loc_pairs, separation_values
 
@@ -552,9 +552,9 @@ def getdistances_two_colours_kdtree(
                 kdtree_end.data[end_points_within_distance[i]] - start_point)
 
     if verbose:
-        print('Found vectors between %i start and %i end localisations'
-              % (len(xyz_values_start), len(kdtree_end.data)))
-        print('in %i seconds.' % (time.time() - start_time))
+        print(f'Found vectors between {len(xyz_values_start)} start ')
+        print(f'and {len(kdtree_end.data)} end localisations')
+        print(f'in {time.time() - start_time} seconds.')
 
     return relposns_list
 
@@ -626,12 +626,12 @@ def save_relative_positions(d_values, filterdist, dims, info):
            recorded in the log file.
     """
     out_file_name = info['results_dir']+r'//'+ info['in_file_no_extension'] + \
-        '_PERPL-relpos_%.1ffilter.csv' % filterdist
+        f'_PERPL-relpos_{filterdist:.1f}filter.csv'
 
     if info['short_names']:
         out_file_name = info['short_results_dir']+r'//'+ \
             info['short_filename_without_extension'] + \
-            '_PERPL-relpos_%.1ffilter.csv' % filterdist
+            f'_PERPL-relpos_{filterdist:.1f}filter.csv'
 
     head = None
     if dims == 2:
@@ -875,9 +875,8 @@ def main():
         print(
             '\nWhen symmetric duplicates are removed (done by default for a '
             'single colour channel, '
-            'never for two-colour data), there are %i vectors within the '
-            'filter distance in all dimensions for all localisations.'
-             % len(d_values))
+            f'never for two-colour data), there are {len(d_values)} vectors within the '
+            'filter distance in all dimensions for all localisations.')
 
     # Plot vector component results
     plotting.plot_histograms(
