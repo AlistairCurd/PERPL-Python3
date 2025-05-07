@@ -714,10 +714,6 @@ def main():
         d_values = getdistances_two_colours(
             xyz_values_start, info['filter_dist'], xyz_values_end, verbose=info['verbose'])
         d_values = np.vstack(d_values)
-        # d_values = getdistances_two_colours(
-        #     xyz_values_start, info['filter_dist'], xyz_values_end, verbose=info['verbose']
-        #     )
-
 
     # Draw scatterplot and zoomed region
     plotting.draw_2d_scatter_plots(xyzcolour_values, info['dims'], info, 0)
