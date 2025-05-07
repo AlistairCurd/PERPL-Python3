@@ -143,7 +143,7 @@ def rot_sym_only(separation_values,
                                               diameter)
     filter_distance = (2 * diameter)
     # getdistances includes removel of duplicates 27/11/2019
-    relative_positions = getdistances(vertices, filter_distance)
+    relative_positions = getdistances(vertices, filter_distance)[1]
     xy_separations = np.sqrt(relative_positions[:, 0] ** 2
                              + relative_positions[:, 1] ** 2)
 
@@ -486,7 +486,7 @@ def rotsym_withreplocs_nosubstructure_isotropicbgwithonset(
     # Get positions of vertices, their relative positions
     # and distances between them.
     verts = models.generate_polygon_points(sym_order.number, dia)
-    relpos = getdistances(verts, filterdist=(2 * dia))
+    relpos = getdistances(verts, filterdist=(2 * dia))[1]
     dists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2)
     # Select unduplicated distances between the vertices.
     dists = dists[0:(sym_order.number - 1)]
@@ -796,7 +796,7 @@ def model_variable_vertices_replocs_substructure_no_bg(
     vertices = models.generate_polygon_points(sym_order.number, diameter)
 
     filter_distance = (2 * diameter)
-    relative_positions = getdistances(vertices, filter_distance)
+    relative_positions = getdistances(vertices, filter_distance)[1]
     xy_separations = np.sqrt(relative_positions[:, 0] ** 2
                              + relative_positions[:, 1] ** 2)
     # Select unduplicated inter-vertex distances
@@ -1019,7 +1019,7 @@ def nup_xy_plot_model_components(
     verts = models.generate_polygon_points(sym_order.number, dia)
     filterdist = (2 * dia)
 
-    relpos = getdistances(verts, filterdist)
+    relpos = getdistances(verts, filterdist)[1]
     dists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2)
     dists = dists[0: 4]  # Select unduplicated distances between the vertices.
     contributions = np.array([2, 2, 2, 1])
