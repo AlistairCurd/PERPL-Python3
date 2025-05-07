@@ -142,6 +142,23 @@ def get_inputs(info):
 
     info['filter_dist'] = filterdist
 
+    # Set the number of nearest neighbours to find and use, within the filter distance.
+    try:
+        print('\nHow many nearest neighbours, within the filter distance, '
+              'do you want to calculate relative positions for?')
+        nns = int(input('\n(Type 0 to include all neighbours within the filter distance):'))
+
+    except ValueError:
+        print('This must be an integer.\n')
+        sys.exit("The filter distance must be an integer.\n")
+
+    if nns == 0:
+        print('Using all neighbouring localisations.')
+    else:
+        print(f'Using {nns} nearest neighbour(s).')
+
+    info['nns'] = nns
+
     # Set histogram bin values for distance histograms.
     print('\nWhat bin size (integer) do you want for the distance histograms (nm)?')
     print('...Choose 1 for model curve fitting functions...')
@@ -340,7 +357,7 @@ def choose_channels(info):
     return start_channel, end_channel
 
 
-def getdistances(xyz_values, filterdist, verbose=False):
+def getdistances(xyz_values, filterdist, nns=0, verbose=False):
     """Calculates relative positions from positions in a scipy KDTree object,
     up to a maximum distance.
     
@@ -351,6 +368,10 @@ def getdistances(xyz_values, filterdist, verbose=False):
             Array of localisations, one localisation (x, y(, z)) per row
         filterdist (float):
             Maximum distance up to which to calculate relative positions.
+        nns (int):
+            Number of nearest neighbours to calculate.
+            If nns == 0: all neighbours within filterdist used.
+            If nns > 0: nns neighbours found.
         verbose (bool):
             Choose whether to print updates to screen.
     
@@ -364,7 +385,24 @@ def getdistances(xyz_values, filterdist, verbose=False):
 
     kdtree = spatial.KDTree(xyz_values)
 
-    loc_pairs = kdtree.query_pairs(r=filterdist, output_type='ndarray')
+    # Find relevant pairs of locs by index in array of locs
+    if nns == 0:
+        loc_pairs = kdtree.query_pairs(r=filterdist, output_type='ndarray')
+
+    else:
+        loc_pairs = []
+        for i, loc in enumerate(xyz_values):
+            # Do not need norm distances (kdtree.query()[0]) as keeping relpos
+            neighbours = kdtree.query(loc, k=nns+1, distance_upper_bound=filterdist)[1]
+            neighbours = neighbours[1:] # First 'neighbour' is the reference point with distance 0.
+            # Get only neighbours within filterdist (if any)
+            # - uses the strange way query() returns ones beyond filterdist
+            neighbours = neighbours[neighbours < len(xyz_values)]
+            for neighbour in neighbours:
+                loc_pairs.append([i, neighbour])
+        loc_pairs = np.vstack(loc_pairs)
+
+    # Get relative positions between pairs
     separation_values = kdtree.data[loc_pairs[:, 0]] - kdtree.data[loc_pairs[:, 1]]
 
     if verbose:
@@ -518,12 +556,6 @@ def save_relative_positions(d_values, filterdist, dims, info):
     return out_file_name
 
 
-
-
-
-
-
-
 def main():
     """Reads input data of point density locations and calculates relative
         poasitions as vectors. Outputs are writen to a file in a directory
@@ -602,6 +634,14 @@ def main():
                         default=150,
                         help="Filter distance.")
 
+    parser.add_argument('--nns',
+                        dest='nns',
+                        type=int,
+                        default=0,
+                        help="Number of nearest neighbours to find within the filter distance, "
+                            "if desired. O (default) means no limit on the number of "
+                            "neighbours used within the filter distance.")
+
     parser.add_argument('-b', '--bin_size',
                         dest='bin_size',
                         type=int,
@@ -644,6 +684,7 @@ def main():
     info['start_channel'] = args.start_channel
     info['end_channel'] = args.end_channel
     info['filter_dist'] = args.filter_dist
+    info['nns'] = args.nns
 
 
     info['zoom'] = args.zoom
