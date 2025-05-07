@@ -185,6 +185,7 @@ In src/perpl:
 * *test_linearrepeatmodels.py*: test file for the linearrepeatmodels.py module.
 
 ### Jupyter notebooks
+#### NOTE: Some notebooks have not worked since v0.3
 
 * *make_ACTN2_Affimer_PERPL_plots.ipynb*: A Jupyter notebook for generating plots and model fits to Z-disc protein relative position data.
 * *make_ACTN2_Affimer_reconstructions.ipynb*: A Jupyter notebook for generating XY projections of the distribution of single molecule localisations in a FOV.
