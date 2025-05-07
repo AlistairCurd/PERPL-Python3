@@ -476,7 +476,7 @@ def getdistances_two_colours(
     return separation_values
 
 
-def get_distances(kdtree, filterdist, verbose=False):
+def getdistances(kdtree, filterdist, verbose=False):
     """Calculates relative positions from positions in a scipy KDTree object,
     up to a maximum distance.
     
@@ -545,9 +545,11 @@ def getdistances_two_colours_kdtree(
     end_points_within_distance = kdtree_end.query_ball_point(
         xyz_values_start, filterdist)
     relposns_list = []
-    for i, start_point in xyz_values_start:
-        relposns_list.append(
-            end_points_within_distance[i] - start_point)
+
+    for i, start_point in enumerate(xyz_values_start):
+        if len(end_points_within_distance[i]) > 0:
+            relposns_list.append(
+                kdtree_end.data[end_points_within_distance[i]] - start_point)
 
     if verbose:
         print('Found vectors between %i start and %i end localisations'
@@ -829,13 +831,13 @@ def main():
     if info['colours_analysed'] is None:
         xyz_values_start = xyzcolour_values[:, 0:info['dims']]
         kdtree = spatial.KDTree(xyz_values_start)
-        d_values = get_distances(kdtree, info['filter_dist'], verbose=info['verbose'])[1]
+        d_values = getdistances(kdtree, info['filter_dist'], verbose=info['verbose'])[1]
 
     if info['colours_analysed'] == 1:
         xyz_values_start = \
             xyzcolour_values[:, 0:info['dims']][xyzcolour_values[:, -1] == info['start_channel']]
         kdtree = spatial.KDTree(xyz_values_start)
-        d_values = get_distances(kdtree, info['filter_dist'], verbose=info['verbose'])[1]
+        d_values = getdistances(kdtree, info['filter_dist'], verbose=info['verbose'])[1]
 
     # For two channels
     if info['colours_analysed'] == 2:
