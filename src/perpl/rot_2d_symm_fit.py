@@ -141,7 +141,7 @@ def rot_sym_only(separation_values,
     """
     vertices = models.generate_polygon_points(sym_order.number,
                                               diameter)
-    filter_distance = (2 * diameter)
+    filter_distance = 2 * diameter
     # getdistances includes removel of duplicates 27/11/2019
     relative_positions = getdistances(vertices, filter_distance)[1]
     xy_separations = np.sqrt(relative_positions[:, 0] ** 2
@@ -167,7 +167,7 @@ def rot_sym_with_replocs_and_substructure_isotropic_bg(
         vertssd, vertsamp,
         replocssd, replocsamp,
         substructsd, substructamp,
-        bggrad, info):
+        bggrad):
     """Parametric model for distances between localisations on vertices
     of a polygon (order of symmetry = number of vertices). The value of
     the model at a distance is termed the relative position density (RPD)
@@ -486,7 +486,7 @@ def rotsym_withreplocs_nosubstructure_isotropicbgwithonset(
     # Get positions of vertices, their relative positions
     # and distances between them.
     verts = models.generate_polygon_points(sym_order.number, dia)
-    relpos = getdistances(verts, filterdist=(2 * dia))[1]
+    relpos = getdistances(verts, filterdist=2 * dia)[1]
     dists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2)
     # Select unduplicated distances between the vertices.
     dists = dists[0:(sym_order.number - 1)]
@@ -795,7 +795,7 @@ def model_variable_vertices_replocs_substructure_no_bg(
     # Calculate the inter-vertex distances
     vertices = models.generate_polygon_points(sym_order.number, diameter)
 
-    filter_distance = (2 * diameter)
+    filter_distance = 2 * diameter
     relative_positions = getdistances(vertices, filter_distance)[1]
     xy_separations = np.sqrt(relative_positions[:, 0] ** 2
                              + relative_positions[:, 1] ** 2)
@@ -1017,7 +1017,7 @@ def nup_xy_plot_model_components(
               )
     # Plot symmetry related peaks
     verts = models.generate_polygon_points(sym_order.number, dia)
-    filterdist = (2 * dia)
+    filterdist = 2 * dia
 
     relpos = getdistances(verts, filterdist)[1]
     dists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2)
@@ -1358,7 +1358,7 @@ def main():
                         " and this shortened names has the first and last 5"
                         " characters with -s- is the middle.",
                         action="store_true")
-    
+
     parser.add_argument('-v', '--verbose',
                         help="Increase output verbosity",
                         action="store_true")
@@ -1371,9 +1371,8 @@ def main():
         print("Verbosity is turned on.\n")
 
     info['filter_dist'] = args.filter_dist
-    info['verbose'] = args.verbose    
+    info['verbose'] = args.verbose
     info['short_names'] = args.short_names
-    
 
 
     if args.input_file is None:
@@ -1390,7 +1389,7 @@ def main():
     reading_time = (read_end-read_start)/60
 
     utils.secondary_filename_and_path_setup(info)
-        
+
 
     if info['verbose']:
         print("\nTime to read the input file was: "+str(round(reading_time, 3))+\
@@ -1403,7 +1402,7 @@ def main():
             os.makedirs(info['short_results_dir'])
         except OSError:
             print("Unexpected error:", sys.exc_info()[0])
-            sys.exit("Could not create directory for the results.")    
+            sys.exit("Could not create directory for the results.")
     else:
         try:
             os.makedirs(info['results_dir'])
@@ -1487,7 +1486,7 @@ def main():
             uncertainty_string_values.append(uncertainty_str)
 
             if info['verbose']:
-                print('  %d            %s +/- %s ' % (count+1, value_str, uncertainty_str))
+                print(f'  {count + 1}            {value_str} +/- {uncertainty_str} ')
 
 
         params = np.column_stack((params_optimised,
@@ -1518,16 +1517,10 @@ def main():
         print('\nSymmetry\tAICc\t\tAkaike weight')
 
         for index, symmetry in enumerate(symmetries):
-            print('{0:2d}\t\t{1:.2f} \t{2:.2}'.format(symmetry,
-                                                      aiccs[index],
-                                                      weights[index]))
-                                                     
+            print(f'{symmetry:2d}\t\t{aiccs[index]:.2f} \t{weights[index]:.2}')
+
 
     reports.write_rot_2d_html_report(info, symmetries, aiccs, weights, table_param_values)
-
-
-
-
 
 
 
