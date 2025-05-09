@@ -218,7 +218,8 @@ def read_data_in(info):
     elif in_file[-4:] == '.csv' or in_file[-4:] == '.txt':
         try:
             skip = 0
-            line = open(in_file).readline()
+            with open(in_file, encoding='utf-8') as f:
+                line = f.readline()
             for cell in line.split(','):
                 try:
                     float(cell)
