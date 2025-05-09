@@ -513,27 +513,35 @@ def get_vectors(d_values, dims):
     return d_values
 
 
-def save_relative_positions(d_values, filterdist, dims, info):
+def save_relative_positions(d_values, filterdist, dims, info, nns=0):
     """Saves the relative positions that have been found in a csv file. This
     function saves both 2D and 3D data.
 
     Args:
-        d_values: numpy array of localisations with distances between the
-                  localisations.
-        filterdist: distance (in all three dimensions) between points within
+        d_values (numpy array):
+            Array of relative positions between localisations, one relative position per row.
+        filterdist (float): distance (in all three dimensions) between points within
             which relative positions are calculated. This can be chosen by user
             input as the function runs, or by specifying when calling the
             function from a script.
-        dim: The dimensions of the data ie 2D or 3D.
+        dims (int):
+            The dimensions of the data ie 2D or 3D.
         info (dict): A python dictionary containing a collection of useful parameters
             such as the filenames and paths.
+        nns (int):
+            The number of nearest neighbours found for calculating relative positions.
+            0 means no fixed number was used (e.g. all within filterdist).
 
     Returns:
         outfilename: The path and filename of the output data file. This is
            recorded in the log file.
     """
-    out_file_name = info['results_dir']+r'//'+ info['in_file_no_extension'] + \
-        f'_PERPL-relpos_{filterdist:.1f}filter.csv'
+    if nns == 0:
+        out_file_name = info['results_dir']+r'//'+ info['in_file_no_extension'] + \
+            f'_PERPL-relpos_{filterdist:.1f}filter.csv'
+    else:
+        out_file_name = info['results_dir']+r'//'+ info['in_file_no_extension'] + \
+            f'_PERPL-relpos_{filterdist:.1f}filter_{nns}nn.csv'
 
     if info['short_names']:
         out_file_name = info['short_results_dir']+r'//'+ \
@@ -740,12 +748,14 @@ def main():
     # For single channel
     if info['colours_analysed'] is None:
         xyz_values = xyzcolour_values[:, 0:info['dims']]
-        d_values = getdistances(xyz_values, info['filter_dist'], verbose=info['verbose'])[1]
+        d_values = getdistances(
+            xyz_values, info['filter_dist'], info['nns'], verbose=info['verbose'])[1]
 
     if info['colours_analysed'] == 1:
         xyz_values = \
             xyzcolour_values[:, 0:info['dims']][xyzcolour_values[:, -1] == info['start_channel']]
-        d_values = getdistances(xyz_values, info['filter_dist'], verbose=info['verbose'])[1]
+        d_values = getdistances(
+            xyz_values, info['filter_dist'], info['nns'], verbose=info['verbose'])[1]
 
     # For two channels
     if info['colours_analysed'] == 2:
@@ -795,7 +805,7 @@ def main():
 
 
     # Save relative positions and vector components.
-    xyz_filename = save_relative_positions(d_values, info['filter_dist'], info['dims'], info)
+    xyz_filename = save_relative_positions(d_values, info['filter_dist'], info['dims'], info, info['nns'])
 
     save_data_end = timeit.default_timer()
     filtering_time = (save_data_end-filter_end)/60
