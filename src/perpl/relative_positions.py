@@ -414,9 +414,7 @@ def getdistances(xyz_values, filterdist, nns=0, verbose=False):
 
 
 def getdistances_two_colours(
-    xyz_values_start, filterdist, xyz_values_end,
-    verbose=False
-    ):
+    xyz_values_start, filterdist, xyz_values_end, nns=0, verbose=False):
     """Store all vectors (relative positions) between points within a chosen
     distance of each other in 3D from a list of points in one numpy array
     to another.
@@ -436,6 +434,10 @@ def getdistances_two_colours(
             Numpy array of localisations with one row per localisation and
             spatial coordinates in 2 or 3 columns,
             to calculate relative positions 'to'.
+        nns (int):
+            Number of nearest neighbours to calculate.
+            If nns == 0: all neighbours within filterdist used.
+            If nns > 0: nns neighbours found.
         verbose (Boolean):
             Choice whether to print updates to screen. Defaults to False.
 
@@ -449,14 +451,17 @@ def getdistances_two_colours(
 
     kdtree_end = spatial.KDTree(xyz_values_end)
 
-    end_points_within_distance = kdtree_end.query_ball_point(
-        xyz_values_start, filterdist)
-    relposns_list = []
+    if nns == 0:
+        end_points_within_distance = kdtree_end.query_ball_point(
+            xyz_values_start, filterdist)
+        relposns_list = []
 
-    for i, start_point in enumerate(xyz_values_start):
-        if len(end_points_within_distance[i]) > 0:
-            relposns_list.append(
-                kdtree_end.data[end_points_within_distance[i]] - start_point)
+        for i, start_point in enumerate(xyz_values_start):
+            if len(end_points_within_distance[i]) > 0:
+                relposns_list.append(
+                    kdtree_end.data[end_points_within_distance[i]] - start_point)
+
+    # ELSE ! :
 
     if verbose:
         print(f'Found vectors between {len(xyz_values_start)} start ')
@@ -764,7 +769,9 @@ def main():
         xyz_values_end = \
             xyzcolour_values[:, 0:info['dims']][xyzcolour_values[:, -1] == info['end_channel']]
         d_values = getdistances_two_colours(
-            xyz_values_start, info['filter_dist'], xyz_values_end, verbose=info['verbose'])
+            xyz_values_start, info['filter_dist'], xyz_values_end,
+            info['nns'], verbose=info['verbose']
+            )
         d_values = np.vstack(d_values)
 
     # Draw scatterplot and zoomed region
@@ -805,7 +812,8 @@ def main():
 
 
     # Save relative positions and vector components.
-    xyz_filename = save_relative_positions(d_values, info['filter_dist'], info['dims'], info, info['nns'])
+    xyz_filename = save_relative_positions(
+        d_values, info['filter_dist'], info['dims'], info, info['nns'])
 
     save_data_end = timeit.default_timer()
     filtering_time = (save_data_end-filter_end)/60
