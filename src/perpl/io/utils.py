@@ -176,6 +176,10 @@ def primary_filename_and_path_setup(info):
                        + 'cols' +repr(info['start_channel'])+ 'to' +repr(info['end_channel'])+ '_'
                        )
 
+    # Include number of nearest neighbours, if used
+    if info['nns'] > 0:
+        results_dir = results_dir + f'{info["nns"]}nn_'
+
     # Include histogram bin-size
     results_dir = results_dir + 'bin' +repr(info['bin_size'])+ '_'
 
