@@ -468,17 +468,7 @@ def getdistances(xyz_values, filterdist, nns=0, verbose=False):
         loc_pairs = kdtree.query_pairs(r=filterdist, output_type='ndarray')
 
     else:
-        loc_pairs = []
-        for i, loc in enumerate(xyz_values):
-            # Do not need norm distances (kdtree.query()[0]) as keeping relpos
-            neighbours = kdtree.query(loc, k=nns+1, distance_upper_bound=filterdist)[1]
-            neighbours = neighbours[1:] # First 'neighbour' is the reference point with distance 0.
-            # Get only neighbours within filterdist (if any)
-            # - uses the strange way query() returns ones beyond filterdist
-            neighbours = neighbours[neighbours < len(xyz_values)]
-            for neighbour in neighbours:
-                loc_pairs.append([i, neighbour])
-        loc_pairs = np.vstack(loc_pairs)
+        loc_pairs = get_knns(xyz_values, filterdist, nns=nns)
 
     # Get relative positions between pairs
     separation_values = kdtree.data[loc_pairs[:, 0]] - kdtree.data[loc_pairs[:, 1]]
@@ -924,16 +914,6 @@ def main():
     # Direct user to the location of the output.
     if info['verbose']:
         print('\nRelative positions are saved in the file:\n' + xyz_filename)
-
-
-
-
-
-
-
-
-
-
 
 
 if __name__ == "__main__":
