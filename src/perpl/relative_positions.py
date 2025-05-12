@@ -146,7 +146,7 @@ def get_inputs(info):
     try:
         print('\nHow many nearest neighbours, within the filter distance, '
               'do you want to calculate relative positions for?')
-        nns = int(input('\n(Type 0 to include all neighbours within the filter distance):'))
+        nns = int(input('\n(Type 0 to include all neighbours within the filter distance): '))
 
     except ValueError:
         print('This must be an integer.\n')
@@ -324,6 +324,8 @@ def choose_channels(info):
     if info['colours_analysed'] == 2:
         start_channel = float(input('Which colour channel do you want to measure FROM? '))
         end_channel = float(input('Which colour channel do you want to measure TO? '))
+
+    print('')
 
     # Check the input values match channel values in the data
     # For 'from' channel
@@ -761,7 +763,7 @@ def main():
     parser.add_argument('-z', '--zoom',
                         dest='zoom',
                         type=int,
-                        default=10,
+                        default=3,
                         help='Magnification applied to the scatter plot of the '
                              'principal view of the data.')
 
