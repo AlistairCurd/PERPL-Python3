@@ -338,6 +338,9 @@ def write_rel_pos_html_report(info):
         report_info = report_info + ('Relative positions were found from localisations '
             'in channel [' +repr(info['start_channel'])+ '] to localisations in channel ['
             +repr(info['end_channel'])+ ']. ')
+    if info['nns'] > 0:
+        report_info = report_info + (f"Analysis was restricted to the {info['nns']} "
+            + "nearest neighbour(s). ")
     report_info = report_info + ("This report provides "
                    "images and information on experimental fluorescence super resolution "
                    "light microscopy data.</p>\n")

@@ -142,6 +142,23 @@ def get_inputs(info):
 
     info['filter_dist'] = filterdist
 
+    # Set the number of nearest neighbours to find and use, within the filter distance.
+    try:
+        print('\nHow many nearest neighbours, within the filter distance, '
+              'do you want to calculate relative positions for?')
+        nns = int(input('\n(Type 0 to include all neighbours within the filter distance): '))
+
+    except ValueError:
+        print('This must be an integer.\n')
+        sys.exit("The filter distance must be an integer.\n")
+
+    if nns == 0:
+        print('Using all neighbouring localisations.')
+    else:
+        print(f'Using {nns} nearest neighbour(s).')
+
+    info['nns'] = nns
+
     # Set histogram bin values for distance histograms.
     print('\nWhat bin size (integer) do you want for the distance histograms (nm)?')
     print('...Choose 1 for model curve fitting functions...')
@@ -218,7 +235,8 @@ def read_data_in(info):
     elif in_file[-4:] == '.csv' or in_file[-4:] == '.txt':
         try:
             skip = 0
-            line = open(in_file).readline()
+            with open(in_file, encoding='utf-8') as f:
+                line = f.readline()
             for cell in line.split(','):
                 try:
                     float(cell)
@@ -307,6 +325,8 @@ def choose_channels(info):
         start_channel = float(input('Which colour channel do you want to measure FROM? '))
         end_channel = float(input('Which colour channel do you want to measure TO? '))
 
+    print('')
+
     # Check the input values match channel values in the data
     # For 'from' channel
     valid_colour = False
@@ -340,7 +360,81 @@ def choose_channels(info):
     return start_channel, end_channel
 
 
-def getdistances(xyz_values, filterdist, verbose=False):
+def get_knns(xyz_values_start, filterdist, xyz_values_end=None, nns=0):
+    """Find nearest neighbours between two lists of points within a chosen
+    distance of each other in 2D or 3D.
+
+    Args:
+        xyz_values_start (numpy array):
+            Numpy array of localisations with one row per localisation and
+            spatial coordinates in 2 or 3 columns,
+            to calculate relative positions 'from'.
+        filterdist (float):
+            Distance (in all three dimensions) between points within
+            which relative positions are calculated. This can be chosen by
+            user input as the function runs, or by specifying when calling
+            the function from a script.
+        xyz_values_end (numpy array):
+            Numpy array of localisations with one row per localisation and
+            spatial coordinates in 2 or 3 columns,
+            to calculate relative positions 'to'.
+            If neighbours are only being found within one list of points,
+            None (default) should be used, to avoid locs being identified
+            as their own nearest neighbour.
+        nns (int):
+            Number of nearest neighbours to calculate.
+
+    Returns:
+        loc_pairs (numpy array):
+            Each row is a pair of localisations, within filterdist,
+            labelled by row number in input arrays: ["From" loc, "To" loc]
+    """
+    # Print error if specific number of nns not requested
+    if nns == 0:
+        print('Need to request a number of near neighbours.')
+        print('Zero near neighbours requested.')
+        sys.exit()
+
+    # Set xyz_values_end and # nns to  for using single list of localisations
+    if xyz_values_end is None:
+        xyz_values_end = xyz_values_start
+        # Each localisation would have itself as neighbour 0 without this - not useful
+        k_nn = nns + 1
+        first_neighbour = 1
+    else:
+        k_nn = nns
+        first_neighbour = 0
+
+    # Get kdtree for "To" localisations
+    kdtree_end = spatial.KDTree(xyz_values_end)
+
+    # Find the desired near neighbours
+    loc_pairs = []
+    for i, loc in enumerate(xyz_values_start):
+        # Do not need norm distances (kdtree.query()[0]) as keeping relpos
+        neighbours = kdtree_end.query(loc, k=k_nn, distance_upper_bound=filterdist)[1]
+        # Turn scalar into array if necessary
+        if k_nn == 1:
+            neighbours = np.array([neighbours])
+
+        neighbours = neighbours[first_neighbour:]
+        # Get only neighbours within filterdist (if any)
+        # - uses the strange way query() returns results beyond filterdist
+        neighbours = neighbours[neighbours < len(xyz_values_end)]
+        for neighbour in neighbours:
+            loc_pairs.append([i, neighbour])
+
+    if len(loc_pairs) > 1:
+        loc_pairs = np.vstack(loc_pairs)
+    elif len(loc_pairs) == 1:
+        loc_pairs = np.array(loc_pairs)  # Ensure consistent output
+    else:
+        print('No neighbours found within filter distance.')
+
+    return loc_pairs
+
+
+def getdistances(xyz_values, filterdist, nns=0, verbose=False):
     """Calculates relative positions from positions in a scipy KDTree object,
     up to a maximum distance.
     
@@ -351,12 +445,17 @@ def getdistances(xyz_values, filterdist, verbose=False):
             Array of localisations, one localisation (x, y(, z)) per row
         filterdist (float):
             Maximum distance up to which to calculate relative positions.
+        nns (int):
+            Number of nearest neighbours to calculate.
+            If nns == 0: all neighbours within filterdist used.
+            If nns > 0: nns neighbours found.
         verbose (bool):
             Choose whether to print updates to screen.
     
     Returns:
-        loc_pairs (set):
-            Pairs of localisations (labelled by row number in input array) within filterdist.
+        loc_pairs (numpy array):
+            Each row is a pair of localisations, within filterdist,
+            labelled by row number in input array.
         separation_values (numpy array):
             Relative positions of the pairs of localisations.
     """
@@ -364,7 +463,14 @@ def getdistances(xyz_values, filterdist, verbose=False):
 
     kdtree = spatial.KDTree(xyz_values)
 
-    loc_pairs = kdtree.query_pairs(r=filterdist, output_type='ndarray')
+    # Find relevant pairs of locs by index in array of locs
+    if nns == 0:
+        loc_pairs = kdtree.query_pairs(r=filterdist, output_type='ndarray')
+
+    else:
+        loc_pairs = get_knns(xyz_values, filterdist, nns=nns)
+
+    # Get relative positions between pairs
     separation_values = kdtree.data[loc_pairs[:, 0]] - kdtree.data[loc_pairs[:, 1]]
 
     if verbose:
@@ -375,9 +481,7 @@ def getdistances(xyz_values, filterdist, verbose=False):
 
 
 def getdistances_two_colours(
-    xyz_values_start, filterdist, xyz_values_end,
-    verbose=False
-    ):
+    xyz_values_start, filterdist, xyz_values_end, nns=0, verbose=False):
     """Store all vectors (relative positions) between points within a chosen
     distance of each other in 3D from a list of points in one numpy array
     to another.
@@ -397,34 +501,62 @@ def getdistances_two_colours(
             Numpy array of localisations with one row per localisation and
             spatial coordinates in 2 or 3 columns,
             to calculate relative positions 'to'.
+        nns (int):
+            Number of nearest neighbours to calculate.
+            If nns == 0: all neighbours within filterdist used.
+            If nns > 0: nns neighbours found.
         verbose (Boolean):
             Choice whether to print updates to screen. Defaults to False.
 
     Returns:
-        relposns_list (list of numpy arrays):
-            A list with each element being a numpy array of vectors to neighbours
-            from a start point to an end point within the filter distance.
+        loc_pairs (numpy array):
+            Each row is a pair of localisations, within filterdist,
+            labelled by row number in input arrays: ["From" loc, "To" loc]
+        separation_values (numpy array):
+            Each row is the vector from the "from" loc to the "to" loc in loc_pairs.
     """
 
     start_time = time.time()  # Start timing it.
 
     kdtree_end = spatial.KDTree(xyz_values_end)
 
-    end_points_within_distance = kdtree_end.query_ball_point(
-        xyz_values_start, filterdist)
-    relposns_list = []
+    if nns == 0:
+        end_points_within_distance = kdtree_end.query_ball_point(
+            xyz_values_start, filterdist)
+        loc_pairs = []
 
-    for i, start_point in enumerate(xyz_values_start):
-        if len(end_points_within_distance[i]) > 0:
-            relposns_list.append(
-                kdtree_end.data[end_points_within_distance[i]] - start_point)
+        # relposns_list = []
+
+        # for i, start_point in enumerate(xyz_values_start):
+        for i in range(len(xyz_values_start)):
+            if len(end_points_within_distance[i]) > 0:
+                for end_loc_index in end_points_within_distance[i]:
+                    loc_pairs.append([i, end_loc_index])
+                # relposns_list.append(
+                #    kdtree_end.data[end_points_within_distance[i]] - start_point)
+
+        if len(loc_pairs) > 1:
+            loc_pairs = np.vstack(loc_pairs)
+        elif len(loc_pairs) == 1:
+            loc_pairs = np.array(loc_pairs)  # Ensure consistent output
+        else:
+            print('No neighbours found within filter distance.')
+
+    else:
+        loc_pairs = get_knns(xyz_values_start, filterdist, xyz_values_end, nns)
+
+    # Get relative positions between pairs
+    if len(loc_pairs) > 0:
+        separation_values = xyz_values_end[loc_pairs[:, 1]] - xyz_values_start[loc_pairs[:, 0]]
+    else:
+        separation_values = np.array([])
 
     if verbose:
         print(f'Found vectors between {len(xyz_values_start)} start ')
         print(f'and {len(kdtree_end.data)} end localisations')
         print(f'in {time.time() - start_time} seconds.')
 
-    return relposns_list
+    return loc_pairs, separation_values
 
 
 def get_vectors(d_values, dims):
@@ -474,27 +606,35 @@ def get_vectors(d_values, dims):
     return d_values
 
 
-def save_relative_positions(d_values, filterdist, dims, info):
+def save_relative_positions(d_values, filterdist, dims, info, nns=0):
     """Saves the relative positions that have been found in a csv file. This
     function saves both 2D and 3D data.
 
     Args:
-        d_values: numpy array of localisations with distances between the
-                  localisations.
-        filterdist: distance (in all three dimensions) between points within
+        d_values (numpy array):
+            Array of relative positions between localisations, one relative position per row.
+        filterdist (float): distance (in all three dimensions) between points within
             which relative positions are calculated. This can be chosen by user
             input as the function runs, or by specifying when calling the
             function from a script.
-        dim: The dimensions of the data ie 2D or 3D.
+        dims (int):
+            The dimensions of the data ie 2D or 3D.
         info (dict): A python dictionary containing a collection of useful parameters
             such as the filenames and paths.
+        nns (int):
+            The number of nearest neighbours found for calculating relative positions.
+            0 means no fixed number was used (e.g. all within filterdist).
 
     Returns:
         outfilename: The path and filename of the output data file. This is
            recorded in the log file.
     """
-    out_file_name = info['results_dir']+r'//'+ info['in_file_no_extension'] + \
-        f'_PERPL-relpos_{filterdist:.1f}filter.csv'
+    if nns == 0:
+        out_file_name = info['results_dir']+r'//'+ info['in_file_no_extension'] + \
+            f'_PERPL-relpos_{filterdist:.1f}filter.csv'
+    else:
+        out_file_name = info['results_dir']+r'//'+ info['in_file_no_extension'] + \
+            f'_PERPL-relpos_{filterdist:.1f}filter_{nns}nn.csv'
 
     if info['short_names']:
         out_file_name = info['short_results_dir']+r'//'+ \
@@ -516,12 +656,6 @@ def save_relative_positions(d_values, filterdist, dims, info):
         sys.exit("Could not create and open the output data file.")
 
     return out_file_name
-
-
-
-
-
-
 
 
 def main():
@@ -602,6 +736,14 @@ def main():
                         default=150,
                         help="Filter distance.")
 
+    parser.add_argument('--nns',
+                        dest='nns',
+                        type=int,
+                        default=0,
+                        help="Number of nearest neighbours to find within the filter distance, "
+                            "if desired. O (default) means no limit on the number of "
+                            "neighbours used within the filter distance.")
+
     parser.add_argument('-b', '--bin_size',
                         dest='bin_size',
                         type=int,
@@ -611,7 +753,7 @@ def main():
     parser.add_argument('-z', '--zoom',
                         dest='zoom',
                         type=int,
-                        default=10,
+                        default=3,
                         help='Magnification applied to the scatter plot of the '
                              'principal view of the data.')
 
@@ -644,6 +786,7 @@ def main():
     info['start_channel'] = args.start_channel
     info['end_channel'] = args.end_channel
     info['filter_dist'] = args.filter_dist
+    info['nns'] = args.nns
 
 
     info['zoom'] = args.zoom
@@ -698,12 +841,14 @@ def main():
     # For single channel
     if info['colours_analysed'] is None:
         xyz_values = xyzcolour_values[:, 0:info['dims']]
-        d_values = getdistances(xyz_values, info['filter_dist'], verbose=info['verbose'])[1]
+        d_values = getdistances(
+            xyz_values, info['filter_dist'], info['nns'], verbose=info['verbose'])[1]
 
     if info['colours_analysed'] == 1:
         xyz_values = \
             xyzcolour_values[:, 0:info['dims']][xyzcolour_values[:, -1] == info['start_channel']]
-        d_values = getdistances(xyz_values, info['filter_dist'], verbose=info['verbose'])[1]
+        d_values = getdistances(
+            xyz_values, info['filter_dist'], info['nns'], verbose=info['verbose'])[1]
 
     # For two channels
     if info['colours_analysed'] == 2:
@@ -712,8 +857,9 @@ def main():
         xyz_values_end = \
             xyzcolour_values[:, 0:info['dims']][xyzcolour_values[:, -1] == info['end_channel']]
         d_values = getdistances_two_colours(
-            xyz_values_start, info['filter_dist'], xyz_values_end, verbose=info['verbose'])
-        d_values = np.vstack(d_values)
+            xyz_values_start, info['filter_dist'], xyz_values_end,
+            info['nns'], verbose=info['verbose']
+            )[1]
 
     # Draw scatterplot and zoomed region
     plotting.draw_2d_scatter_plots(xyzcolour_values, info['dims'], info, 0)
@@ -734,10 +880,11 @@ def main():
     # Summarise
     if info['verbose']:
         print(
-            '\nWhen symmetric duplicates are removed (done by default for a '
-            'single colour channel, '
-            f'never for two-colour data), there are {len(d_values)} vectors within the '
-            'filter distance in all dimensions for all localisations.')
+            '\n'
+            f'{len(d_values)} relative positions within the '
+            'filter distance in all dimensions for all localisations. '
+            ' Symmetric duplicates removed for single-channel analysis if ' \
+            '# nearest neighbours was unrestricted.')
 
     # Plot vector component results
     plotting.plot_histograms(
@@ -753,7 +900,8 @@ def main():
 
 
     # Save relative positions and vector components.
-    xyz_filename = save_relative_positions(d_values, info['filter_dist'], info['dims'], info)
+    xyz_filename = save_relative_positions(
+        d_values, info['filter_dist'], info['dims'], info, info['nns'])
 
     save_data_end = timeit.default_timer()
     filtering_time = (save_data_end-filter_end)/60
@@ -766,16 +914,6 @@ def main():
     # Direct user to the location of the output.
     if info['verbose']:
         print('\nRelative positions are saved in the file:\n' + xyz_filename)
-
-
-
-
-
-
-
-
-
-
 
 
 if __name__ == "__main__":
