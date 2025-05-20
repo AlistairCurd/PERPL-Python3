@@ -110,7 +110,7 @@ To get information on the flags and usage, type:
 Examples of usage are in the bash script *command_line_demo.sh*. This is a Linux script and will not run on Windows in an Anaconda shell. If you transfer this script to a Linux system you may need to run the `dos2unix` command on it to make it work, as well as `chmod u+x command_line_demo.sh`. If you create the **data-perpl** directory as described in the **DATA** section then the script should pick up the data without you having to change the path in the script.
 
 
-### Jupyter notebooks (.ipynb)
+### Jupyter notebooks (in /notebooks/)
 
 To start the Jupyter notebook environment, go to an Anaconda shell that is running the PERPL environment and type:
 
