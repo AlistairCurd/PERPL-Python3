@@ -160,11 +160,12 @@ axes.set_title('Best model: ' + repr(model.__name__))
 # -
 
 # ## Akaike weights for the models
-# Typed-in AICc values for the different models here, to obtain relative likelihood, summing to one:
+# Use typed-in AICc values for different models here, to obtain relative likelihood, summing to one:
 
 weights = akaike_weights([1.])
 print(weights)
 
+# + [markdown] jp-MarkdownHeadingCollapsed=true
 # ## Plot model components
 
 # +
