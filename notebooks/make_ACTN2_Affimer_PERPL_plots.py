@@ -214,8 +214,8 @@ plt.plot(hist_1nm_bins[1][0:-1] + 0.5, hist_1nm_bins[0]/(hist_1nm_bins[1][0:-1] 
 
 # ### Optional save/load to save time
 
-np.save('normalised_transverse_rpd_smoothed_Churchman-4p4', normalised_transverse_rpd)
-# normalised_transverse_rpd = np.load('normalised_transverse_rpd_smoothed_Churchman-4p4.npy')
+np.save('..//..//perpl_test_data//normalised_transverse_rpd_smoothed_Churchman-4p4', normalised_transverse_rpd)
+# normalised_transverse_rpd = np.load('..//..//perpl_test_data//normalised_transverse_rpd_smoothed_Churchman-4p4.npy')
 
 # ## Set up an RPD model and fit
 # I've tried a few smoothing kernel widths here.
@@ -261,8 +261,8 @@ transverse_rpd_s8 = plotting.estimate_rpd_churchman_2d(
 normalised_transverse_rpd_s8 = transverse_rpd_s8[calculation_points > 0.] / calculation_points[calculation_points > 0.]
 norm_rpd_calculation_points = calculation_points[calculation_points > 0.]
 plt.plot(norm_rpd_calculation_points, normalised_transverse_rpd_s8)
-np.save('..\data-perpl\ACTN2-Affimer\\normalised_transverse_rpd_smoothed_Churchman-8', normalised_transverse_rpd_s8)
-# normalised_transverse_rpd = np.load('normalised_transverse_rpd_smoothed_Churchman-4p4.npy')
+np.save('..//..//perpl_test_data//normalised_transverse_rpd_smoothed_Churchman-8', normalised_transverse_rpd_s8)
+# normalised_transverse_rpd = np.load('..//..//perpl_test_data//normalised_transverse_rpd_smoothed_Churchman-8.npy')
 
 (params_optimised,
  params_covar,
@@ -303,8 +303,7 @@ transverse_rpd_s5 = plotting.estimate_rpd_churchman_2d(
 normalised_transverse_rpd_s5 = transverse_rpd_s5[calculation_points > 0.] / calculation_points[calculation_points > 0.]
 norm_rpd_calculation_points = calculation_points[calculation_points > 0.]
 plt.plot(norm_rpd_calculation_points, normalised_transverse_rpd_s5)
-np.save('normalised_transverse_rpd_smoothed_Churchman-5', normalised_transverse_rpd_s5)
-# normalised_transverse_rpd = np.load('normalised_transverse_rpd_smoothed_Churchman-4p4.npy')
+np.save('..//..//perpl_test_data//normalised_transverse_rpd_smoothed_Churchman-5', normalised_transverse_rpd_s5)
 
 fitlength = 50.
 calculation_points = np.arange(fitlength + 1.)
@@ -318,8 +317,7 @@ transverse_rpd_s6 = plotting.estimate_rpd_churchman_2d(
 normalised_transverse_rpd_s6 = transverse_rpd_s6[calculation_points > 0.] / calculation_points[calculation_points > 0.]
 norm_rpd_calculation_points = calculation_points[calculation_points > 0.]
 plt.plot(norm_rpd_calculation_points, normalised_transverse_rpd_s6)
-np.save('normalised_transverse_rpd_smoothed_Churchman-6', normalised_transverse_rpd_s6)
-# normalised_transverse_rpd = np.load('normalised_transverse_rpd_smoothed_Churchman-4p4.npy')
+np.save('..//..//perpl_test_data//normalised_transverse_rpd_smoothed_Churchman-6', normalised_transverse_rpd_s6)
 
 (params_optimised,
  params_covar,
@@ -354,7 +352,7 @@ zdisk_plots.plot_fitted_model(
 
 trans_model_with_info = zdisk_modelling.set_up_model_2d_twopeaks_flat_bg_with_fit_settings()
 
-normalised_transverse_rpd_s6 = np.load('./normalised_transverse_rpd_smoothed_Churchman-6.npy')
+normalised_transverse_rpd_s6 = np.load('..//..//perpl_test_data//normalised_transverse_rpd_smoothed_Churchman-6.npy')
 calculation_points = np.arange(fitlength + 1.)
 norm_rpd_calculation_points = calculation_points[calculation_points > 0.]
 
@@ -412,7 +410,7 @@ zdisk_plots.plot_fitted_model(
     plot_95ci=True
     )
 
-normalised_transverse_rpd_s8 = np.load('./normalised_transverse_rpd_smoothed_Churchman-8.npy')
+normalised_transverse_rpd_s8 = np.load('..//..//perpl_test_data//normalised_transverse_rpd_smoothed_Churchman-8.npy')
 calculation_points = np.arange(fitlength + 1.)
 norm_rpd_calculation_points = calculation_points[calculation_points > 0.]
 
