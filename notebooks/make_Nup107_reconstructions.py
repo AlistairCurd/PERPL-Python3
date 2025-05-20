@@ -30,7 +30,7 @@ import matplotlib.pyplot as plt
 #
 # Choose paths to load from and save to.
 
-input_path = r'..\data-perpl\Nup107_SNAP_3D_GRROUPED_10nmZprec.txt'
+input_path = r'..\..\perpl_test_data\Nup107_SNAP_3D_GRROUPED_10nmZprec.txt'
 locs = np.loadtxt(input_path, delimiter=',')
 print(locs.shape)
 # locs.columns
