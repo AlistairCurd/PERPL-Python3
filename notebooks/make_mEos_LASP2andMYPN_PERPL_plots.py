@@ -43,7 +43,7 @@ fitlength = 100.
 # ## Choose Affimer relative position data and combine files if necessary
 # ### Insert paths to the Affimer relative position data here:
 
-meos_lasp_relpos_path = r'../perpl_test_data/mEos3-LASP2_PERPL-relpos_200.0filter_5FOVs_aligned_len533140.pkl'
+meos_lasp_relpos_path = r'../../perpl_test_data/mEos3-LASP2_PERPL-relpos_200.0filter_5FOVs_aligned_len533140.pkl'
 
 # ### Select desired datasets to combine here:
 # These contain all data attributes, including the relative positions in both directions for each pair of localisations. We will filter e.g. for cell-axial data later.
