@@ -35,7 +35,7 @@ import matplotlib.pyplot as plt
 
 # +
 # ACTN2 Affimer
-input_path = r'..\perpl_test_data\ACTN2-Affimer_locs_maxprec5.pkl'
+input_path = r'..\..\perpl_test_data\ACTN2-Affimer_locs_maxprec5.pkl'
 
 locs = pd.read_pickle(input_path)
 print(locs.columns)
