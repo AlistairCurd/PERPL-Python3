@@ -29,6 +29,7 @@ import numpy as np
 
 from perpl.modelling import modelling_general, dna_paint_data_fitting
 from perpl.statistics import modelstats
+from perpl.statistics.modelstats import akaike_weights
 # -
 
 # ## Set standard maximum distance over which to plot distances and fit models
@@ -38,7 +39,7 @@ fitlength = 250.
 # ## Load relative position data
 # ### Insert path to the relative position data here:
 
-dna_origami_relpos_path = r'../data-perpl/DNA-origami_DNA-PAINT_locs_xyz_PERPL-relpos_250.0filter.csv'
+dna_origami_relpos_path = r'../../perpl_test_data/DNA-origami_DNA-PAINT_locs_xyz_PERPL-relpos_250.0filter.csv'
 
 
 start_time = time.time()
@@ -120,9 +121,7 @@ fig, axes = dna_paint_data_fitting.plot_distance_hist_and_fit(
 # ## Akaike weights for the models
 # Typed in AICc values for the different models here, to obtain relative likelihood, summing to one:
 
-from modelstats import akaike_weights
-weights = akaike_weights([1.
-])
+weights = akaike_weights([1.])
 print(weights)
 
 # ## Plot model components for best model: triangular prism with equal sides
@@ -135,7 +134,5 @@ dna_paint_data_fitting.plot_model_components_tri_prism(
     )
 
 dna_paint_data_fitting.plot_three_models(relpos, fitlength=fitlength)
-
-
 
 
