@@ -43,7 +43,7 @@ fitlength = 100.
 # ## Choose Affimer relative position data and combine files if necessary
 # ### Insert paths to the Affimer relative position data here:
 
-actn_meos_relpos_path = r'../perpl_test_data/ACTN2-mEos2_PERPL-relpos_200.0filter_6FOVs_aligned_len1229656.pkl'
+actn_meos_relpos_path = r'../../perpl_test_data/ACTN2-mEos2_PERPL-relpos_200.0filter_6FOVs_aligned_len1229656.pkl'
 
 
 # ### Select desired datasets to combine here:
@@ -340,7 +340,7 @@ yz_axes.fill_between(calculation_points,
                     )
 yz_axes.set_ylabel('Standardaised counts')
 yz_axes.set_xlabel('$\Delta$YZ (nm)')
-yz_fig.savefig(r'..\data-perpl\ACTN2_mEos\YZ-dists-standardised-smoothed2xprec-fit-95ci.pdf',
+yz_fig.savefig(r'..\..\perpl_test_data\ACTN2_mEos-YZ-dists-standardised-smoothed2xprec-fit-95ci.pdf',
               bbox_inches='tight')
 
 fitlength = 50.
