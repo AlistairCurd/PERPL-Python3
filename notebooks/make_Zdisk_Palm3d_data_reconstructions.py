@@ -13,6 +13,8 @@
 #     name: python3
 # ---
 
+# # Display projections of Z-disk protein data as in PERPL manuscript
+
 # # IMPORTANT
 # # Disable autosave for Jupytext version control with a paired .py script
 # # But manually saving the notebook frequently is still good
