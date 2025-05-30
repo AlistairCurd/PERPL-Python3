@@ -725,6 +725,9 @@ class TestPrimaryFilenameAndPathSetup(unittest.TestCase):
         info['verbose'] = True
         info['in_file_and_path'] = ("/localhome/joanna/PERPL_data/Nup107_SNAP_3D"
                                     "_GRROUPED_10nmZprec.csv")
+        info['colours_analysed'] = None
+        info['nns'] = 0
+        info['bin_size'] = 1
 
         ut.primary_filename_and_path_setup(info)
 
