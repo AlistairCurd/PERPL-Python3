@@ -21,16 +21,24 @@ specific language governing permissions and limitations under the License.
 """
 import unittest
 from unittest import mock
+
+import matplotlib
 import numpy as np
 import perpl.io.plotting as plots
 
 
+
 class TestDraw2dScatterPlot(unittest.TestCase):
     """
-    Test the draw_2d_scatter_plot function from the plotting library
+    Test the draw_2col_2d_scatter_plot function from the plotting library
     """
-    @mock.patch("%s.plots.plt" % __name__)
-    def test_mock_inputs(self, mock_plt):
+    @mock.patch.object(matplotlib.figure.Figure, "savefig")
+    @mock.patch.object(matplotlib.axes.Axes, "set_ylabel")
+    @mock.patch.object(matplotlib.axes.Axes, "set_xlabel")
+    @mock.patch.object(matplotlib.axes.Axes, "set_title")
+    @mock.patch.object(matplotlib.axes.Axes, "scatter")
+    def test_mock_inputs(self, mock_scatter, mock_set_title,
+                         mock_set_xlabel, mock_set_ylabel, mock_savefig):
         """
         Tests the getdistances function with an array representing 2
         localisations in 2d space (x and y coordinates) with values that are
@@ -45,10 +53,13 @@ class TestDraw2dScatterPlot(unittest.TestCase):
         x_label = "X Label"
         y_label = "Y Label"
 
-        plots.draw_2d_scatter_plot(x_values, y_values, title, filename, x_label, y_label)
+        plots.draw_2col_2d_scatter_plot(np.column_stack((x_values, y_values)),
+                                        title, filename, x_label, y_label,
+                                        info={'colours_analysed': None}
+                                        )
 
-        x_values_dash = mock_plt.scatter.call_args_list[0][0][0]
-        y_values_dash = mock_plt.scatter.call_args_list[0][0][1]
+        x_values_dash = mock_scatter.call_args_list[0][0][0]
+        y_values_dash = mock_scatter.call_args_list[0][0][1]
 
         try:
             np.testing.assert_array_almost_equal(x_values, x_values_dash)
@@ -67,12 +78,12 @@ class TestDraw2dScatterPlot(unittest.TestCase):
         self.assertTrue(res)
 
         assert x_values_dash.shape == y_values_dash.shape
-        assert mock_plt.title.call_args_list[0][0][0] == "2D Scatter Plot for Tests"
-        assert mock_plt.xlabel.call_args_list[0][0][0] == "X Label"
-        assert mock_plt.ylabel.call_args_list[0][0][0] == "Y Label"
 
-        assert mock_plt.figure.called
+        assert mock_set_title.call_args_list[0][0][0] == "2D Scatter Plot for Tests"
+        assert mock_set_xlabel.call_args_list[0][0][0] == "X Label"
+        assert mock_set_ylabel.call_args_list[0][0][0] == "Y Label"
 
+        assert mock_savefig.called
 
 
 if __name__ == '__main__':
