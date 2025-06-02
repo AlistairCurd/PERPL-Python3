@@ -471,11 +471,13 @@ def getdistances(xyz_values, filterdist, nns=0, verbose=False):
         loc_pairs = get_knns(xyz_values, filterdist, nns=nns)
 
     # Get relative positions between pairs
-    separation_values = kdtree.data[loc_pairs[:, 0]] - kdtree.data[loc_pairs[:, 1]]
+    separation_values = kdtree.data[loc_pairs[:, 1]] - kdtree.data[loc_pairs[:, 0]]
 
     if verbose:
         print(f'Found {len(separation_values)} vectors between all localisations')
         print(f'in {int(time.time() - start_time):d} seconds.')
+
+    # breakpoint()
 
     return loc_pairs, separation_values
 
@@ -570,8 +572,12 @@ def get_vectors(d_values, dims):
         dim: The dimensions of the data ie 2D or 3D.
 
     Returns:
-        d_values (numpy array): Array of vector components.
+        d_values (numpy array):
+            Array of vector components and distances (final added column),
+            with rows sorted by distance (smallest to largest).
+
     """
+    print(d_values.shape)
     #for i in range(0, 10):
     #    print(d_values[i])
     x_square_values = np.square(d_values[:, 0])
@@ -596,12 +602,12 @@ def get_vectors(d_values, dims):
         d_values = np.column_stack((d_values, yz_distance_values))
         d_values = np.column_stack((d_values, xyz_distance_values))
 
-    # I DON'T THINK THIS SORTING IS NEEDED
-    # if dims == 2:
-        # d_values.view('f8,f8,f8,f8').sort(order=['f3'], axis=0)
+    # Sorting distances in order
+    if dims == 2:
+        d_values.view('f8,f8,f8,f8').sort(order=['f3'], axis=0)
 
-    # if dims == 3:
-        # d_values.view('f8,f8,f8,f8,f8,f8,f8').sort(order=['f6'], axis=0)
+    if dims == 3:
+        d_values.view('f8,f8,f8,f8,f8,f8,f8').sort(order=['f6'], axis=0)
 
     return d_values
 
