@@ -28,6 +28,7 @@ dependencies = [
     "scikit-image~=0.22",
     "jupyter~=1.0",
     "jupytext~=1.16",
+    "sphinx~=8.2"
 ]
 
 [project.scripts]
