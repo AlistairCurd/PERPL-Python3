@@ -1,3 +1,6 @@
+[![Python application](https://github.com/AlistairCurd/PERPL-Python3/actions/workflows/python-app.yml/badge.svg)](https://github.com/AlistairCurd/PERPL-Python3/actions/workflows/python-app.yml)
+
+
 # PERPL (Pattern Extraction from Relative Positions of Localisations) 
 
 This project provides functions for finding relative positions between points in 3D space and plotting as distance histograms for single molecule localisation microscopy data e.g. direct stochastic optical reconstruction microscopy (dSTORM) or photoactivated light microscopy (PALM). It also provides functions for fitting in silico model relative position distributions to those obtained from experimental localisations and allows the user to select the most likely structural model to describe the experimental data.
@@ -202,6 +205,3 @@ Do version control with paired Python scripts to avoid including distracting not
 There are unit tests in the tests directory. These will be of interest to a software engineer who wishes to extend this project. They can be run from a Python 3 shell with the command.
 
 `python -m unittest discover -s tests`
-
-
-[![Python application](https://github.com/AlistairCurd/PERPL-Python3/actions/workflows/python-app.yml/badge.svg)](https://github.com/AlistairCurd/PERPL-Python3/actions/workflows/python-app.yml)
