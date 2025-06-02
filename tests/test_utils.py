@@ -739,14 +739,14 @@ class TestPrimaryFilenameAndPathSetup(unittest.TestCase):
 
         self.assertIn(result1, '/localhome/joanna/PERPL_data/PERPL_relative_'
                       'positions/Nup107_SNAP_3D_GRROUPED_10nmZprec/'
-                      'filter_200_2D_2019-11-07_15-49-55')
+                      'filter_200_2D_bin1_2019-11-07_15-49-55')
         self.assertIn(result2, 'Nup107_SNAP_3D_GRROUPED_10nmZprec')
         self.assertIn(result3, 'Nup107_SNAP_3D_GRROUPED_10nmZprec.csv')
         self.assertIn(result4, '/localhome/joanna/PERPL_data/PERPL_rp/Nup10-s-Zprec/'
-                      'f_200_2D_2019-11-07_15-49-55')
+                      'f_200_2D_b1_2019-11-07_15-49-55')
         self.assertIn(result5, 'Nup10-s-Zprec')
-        
-        
+
+
 
 class TestSecondaryFilenameAndPathSetup(unittest.TestCase):
     """
@@ -789,7 +789,7 @@ class TestSecondaryFilenameAndPathSetup(unittest.TestCase):
         print("result2: ", result2)
         print("result3: ", result3)
         print("result4: ", result4)
-        print("result5: ", result5)        
+        print("result5: ", result5)
 
         self.assertIn(result1, '/localhome/joanna/PERPL_data/PERPL_relative_'
                       'positions/Nup107_SNAP_3D_GRROUPED_10nmZprec/filter_200'
