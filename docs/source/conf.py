@@ -13,10 +13,21 @@ author = 'Alistair Curd'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['sphinx.ext.autodoc']
+extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.intersphinx',
+    "sphinx.ext.viewcode",
+    "sphinx.ext.githubpages",
+]
+pygments_style = "sphinx"       # enable syntax highlighting
+
+# Napoleon settings for Google/NumPy-style docstrings
+napoleon_google_docstring = True
+napoleon_numpy_docstring = True
 
 templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = []
 
 
 
