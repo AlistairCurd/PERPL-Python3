@@ -58,6 +58,10 @@ relposdensity_TestData*
 *~
 *.pylint*
 
+# Notebooks with output #
+#########################
+*.ipynb
+
 # Output #
 ##########
 *.pdf

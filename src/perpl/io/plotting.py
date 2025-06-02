@@ -37,8 +37,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib
-from scipy.ndimage.filters import gaussian_filter1d
-from scipy.ndimage.filters import gaussian_filter
+from scipy.ndimage import gaussian_filter1d
+from scipy.ndimage import gaussian_filter
 from tifffile import TiffWriter
 import perpl.modelling.modelling_general as models
 

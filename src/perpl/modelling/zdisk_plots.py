@@ -409,7 +409,7 @@ def plot_model_components_5peaks_variable(
 
 def actn_mEos_x_plot():
     # Get 2D (axial, transverse) relative positions
-    relpos = pd.read_pickle('../perpl_test_data/ACTN2-mEos2_PERPL-relpos_200.0filter_6FOVs_aligned_len1229656.pkl')
+    relpos = pd.read_pickle('../../perpl_test_data/ACTN2-mEos2_PERPL-relpos_200.0filter_6FOVs_aligned_len1229656.pkl')
 
     # Get subset of axial relative positions
     relpos.axial = abs(relpos.axial)
@@ -522,7 +522,7 @@ def lasp_mEos_plot():
     """Fit axial KDE of relative positions of myopalladin:mEos localisations.
     """
     # Get 2D (axial, transverse) relative positions
-    relpos = pd.read_pickle('../perpl_test_data/mEos3-LASP2_PERPL-relpos_200.0filter_5FOVs_aligned_len533140.pkl')
+    relpos = pd.read_pickle('../../perpl_test_data/mEos3-LASP2_PERPL-relpos_200.0filter_5FOVs_aligned_len533140.pkl')
         
     # 'S:/Peckham/Bioimaging/Alistair/PALM-STORM'
     # '/AlexasNearestNeighbours/LASP2'
@@ -637,7 +637,7 @@ def mypn_mEos_plot():
     """Fit axial KDE of relative positions of myopalladin:mEos localisations.
     """
     # Get 2D (axial, transverse) relative positions
-    relpos = pd.read_pickle('../perpl_test_data/mEos3-MYPN_NNS_aligned_5_FOVs_len1445698.pkl')
+    relpos = pd.read_pickle('../../perpl_test_data/mEos3-MYPN_NNS_aligned_5_FOVs_len1445698.pkl')
 
     # Get subset of axial relative positions
     relpos.axial = abs(relpos.axial)

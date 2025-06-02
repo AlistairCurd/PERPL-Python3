@@ -1,3 +1,6 @@
+[![Python application](https://github.com/AlistairCurd/PERPL-Python3/actions/workflows/python-app.yml/badge.svg)](https://github.com/AlistairCurd/PERPL-Python3/actions/workflows/python-app.yml)
+
+
 # PERPL (Pattern Extraction from Relative Positions of Localisations) 
 
 This project provides functions for finding relative positions between points in 3D space and plotting as distance histograms for single molecule localisation microscopy data e.g. direct stochastic optical reconstruction microscopy (dSTORM) or photoactivated light microscopy (PALM). It also provides functions for fitting in silico model relative position distributions to those obtained from experimental localisations and allows the user to select the most likely structural model to describe the experimental data.
@@ -110,13 +113,13 @@ To get information on the flags and usage, type:
 Examples of usage are in the bash script *command_line_demo.sh*. This is a Linux script and will not run on Windows in an Anaconda shell. If you transfer this script to a Linux system you may need to run the `dos2unix` command on it to make it work, as well as `chmod u+x command_line_demo.sh`. If you create the **data-perpl** directory as described in the **DATA** section then the script should pick up the data without you having to change the path in the script.
 
 
-### Jupyter notebooks (.ipynb)
+### Jupyter notebooks (in /notebooks/)
 
 To start the Jupyter notebook environment, go to an Anaconda shell that is running the PERPL environment and type:
 
 `jupyter notebook`
 
-The notebook environment will open in your web browser. Select a notebook (*.ipynb* file). Select **Python 3** for the **kernel**, if necessary. If working in WSL2:
+The notebook environment will open in your web browser. Select a notebook. Select **Python 3** for the **kernel**, if necessary. If working in WSL2:
 * Copy a URL given in the output and paste into a web browser in Windows.
 * For accessing data, use paths as expected in the Linux environment.
 
@@ -185,15 +188,18 @@ In src/perpl:
 * *test_linearrepeatmodels.py*: test file for the linearrepeatmodels.py module.
 
 ### Jupyter notebooks
-#### NOTE: Some notebooks have not worked since v0.3
 
-* *make_ACTN2_Affimer_PERPL_plots.ipynb*: A Jupyter notebook for generating plots and model fits to Z-disc protein relative position data.
-* *make_ACTN2_Affimer_reconstructions.ipynb*: A Jupyter notebook for generating XY projections of the distribution of single molecule localisations in a FOV.
-* *make_ACTN2_mEos_PERPL_plots.ipynb*: A Jupyter notebook for generating plots and model fits to Z-disc protein relative position data.
-* *make_DNA_origami_PERPL_plots.ipynb*: A Jupyter notebook for generating plots and model fits to relative position data among DNA-origami localisation data.
-* *make_Nup107_reconstructions.ipynb*: A Jupyter notebook for generating XY projections of the distribution of single molecule localisations in a FOV.
-* *make_Nup107_Z_PERPL_plots.ipynb*: A Jupyter notebook for generating plots and model fits to relative position data among nuclear pore protein localisation data (along the Z-axis).
-* *make_mEos_LASP2_PERPL_plots.ipynb*: A Jupyter notebook for generating plots and model fits to Z-disc protein relative position data.
+Open as notebook with Jupyter.
+
+Do version control with paired Python scripts to avoid including distracting notebook-related data.
+
+* *make_ACTN2_Affimer_PERPL_plots.py*: A Jupyter notebook for generating plots and model fits to Z-disc protein relative position data.
+* *make_ACTN2_Affimer_reconstructions.py*: A Jupyter notebook for generating XY projections of the distribution of single molecule localisations in a FOV.
+* *make_ACTN2_mEos_PERPL_plots.py*: A Jupyter notebook for generating plots and model fits to Z-disc protein relative position data.
+* *make_DNA_origami_PERPL_plots.py*: A Jupyter notebook for generating plots and model fits to relative position data among DNA-origami localisation data.
+* *make_Nup107_reconstructions.py*: A Jupyter notebook for generating XY projections of the distribution of single molecule localisations in a FOV.
+* *make_Nup107_Z_PERPL_plots.py*: A Jupyter notebook for generating plots and model fits to relative position data among nuclear pore protein localisation data (along the Z-axis).
+* *make_mEos_LASP2_PERPL_plots.py*: A Jupyter notebook for generating plots and model fits to Z-disc protein relative position data.
 
 ### Unittests
 

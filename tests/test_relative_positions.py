@@ -41,9 +41,9 @@ class TestGetdistances(unittest.TestCase):
         xyz_values = np.array([[20886.96, 30248.96],
                                [20891.08, 30246.26]])
         filterdist = 150
-        separation_values = np.array([[4.12, -2.7, 0.]])
+        separation_values = np.array([[4.12, -2.7]])
 
-        result = rp.getdistances(xyz_values, filterdist)
+        result = rp.getdistances(xyz_values, filterdist)[1]
         try:
             np.testing.assert_array_almost_equal(separation_values, result)
             res = True
@@ -65,10 +65,10 @@ class TestGetdistances(unittest.TestCase):
                                [20886.96, 30248.96],
                                [20891.08, 30346.26]])
         filterdist = 150
-        separation_values = np.array([[4.12, 97.3, 0.],
-                                      [6.62, 14.49, 0.]])
+        separation_values = np.array([[-6.62, -14.49],
+                                      [4.12, 97.3]])
 
-        result = rp.getdistances(xyz_values, filterdist)
+        result = rp.getdistances(xyz_values, filterdist)[1]
         try:
             np.testing.assert_array_almost_equal(separation_values, result)
             res = True
@@ -91,9 +91,9 @@ class TestGetdistances(unittest.TestCase):
                                [20886.96, 30248.96],
                                [20891.08, 30446.26]])
         filterdist = 150
-        separation_values = np.array([[6.62, 14.49, 0.]])
+        separation_values = np.array([[-6.62, -14.49]])
 
-        result = rp.getdistances(xyz_values, filterdist)
+        result = rp.getdistances(xyz_values, filterdist)[1]
         try:
             np.testing.assert_array_almost_equal(separation_values, result)
             res = True
@@ -117,10 +117,10 @@ class TestGetdistances(unittest.TestCase):
                                [20886.96, 30248.96],
                                [20891.08, 30446.26]])
         filterdist = 200
-        separation_values = np.array([[4.12, 197.3, 0.],
-                                      [6.62, 14.49, 0.],])
+        separation_values = np.array([[-6.62, -14.49],
+                                      [4.12, 197.3]])
 
-        result = rp.getdistances(xyz_values, filterdist)
+        result = rp.getdistances(xyz_values, filterdist)[1]
         try:
             np.testing.assert_array_almost_equal(separation_values, result)
             res = True
@@ -142,9 +142,9 @@ class TestGetdistances(unittest.TestCase):
                                [20886.96, 30248.96],
                                [20791.08, 30446.26]])
         filterdist = 150
-        separation_values = np.array([[6.62, 14.49, 0.]])
+        separation_values = np.array([[-6.62, -14.49]])
 
-        result = rp.getdistances(xyz_values, filterdist)
+        result = rp.getdistances(xyz_values, filterdist)[1]
         try:
             np.testing.assert_array_almost_equal(separation_values, result)
             res = True
@@ -168,9 +168,9 @@ class TestGetdistances(unittest.TestCase):
                                [21740.77, 26400.65],
                                [20891.08, 30246.26]])
         filterdist = 150
-        separation_values = np.array([[4.12, -2.7, 0.]])
+        separation_values = np.array([[4.12, -2.7]])
 
-        result = rp.getdistances(xyz_values, filterdist)
+        result = rp.getdistances(xyz_values, filterdist)[1]
         try:
             np.testing.assert_array_almost_equal(separation_values, result)
             res = True
@@ -195,10 +195,11 @@ class TestGetdistances(unittest.TestCase):
                                [20891.08, 30246.26],
                                [20891.08, 30246.26]])
         filterdist = 150
-        separation_values = np.array([[4.12, -2.7, 0.],
-                                      [4.12, -2.7, 0.]])
+        separation_values = np.array([[4.12, -2.7],
+                                      [4.12, -2.7],
+                                      [0., 0.]])
 
-        result = rp.getdistances(xyz_values, filterdist)
+        result = rp.getdistances(xyz_values, filterdist)[1]
         try:
             np.testing.assert_array_almost_equal(separation_values, result)
             res = True
@@ -227,10 +228,10 @@ class TestGetdistances(unittest.TestCase):
                                [21734.15, 26386.16]])
 
         filterdist = 150
-        separation_values = np.array([[4.12, -2.7, 0.],
-                                      [6.62, 14.49, 0.]])
+        separation_values = np.array([[4.12, -2.7],
+                                      [-6.62, -14.49]])
 
-        result = rp.getdistances(xyz_values, filterdist)
+        result = rp.getdistances(xyz_values, filterdist)[1]
 
         try:
             np.testing.assert_array_almost_equal(separation_values, result)
