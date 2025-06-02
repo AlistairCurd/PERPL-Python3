@@ -188,6 +188,7 @@ In src/perpl:
 * *test_linearrepeatmodels.py*: test file for the linearrepeatmodels.py module.
 
 ### Jupyter notebooks
+
 Open as notebook with Jupyter.
 
 Do version control with paired Python scripts to avoid including distracting notebook-related data.
