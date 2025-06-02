@@ -202,3 +202,6 @@ Do version control with paired Python scripts to avoid including distracting not
 There are unit tests in the tests directory. These will be of interest to a software engineer who wishes to extend this project. They can be run from a Python 3 shell with the command.
 
 `python -m unittest discover -s tests`
+
+
+[![Python application](https://github.com/AlistairCurd/PERPL-Python3/actions/workflows/python-app.yml/badge.svg)](https://github.com/AlistairCurd/PERPL-Python3/actions/workflows/python-app.yml)
