@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>perpl.modelling.models_2d_distances_normalised &#8212; PERPL  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for perpl.modelling.models_2d_distances_normalised</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Tue Jun 9 2020</span>
+
+<span class="sd">Functions for creating models for distances in 2D space, normalised for</span>
+<span class="sd">increasing search radius.</span>
+
+<span class="sd">Alistair Curd</span>
+<span class="sd">University of Leeds</span>
+<span class="sd">9 June 2020</span>
+
+<span class="sd">---</span>
+<span class="sd">Copyright 2020 Peckham Lab</span>
+
+<span class="sd">Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use</span>
+<span class="sd">this file except in compliance with the License. You may obtain a copy of the</span>
+<span class="sd">License at</span>
+<span class="sd">http://www.apache.org/licenses/LICENSE-2.0</span>
+
+<span class="sd">Unless required by applicable law or agreed to in writing, software distributed</span>
+<span class="sd">under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR</span>
+<span class="sd">CONDITIONS OF ANY KIND, either express or implied. See the License for the</span>
+<span class="sd">specific language governing permissions and limitations under the License.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">perpl.modelling.modelling_general</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">model</span>
+
+<span class="sd">&quot;&quot;&quot;Various models for the relative position distribution (hence</span>
+<span class="sd">*returns* **rpd**).</span>
+
+<span class="sd">Args are from:</span>
+<span class="sd">    x_values (float or numpy array):</span>
+<span class="sd">        Distances at which the model will be evaluated.</span>
+<span class="sd">    dist_int (float):</span>
+<span class="sd">        Characteristic distance between two localisations in a 2D distribution.</span>
+<span class="sd">    broadening (float):</span>
+<span class="sd">        Sigma in the function used for distances between Gaussian</span>
+<span class="sd">        distributions.</span>
+<span class="sd">    amp or amp_int (float):</span>
+<span class="sd">        Amplitude of the peak representing the characteristic distance</span>
+<span class="sd">    locprec (float):</span>
+<span class="sd">        Localisation precision/broadening for repeated localisations of the</span>
+<span class="sd">        same or unresolvable molecule(s).</span>
+<span class="sd">    ampreplocs (float):</span>
+<span class="sd">        Amplitude for the repeated localisations peak.</span>
+<span class="sd">    bgoffset (float):</span>
+<span class="sd">        Magnitude of a uniform backgroun level of distances.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="onepeakplusreps_normalised_flat_bg">
+<a class="viewcode-back" href="../../../perpl.modelling.html#perpl.modelling.models_2d_distances_normalised.onepeakplusreps_normalised_flat_bg">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">onepeakplusreps_normalised_flat_bg</span><span class="p">(</span><span class="n">x_values</span><span class="p">,</span> <span class="n">dist_1</span><span class="p">,</span> <span class="n">broadening</span><span class="p">,</span>
+                            <span class="n">amp</span><span class="p">,</span>
+                            <span class="n">locprec</span><span class="p">,</span> <span class="n">ampreplocs</span><span class="p">,</span>
+                            <span class="n">bgoffset</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A model for the normalised distance distribution for 2D localisations with</span>
+<span class="sd">    a characteristic distance between them.</span>
+<span class="sd">    </span>
+<span class="sd">    See docstring below imports.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Background</span>
+    <span class="n">rpd</span> <span class="o">=</span> <span class="mf">0.</span> <span class="o">*</span> <span class="n">x_values</span> <span class="o">+</span> <span class="n">bgoffset</span>
+    <span class="c1"># Characteristic distance peak</span>
+    <span class="n">peak_1</span> <span class="o">=</span> <span class="n">amp</span> <span class="o">*</span> <span class="n">model</span><span class="o">.</span><span class="n">pairwise_correlation_2d</span><span class="p">(</span><span class="n">x_values</span><span class="p">,</span> <span class="n">dist_1</span><span class="p">,</span> <span class="n">broadening</span><span class="p">)</span>
+    <span class="n">peak_1</span> <span class="o">=</span> <span class="n">peak_1</span> <span class="o">/</span> <span class="n">x_values</span> <span class="c1"># Normalisation</span>
+    <span class="n">rpd</span> <span class="o">=</span> <span class="n">rpd</span> <span class="o">+</span> <span class="n">peak_1</span>
+    <span class="c1"># Repeated localisations of the same/unresolvable molecule(s)</span>
+    <span class="n">reps</span> <span class="o">=</span> <span class="n">ampreplocs</span> <span class="o">*</span> <span class="n">model</span><span class="o">.</span><span class="n">pairwise_correlation_2d</span><span class="p">(</span><span class="n">x_values</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">locprec</span><span class="p">)</span>
+    <span class="n">rpd</span> <span class="o">=</span> <span class="n">rpd</span> <span class="o">+</span> <span class="n">reps</span>
+
+    <span class="k">return</span> <span class="n">rpd</span></div>
+
+
+
+<div class="viewcode-block" id="onepeakplusreps_normalised_flat_bg_vectorinput">
+<a class="viewcode-back" href="../../../perpl.modelling.html#perpl.modelling.models_2d_distances_normalised.onepeakplusreps_normalised_flat_bg_vectorinput">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">onepeakplusreps_normalised_flat_bg_vectorinput</span><span class="p">(</span><span class="n">vector_input</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Version of onepeakplusreps_normalised_flat_bg to take vector input</span>
+<span class="sd">    so that numdifftools can calculate the Jacobian, and we can get confidence</span>
+<span class="sd">    intervals.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="p">(</span><span class="n">x_values</span><span class="p">,</span> <span class="n">rep</span><span class="p">,</span> <span class="n">broadening</span><span class="p">,</span>
+     <span class="n">amp</span><span class="p">,</span>
+     <span class="n">locprec</span><span class="p">,</span> <span class="n">ampreplocs</span><span class="p">,</span>
+     <span class="n">bgoffset</span><span class="p">)</span> <span class="o">=</span> <span class="n">vector_input</span>
+    <span class="n">rpd</span> <span class="o">=</span> <span class="n">onepeakplusreps_normalised_flat_bg</span><span class="p">(</span><span class="n">x_values</span><span class="p">,</span> <span class="n">rep</span><span class="p">,</span> <span class="n">broadening</span><span class="p">,</span>
+                                  <span class="n">amp</span><span class="p">,</span>
+                                  <span class="n">locprec</span><span class="p">,</span> <span class="n">ampreplocs</span><span class="p">,</span>
+                                  <span class="n">bgoffset</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">rpd</span></div>
+
+
+
+<div class="viewcode-block" id="twopeaks_normalised_flat_bg">
+<a class="viewcode-back" href="../../../perpl.modelling.html#perpl.modelling.models_2d_distances_normalised.twopeaks_normalised_flat_bg">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">twopeaks_normalised_flat_bg</span><span class="p">(</span><span class="n">x_values</span><span class="p">,</span>
+                                <span class="n">dist_1</span><span class="p">,</span> <span class="n">dist_2</span><span class="p">,</span> <span class="n">broadening</span><span class="p">,</span>
+                                <span class="n">amp_1</span><span class="p">,</span> <span class="n">amp_2</span><span class="p">,</span>
+                                <span class="n">bgoffset</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A model for the normalised distance distribution for 2D localisations with</span>
+<span class="sd">    a characteristic distance between them.</span>
+<span class="sd">    </span>
+<span class="sd">    See docstring below imports.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Background</span>
+    <span class="n">rpd</span> <span class="o">=</span> <span class="mf">0.</span> <span class="o">*</span> <span class="n">x_values</span> <span class="o">+</span> <span class="n">bgoffset</span>
+    <span class="c1"># Characteristic distance peaks</span>
+    <span class="n">peak_1</span> <span class="o">=</span> <span class="p">(</span><span class="n">amp_1</span> <span class="o">*</span> <span class="n">model</span><span class="o">.</span><span class="n">pairwise_correlation_2d</span><span class="p">(</span><span class="n">x_values</span><span class="p">,</span> <span class="n">dist_1</span><span class="p">,</span> <span class="n">broadening</span><span class="p">)</span>
+              <span class="o">/</span> <span class="n">x_values</span> <span class="c1"># Normalisation</span>
+              <span class="p">)</span>
+    <span class="n">peak_2</span> <span class="o">=</span> <span class="p">(</span><span class="n">amp_2</span> <span class="o">*</span> <span class="n">model</span><span class="o">.</span><span class="n">pairwise_correlation_2d</span><span class="p">(</span><span class="n">x_values</span><span class="p">,</span> <span class="n">dist_2</span><span class="p">,</span> <span class="n">broadening</span><span class="p">)</span>
+              <span class="o">/</span> <span class="n">x_values</span> <span class="c1"># Normalisation</span>
+              <span class="p">)</span>
+    <span class="n">rpd</span> <span class="o">=</span> <span class="n">rpd</span> <span class="o">+</span> <span class="n">peak_1</span> <span class="o">+</span> <span class="n">peak_2</span>
+
+    <span class="k">return</span> <span class="n">rpd</span></div>
+
+
+
+<div class="viewcode-block" id="twopeaks_normalised_flat_bg_vectorinput">
+<a class="viewcode-back" href="../../../perpl.modelling.html#perpl.modelling.models_2d_distances_normalised.twopeaks_normalised_flat_bg_vectorinput">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">twopeaks_normalised_flat_bg_vectorinput</span><span class="p">(</span><span class="n">vector_input</span><span class="p">):</span>
+    <span class="p">(</span><span class="n">x_values</span><span class="p">,</span>
+     <span class="n">dist_1</span><span class="p">,</span> <span class="n">dist_2</span><span class="p">,</span> <span class="n">broadening</span><span class="p">,</span>
+     <span class="n">amp_1</span><span class="p">,</span> <span class="n">amp_2</span><span class="p">,</span>
+     <span class="n">bgoffset</span><span class="p">)</span> <span class="o">=</span> <span class="n">vector_input</span>
+    <span class="n">rpd</span> <span class="o">=</span> <span class="n">twopeaks_normalised_flat_bg</span><span class="p">(</span><span class="n">x_values</span><span class="p">,</span>
+                                      <span class="n">dist_1</span><span class="p">,</span> <span class="n">dist_2</span><span class="p">,</span> <span class="n">broadening</span><span class="p">,</span>
+                                      <span class="n">amp_1</span><span class="p">,</span> <span class="n">amp_2</span><span class="p">,</span>
+                                      <span class="n">bgoffset</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">rpd</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">PERPL</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Alistair Curd.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
