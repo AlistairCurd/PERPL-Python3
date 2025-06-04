@@ -29,7 +29,6 @@ dependencies = [
     "jupyter~=1.0",
     "jupytext~=1.16",
     "sphinx~=8.2",
-    "sphinx-rtd-theme~=3.0
 ]
 
 [project.scripts]
