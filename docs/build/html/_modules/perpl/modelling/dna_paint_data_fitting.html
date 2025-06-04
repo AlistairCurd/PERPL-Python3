@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>perpl.modelling.dna_paint_data_fitting &#8212; PERPL  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for perpl.modelling.dna_paint_data_fitting</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">dna_paint_data_fitting.py</span>
+
+<span class="sd">Library of functions for fitting model relative position distributions (RPDs)</span>
+<span class="sd">to relative positions obtained from localisations appearing to be arranged</span>
+<span class="sd">on a relatively simple geometric pattern, i.e. polyhedra.</span>
+
+<span class="sd">Created on Mon Jul 29 15:41:31 2019</span>
+
+<span class="sd">Alistair Curd</span>
+<span class="sd">University of Leeds</span>
+<span class="sd">30 July 2018</span>
+
+<span class="sd">Software Engineering practices applied</span>
+
+<span class="sd">Joanna Leng (an EPSRC funded Research Software Engineering Fellow (EP/R025819/1)</span>
+<span class="sd">University of Leeds</span>
+<span class="sd">January 2019</span>
+
+<span class="sd">---</span>
+<span class="sd">Copyright 2018 Peckham Lab</span>
+
+<span class="sd">Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use</span>
+<span class="sd">this file except in compliance with the License. You may obtain a copy of the</span>
+<span class="sd">License at</span>
+<span class="sd">http://www.apache.org/licenses/LICENSE-2.0</span>
+
+<span class="sd">Unless required by applicable law or agreed to in writing, software distributed</span>
+<span class="sd">under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR</span>
+<span class="sd">CONDITIONS OF ANY KIND, either express or implied. See the License for the</span>
+<span class="sd">specific language governing permissions and limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">curve_fit</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">perpl.modelling.polyhedramodelling</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">poly</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">perpl.statistics.modelstats</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">stats</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">perpl.modelling.modelling_general</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">models</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perpl.modelling.modelling_general</span><span class="w"> </span><span class="kn">import</span> <span class="n">ModelWithFitSettings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perpl.modelling.modelling_general</span><span class="w"> </span><span class="kn">import</span> <span class="n">stdev_of_model</span>
+
+
+<div class="viewcode-block" id="create_default_fitting_params_dicts">
+<a class="viewcode-back" href="../../../perpl.modelling.html#perpl.modelling.dna_paint_data_fitting.create_default_fitting_params_dicts">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_default_fitting_params_dicts</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create lists for initial guesses and bounds for parameters during</span>
+<span class="sd">    fitting. Sets the defaults for scipy.optimise.curve_fit</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        lower_bound_dict (dict):</span>
+<span class="sd">            Dictionary of default lower bound options for parameter values.</span>
+<span class="sd">        upper_bound_dict (dict):</span>
+<span class="sd">            Dictionary of default upper bound options for parameter values.</span>
+<span class="sd">        initial_params_dict (dict):</span>
+<span class="sd">            Dictionary of default initial parameter value options.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lower_bound_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;side_1&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                        <span class="s1">&#39;side_2&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                        <span class="s1">&#39;side_3&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                        <span class="s1">&#39;loc_prec_sd&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                        <span class="s1">&#39;loc_prec_amp&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                        <span class="s1">&#39;vertices_amp&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                        <span class="s1">&#39;vertices_sd&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                        <span class="s1">&#39;substruct_amp&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                        <span class="s1">&#39;substruct_sd&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                        <span class="s1">&#39;square_grid_spacing&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                        <span class="s1">&#39;square_grid_amp&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                        <span class="s1">&#39;square_grid_sd&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                        <span class="s1">&#39;bg_slope&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                        <span class="p">}</span>
+
+    <span class="n">upper_bound_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;side_1&#39;</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
+                        <span class="s1">&#39;side_2&#39;</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
+                        <span class="s1">&#39;side_3&#39;</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
+                        <span class="s1">&#39;loc_prec_sd&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+                        <span class="s1">&#39;loc_prec_amp&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+                        <span class="s1">&#39;vertices_amp&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+                        <span class="s1">&#39;vertices_sd&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+                        <span class="s1">&#39;substruct_amp&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+                        <span class="s1">&#39;substruct_sd&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+                        <span class="s1">&#39;square_grid_spacing&#39;</span><span class="p">:</span> <span class="mi">400</span><span class="p">,</span>
+                        <span class="s1">&#39;square_grid_amp&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
+                        <span class="s1">&#39;square_grid_sd&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+                        <span class="s1">&#39;bg_slope&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+                        <span class="p">}</span>
+
+    <span class="n">initial_params_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;side_1&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+                           <span class="s1">&#39;side_2&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+                           <span class="s1">&#39;side_3&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+                           <span class="s1">&#39;loc_prec_sd&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+                           <span class="s1">&#39;loc_prec_amp&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+                           <span class="s1">&#39;vertices_amp&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+                           <span class="s1">&#39;vertices_sd&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+                           <span class="s1">&#39;substruct_amp&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+                           <span class="s1">&#39;substruct_sd&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+                           <span class="s1">&#39;square_grid_spacing&#39;</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
+                           <span class="s1">&#39;square_grid_amp&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+                           <span class="s1">&#39;square_grid_sd&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+                           <span class="s1">&#39;bg_slope&#39;</span><span class="p">:</span> <span class="mf">0.001</span><span class="p">,</span>
+                           <span class="p">}</span>
+    <span class="k">return</span> <span class="n">lower_bound_dict</span><span class="p">,</span> <span class="n">upper_bound_dict</span><span class="p">,</span> <span class="n">initial_params_dict</span></div>
+
+
+
+<div class="viewcode-block" id="set_up_tri_prism_on_grid_1_length_2disobg_substruct_with_fit_info">
+<a class="viewcode-back" href="../../../perpl.modelling.html#perpl.modelling.dna_paint_data_fitting.set_up_tri_prism_on_grid_1_length_2disobg_substruct_with_fit_info">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_up_tri_prism_on_grid_1_length_2disobg_substruct_with_fit_info</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set up the RPD model with fitting settings,</span>
+<span class="sd">    for a rotationally symmetric model with spread due to repeated</span>
+<span class="sd">    localisations and spread to unresolvable substructure.</span>
+<span class="sd">    The fitting settings are to pass to scipy&#39;s</span>
+<span class="sd">    curve_fit, and the vector-input version of the model is for</span>
+<span class="sd">    differentiation and error propagation with numdifftools.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A ModelWithFitSettings object containing:</span>
+<span class="sd">            model_rpd (function name):</span>
+<span class="sd">                Relative position density as a function of separation</span>
+<span class="sd">                between localisations.</span>
+<span class="sd">            initial_params (list):</span>
+<span class="sd">                Starting guesses for the parameter values by</span>
+<span class="sd">                scipy.optimize.curve_fit</span>
+<span class="sd">            lower_bounds (list), upper_bounds (list):</span>
+<span class="sd">                The bounds on allowable parameter values as</span>
+<span class="sd">                scipy.optimize.curve_fit runs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model_with_info</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">ModelWithFitSettings</span><span class="p">(</span>
+            <span class="n">model_rpd</span><span class="o">=</span><span class="n">poly</span><span class="o">.</span><span class="n">tri_prism_on_grid_1_length_2disobg_substruct_rpd</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Add fitting parameters to ModelWithFitSettings object</span>
+    <span class="p">(</span><span class="n">lower_bound_dict</span><span class="p">,</span>
+     <span class="n">upper_bound_dict</span><span class="p">,</span>
+     <span class="n">initial_params_dict</span><span class="p">)</span> <span class="o">=</span> <span class="n">create_default_fitting_params_dicts</span><span class="p">()</span>
+
+    <span class="c1"># Can optionally modify these dictionaries here:</span>
+    
+    <span class="n">initial_params</span> <span class="o">=</span> <span class="p">[</span><span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;side_1&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_sd&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;vertices_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;vertices_sd&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;substruct_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;substruct_sd&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_spacing&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_sd&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;bg_slope&#39;</span><span class="p">]</span>
+                      <span class="p">]</span>
+
+    <span class="n">lower_bounds</span> <span class="o">=</span> <span class="p">[</span><span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;side_1&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_sd&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_sd&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_sd&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_spacing&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_sd&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;bg_slope&#39;</span><span class="p">]</span>
+                    <span class="p">]</span>
+
+
+    <span class="n">upper_bounds</span> <span class="o">=</span> <span class="p">[</span><span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;side_1&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_sd&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_sd&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_sd&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_spacing&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_sd&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;bg_slope&#39;</span><span class="p">]</span>
+                    <span class="p">]</span>
+
+    <span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span><span class="n">lower_bounds</span><span class="p">,</span> <span class="n">upper_bounds</span><span class="p">)</span>
+
+    <span class="n">model_with_info</span><span class="o">.</span><span class="n">initial_params</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">initial_params</span>
+        <span class="p">)</span>
+    <span class="n">model_with_info</span><span class="o">.</span><span class="n">param_bounds</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">bounds</span>
+        <span class="p">)</span>
+    <span class="n">model_with_info</span><span class="o">.</span><span class="n">vector_input_model</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">poly</span><span class="o">.</span><span class="n">tri_prism_on_grid_1_length_2disobg_substruct_rpd_vectorargs</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">model_with_info</span></div>
+
+
+
+<div class="viewcode-block" id="set_up_tri_prism_on_grid_1_length_substruct_with_fit_info">
+<a class="viewcode-back" href="../../../perpl.modelling.html#perpl.modelling.dna_paint_data_fitting.set_up_tri_prism_on_grid_1_length_substruct_with_fit_info">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_up_tri_prism_on_grid_1_length_substruct_with_fit_info</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set up the RPD model with fitting settings,</span>
+<span class="sd">    for a rotationally symmetric model with spread due to repeated</span>
+<span class="sd">    localisations and spread to unresolvable substructure.</span>
+<span class="sd">    The fitting settings are to pass to scipy&#39;s</span>
+<span class="sd">    curve_fit, and the vector-input version of the model is for</span>
+<span class="sd">    differentiation and error propagation with numdifftools.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A ModelWithFitSettings object containing:</span>
+<span class="sd">            model_rpd (function name):</span>
+<span class="sd">                Relative position density as a function of separation</span>
+<span class="sd">                between localisations.</span>
+<span class="sd">            initial_params (list):</span>
+<span class="sd">                Starting guesses for the parameter values by</span>
+<span class="sd">                scipy.optimize.curve_fit</span>
+<span class="sd">            lower_bounds (list), upper_bounds (list):</span>
+<span class="sd">                The bounds on allowable parameter values as</span>
+<span class="sd">                scipy.optimize.curve_fit runs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model_with_info</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">ModelWithFitSettings</span><span class="p">(</span>
+            <span class="n">model_rpd</span><span class="o">=</span><span class="n">poly</span><span class="o">.</span><span class="n">tri_prism_on_grid_1_length_substructure_rpd</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Add fitting parameters to ModelWithFitSettings object</span>
+    <span class="p">(</span><span class="n">lower_bound_dict</span><span class="p">,</span>
+     <span class="n">upper_bound_dict</span><span class="p">,</span>
+     <span class="n">initial_params_dict</span><span class="p">)</span> <span class="o">=</span> <span class="n">create_default_fitting_params_dicts</span><span class="p">()</span>
+
+    <span class="c1"># Can optionally modify these dictionaries here:</span>
+    
+    <span class="n">initial_params</span> <span class="o">=</span> <span class="p">[</span><span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;side_1&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_sd&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;vertices_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;vertices_sd&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;substruct_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;substruct_sd&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_spacing&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_sd&#39;</span><span class="p">],</span>
+                      <span class="p">]</span>
+
+    <span class="n">lower_bounds</span> <span class="o">=</span> <span class="p">[</span><span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;side_1&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_sd&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_sd&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_sd&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_spacing&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_sd&#39;</span><span class="p">],</span>
+                    <span class="p">]</span>
+
+
+    <span class="n">upper_bounds</span> <span class="o">=</span> <span class="p">[</span><span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;side_1&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_sd&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_sd&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_sd&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_spacing&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_sd&#39;</span><span class="p">],</span>
+                    <span class="p">]</span>
+
+    <span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span><span class="n">lower_bounds</span><span class="p">,</span> <span class="n">upper_bounds</span><span class="p">)</span>
+
+    <span class="n">model_with_info</span><span class="o">.</span><span class="n">initial_params</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">initial_params</span>
+        <span class="p">)</span>
+    <span class="n">model_with_info</span><span class="o">.</span><span class="n">param_bounds</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">bounds</span>
+        <span class="p">)</span>
+    <span class="c1">#model_with_info.vector_input_model = (</span>
+    <span class="c1">#    poly.tri_prism_on_grid_1_length_2disobg_substruct_rpd_vectorargs</span>
+    <span class="c1">#    )</span>
+
+    <span class="k">return</span> <span class="n">model_with_info</span></div>
+
+
+
+<div class="viewcode-block" id="set_up_tri_prism_on_grid_1_length_3disobg_substruct_with_fit_info">
+<a class="viewcode-back" href="../../../perpl.modelling.html#perpl.modelling.dna_paint_data_fitting.set_up_tri_prism_on_grid_1_length_3disobg_substruct_with_fit_info">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_up_tri_prism_on_grid_1_length_3disobg_substruct_with_fit_info</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set up the RPD model with fitting settings,</span>
+<span class="sd">    for a rotationally symmetric model with spread due to repeated</span>
+<span class="sd">    localisations and spread to unresolvable substructure.</span>
+<span class="sd">    The fitting settings are to pass to scipy&#39;s</span>
+<span class="sd">    curve_fit, and the vector-input version of the model is for</span>
+<span class="sd">    differentiation and error propagation with numdifftools.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A ModelWithFitSettings object containing:</span>
+<span class="sd">            model_rpd (function name):</span>
+<span class="sd">                Relative position density as a function of separation</span>
+<span class="sd">                between localisations.</span>
+<span class="sd">            initial_params (list):</span>
+<span class="sd">                Starting guesses for the parameter values by</span>
+<span class="sd">                scipy.optimize.curve_fit</span>
+<span class="sd">            lower_bounds (list), upper_bounds (list):</span>
+<span class="sd">                The bounds on allowable parameter values as</span>
+<span class="sd">                scipy.optimize.curve_fit runs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model_with_info</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">ModelWithFitSettings</span><span class="p">(</span>
+            <span class="n">model_rpd</span><span class="o">=</span><span class="n">poly</span><span class="o">.</span><span class="n">tri_prism_on_grid_1_length_3disobg_substruct_rpd</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Add fitting parameters to ModelWithFitSettings object</span>
+    <span class="p">(</span><span class="n">lower_bound_dict</span><span class="p">,</span>
+     <span class="n">upper_bound_dict</span><span class="p">,</span>
+     <span class="n">initial_params_dict</span><span class="p">)</span> <span class="o">=</span> <span class="n">create_default_fitting_params_dicts</span><span class="p">()</span>
+
+    <span class="c1"># Can optionally modify these dictionaries here:</span>
+    
+    <span class="n">initial_params</span> <span class="o">=</span> <span class="p">[</span><span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;side_1&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_sd&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;vertices_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;vertices_sd&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;substruct_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;substruct_sd&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_spacing&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_sd&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;bg_slope&#39;</span><span class="p">]</span> <span class="c1"># Use this as the bg_scale</span>
+                      <span class="p">]</span>
+
+    <span class="n">lower_bounds</span> <span class="o">=</span> <span class="p">[</span><span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;side_1&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_sd&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_sd&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_sd&#39;</span><span class="p">],</span>
+                    <span class="c1">#lower_bound_dict[&#39;square_grid_spacing&#39;],</span>
+                    <span class="mf">200.</span><span class="p">,</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_sd&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;bg_slope&#39;</span><span class="p">]</span> <span class="c1"># Use this as the bg_scale</span>
+                    <span class="p">]</span>
+
+
+    <span class="n">upper_bounds</span> <span class="o">=</span> <span class="p">[</span><span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;side_1&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_sd&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_sd&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_sd&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_spacing&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_sd&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;bg_slope&#39;</span><span class="p">]</span> <span class="c1"># Use this as the bg_scale</span>
+                    <span class="p">]</span>
+
+    <span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span><span class="n">lower_bounds</span><span class="p">,</span> <span class="n">upper_bounds</span><span class="p">)</span>
+
+    <span class="n">model_with_info</span><span class="o">.</span><span class="n">initial_params</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">initial_params</span>
+        <span class="p">)</span>
+    <span class="n">model_with_info</span><span class="o">.</span><span class="n">param_bounds</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">bounds</span>
+        <span class="p">)</span>
+    <span class="c1">#model_with_info.vector_input_model = (</span>
+    <span class="c1">#    poly.tri_prism_on_grid_1_length_2disobg_substruct_rpd_vectorargs</span>
+    <span class="c1">#    )</span>
+
+    <span class="k">return</span> <span class="n">model_with_info</span></div>
+
+
+
+<div class="viewcode-block" id="set_up_tri_prism_1_length_3disobg_substruct_with_fit_info">
+<a class="viewcode-back" href="../../../perpl.modelling.html#perpl.modelling.dna_paint_data_fitting.set_up_tri_prism_1_length_3disobg_substruct_with_fit_info">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_up_tri_prism_1_length_3disobg_substruct_with_fit_info</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set up the RPD model with fitting settings,</span>
+<span class="sd">    for a rotationally symmetric model with spread due to repeated</span>
+<span class="sd">    localisations and spread to unresolvable substructure.</span>
+<span class="sd">    The fitting settings are to pass to scipy&#39;s</span>
+<span class="sd">    curve_fit, and the vector-input version of the model is for</span>
+<span class="sd">    differentiation and error propagation with numdifftools.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A ModelWithFitSettings object containing:</span>
+<span class="sd">            model_rpd (function name):</span>
+<span class="sd">                Relative position density as a function of separation</span>
+<span class="sd">                between localisations.</span>
+<span class="sd">            initial_params (list):</span>
+<span class="sd">                Starting guesses for the parameter values by</span>
+<span class="sd">                scipy.optimize.curve_fit</span>
+<span class="sd">            lower_bounds (list), upper_bounds (list):</span>
+<span class="sd">                The bounds on allowable parameter values as</span>
+<span class="sd">                scipy.optimize.curve_fit runs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model_with_info</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">ModelWithFitSettings</span><span class="p">(</span>
+            <span class="n">model_rpd</span><span class="o">=</span><span class="n">poly</span><span class="o">.</span><span class="n">tri_prism_1_length_3disobg_substruct_rpd</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Add fitting parameters to ModelWithFitSettings object</span>
+    <span class="p">(</span><span class="n">lower_bound_dict</span><span class="p">,</span>
+     <span class="n">upper_bound_dict</span><span class="p">,</span>
+     <span class="n">initial_params_dict</span><span class="p">)</span> <span class="o">=</span> <span class="n">create_default_fitting_params_dicts</span><span class="p">()</span>
+
+    <span class="c1"># Can optionally modify these dictionaries here:</span>
+    
+    <span class="n">initial_params</span> <span class="o">=</span> <span class="p">[</span><span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;side_1&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_sd&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;vertices_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;vertices_sd&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;substruct_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;substruct_sd&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;bg_slope&#39;</span><span class="p">]</span> <span class="c1"># Use this as the bg_scale</span>
+                      <span class="p">]</span>
+
+    <span class="n">lower_bounds</span> <span class="o">=</span> <span class="p">[</span><span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;side_1&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_sd&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_sd&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_sd&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;bg_slope&#39;</span><span class="p">]</span> <span class="c1"># Use this as the bg_scale</span>
+                    <span class="p">]</span>
+
+
+    <span class="n">upper_bounds</span> <span class="o">=</span> <span class="p">[</span><span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;side_1&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_sd&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_sd&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_sd&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;bg_slope&#39;</span><span class="p">]</span> <span class="c1"># Use this as the bg_scale</span>
+                    <span class="p">]</span>
+
+    <span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span><span class="n">lower_bounds</span><span class="p">,</span> <span class="n">upper_bounds</span><span class="p">)</span>
+
+    <span class="n">model_with_info</span><span class="o">.</span><span class="n">initial_params</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">initial_params</span>
+        <span class="p">)</span>
+    <span class="n">model_with_info</span><span class="o">.</span><span class="n">param_bounds</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">bounds</span>
+        <span class="p">)</span>
+    <span class="c1">#model_with_info.vector_input_model = (</span>
+    <span class="c1">#    poly.tri_prism_on_grid_1_length_2disobg_substruct_rpd_vectorargs</span>
+    <span class="c1">#    )</span>
+
+    <span class="k">return</span> <span class="n">model_with_info</span></div>
+
+
+
+<div class="viewcode-block" id="set_up_model_tri_prism_on_grid_2disobg_substructure_with_fit_info">
+<a class="viewcode-back" href="../../../perpl.modelling.html#perpl.modelling.dna_paint_data_fitting.set_up_model_tri_prism_on_grid_2disobg_substructure_with_fit_info">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_up_model_tri_prism_on_grid_2disobg_substructure_with_fit_info</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set up the RPD model with fitting settings,</span>
+<span class="sd">    for a rotationally symmetric model with spread due to repeated</span>
+<span class="sd">    localisations and spread to unresolvable substructure.</span>
+<span class="sd">    The fitting settings are to pass to scipy&#39;s</span>
+<span class="sd">    curve_fit, and the vector-input version of the model is for</span>
+<span class="sd">    differentiation and error propagation with numdifftools.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A ModelWithFitSettings object containing:</span>
+<span class="sd">            model_rpd (function name):</span>
+<span class="sd">                Relative position density as a function of separation</span>
+<span class="sd">                between localisations.</span>
+<span class="sd">            initial_params (list):</span>
+<span class="sd">                Starting guesses for the parameter values by</span>
+<span class="sd">                scipy.optimize.curve_fit</span>
+<span class="sd">            lower_bounds (list), upper_bounds (list):</span>
+<span class="sd">                The bounds on allowable parameter values as</span>
+<span class="sd">                scipy.optimize.curve_fit runs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model_with_info</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">ModelWithFitSettings</span><span class="p">(</span>
+            <span class="n">model_rpd</span><span class="o">=</span><span class="n">poly</span><span class="o">.</span><span class="n">tri_prism_on_grid_2disobg_substructure_rpd</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Add fitting parameters to ModelWithFitSettings object</span>
+    <span class="p">(</span><span class="n">lower_bound_dict</span><span class="p">,</span>
+     <span class="n">upper_bound_dict</span><span class="p">,</span>
+     <span class="n">initial_params_dict</span><span class="p">)</span> <span class="o">=</span> <span class="n">create_default_fitting_params_dicts</span><span class="p">()</span>
+
+    <span class="c1"># Can optionally modify these dictionaries here:</span>
+    
+    <span class="n">initial_params</span> <span class="o">=</span> <span class="p">[</span><span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;side_1&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;side_2&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_sd&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;vertices_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;vertices_sd&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;substruct_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;substruct_sd&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_spacing&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_sd&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;bg_slope&#39;</span><span class="p">]</span>
+                      <span class="p">]</span>
+
+    <span class="n">lower_bounds</span> <span class="o">=</span> <span class="p">[</span><span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;side_1&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;side_2&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_sd&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_sd&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_sd&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_spacing&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_sd&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;bg_slope&#39;</span><span class="p">]</span>
+                    <span class="p">]</span>
+
+
+    <span class="n">upper_bounds</span> <span class="o">=</span> <span class="p">[</span><span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;side_1&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;side_2&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_sd&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_sd&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_sd&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_spacing&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_sd&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;bg_slope&#39;</span><span class="p">]</span>
+                    <span class="p">]</span>
+
+    <span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span><span class="n">lower_bounds</span><span class="p">,</span> <span class="n">upper_bounds</span><span class="p">)</span>
+
+    <span class="n">model_with_info</span><span class="o">.</span><span class="n">initial_params</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">initial_params</span>
+        <span class="p">)</span>
+    <span class="n">model_with_info</span><span class="o">.</span><span class="n">param_bounds</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">bounds</span>
+        <span class="p">)</span>
+    <span class="n">model_with_info</span><span class="o">.</span><span class="n">vector_input_model</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">poly</span><span class="o">.</span><span class="n">tri_prism_on_grid_2disobg_substructure_rpd_vectorargs</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">model_with_info</span></div>
+
+
+
+<div class="viewcode-block" id="set_up_model_cuboid_on_grid_2disobg_substructure_with_fit_info">
+<a class="viewcode-back" href="../../../perpl.modelling.html#perpl.modelling.dna_paint_data_fitting.set_up_model_cuboid_on_grid_2disobg_substructure_with_fit_info">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_up_model_cuboid_on_grid_2disobg_substructure_with_fit_info</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set up the RPD model with fitting settings,</span>
+<span class="sd">    for a rotationally symmetric model with spread due to repeated</span>
+<span class="sd">    localisations and spread to unresolvable substructure.</span>
+<span class="sd">    The fitting settings are to pass to scipy&#39;s</span>
+<span class="sd">    curve_fit, and the vector-input version of the model is for</span>
+<span class="sd">    differentiation and error propagation with numdifftools.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A ModelWithFitSettings object containing:</span>
+<span class="sd">            model_rpd (function name):</span>
+<span class="sd">                Relative position density as a function of separation</span>
+<span class="sd">                between localisations.</span>
+<span class="sd">            initial_params (list):</span>
+<span class="sd">                Starting guesses for the parameter values by</span>
+<span class="sd">                scipy.optimize.curve_fit</span>
+<span class="sd">            lower_bounds (list), upper_bounds (list):</span>
+<span class="sd">                The bounds on allowable parameter values as</span>
+<span class="sd">                scipy.optimize.curve_fit runs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model_with_info</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">ModelWithFitSettings</span><span class="p">(</span>
+            <span class="n">model_rpd</span><span class="o">=</span><span class="n">poly</span><span class="o">.</span><span class="n">cuboid_on_grid_2disobg_substructure_rpd</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Add fitting parameters to ModelWithFitSettings object</span>
+    <span class="p">(</span><span class="n">lower_bound_dict</span><span class="p">,</span>
+     <span class="n">upper_bound_dict</span><span class="p">,</span>
+     <span class="n">initial_params_dict</span><span class="p">)</span> <span class="o">=</span> <span class="n">create_default_fitting_params_dicts</span><span class="p">()</span>
+
+    <span class="c1"># Can optionally modify these dictionaries here:</span>
+    
+    <span class="n">initial_params</span> <span class="o">=</span> <span class="p">[</span><span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;side_1&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;side_2&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;side_3&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_sd&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;vertices_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;vertices_sd&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;substruct_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;substruct_sd&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_spacing&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_sd&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;bg_slope&#39;</span><span class="p">]</span>
+                      <span class="p">]</span>
+
+    <span class="n">lower_bounds</span> <span class="o">=</span> <span class="p">[</span><span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;side_1&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;side_2&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;side_3&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_sd&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_sd&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_sd&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_spacing&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_sd&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;bg_slope&#39;</span><span class="p">]</span>
+                    <span class="p">]</span>
+
+
+    <span class="n">upper_bounds</span> <span class="o">=</span> <span class="p">[</span><span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;side_1&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;side_2&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;side_3&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_sd&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_sd&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_sd&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_spacing&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_sd&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;bg_slope&#39;</span><span class="p">]</span>
+                    <span class="p">]</span>
+
+    <span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span><span class="n">lower_bounds</span><span class="p">,</span> <span class="n">upper_bounds</span><span class="p">)</span>
+
+    <span class="n">model_with_info</span><span class="o">.</span><span class="n">initial_params</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">initial_params</span>
+        <span class="p">)</span>
+    <span class="n">model_with_info</span><span class="o">.</span><span class="n">param_bounds</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">bounds</span>
+        <span class="p">)</span>
+    <span class="c1">#    model_with_info.vector_input_model = (</span>
+    <span class="c1">#        poly.tri_prism_on_grid_2disobg_substructure_rpd_vectorargs</span>
+    <span class="c1">#        )</span>
+
+    <span class="k">return</span> <span class="n">model_with_info</span></div>
+
+
+
+<div class="viewcode-block" id="set_up_model_tri_pyramid_on_grid_2disobg_substructure_with_fit_info">
+<a class="viewcode-back" href="../../../perpl.modelling.html#perpl.modelling.dna_paint_data_fitting.set_up_model_tri_pyramid_on_grid_2disobg_substructure_with_fit_info">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_up_model_tri_pyramid_on_grid_2disobg_substructure_with_fit_info</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set up the RPD model with fitting settings,</span>
+<span class="sd">    for a rotationally symmetric model with spread due to repeated</span>
+<span class="sd">    localisations and spread to unresolvable substructure.</span>
+<span class="sd">    The fitting settings are to pass to scipy&#39;s</span>
+<span class="sd">    curve_fit, and the vector-input version of the model is for</span>
+<span class="sd">    differentiation and error propagation with numdifftools.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A ModelWithFitSettings object containing:</span>
+<span class="sd">            model_rpd (function name):</span>
+<span class="sd">                Relative position density as a function of separation</span>
+<span class="sd">                between localisations.</span>
+<span class="sd">            initial_params (list):</span>
+<span class="sd">                Starting guesses for the parameter values by</span>
+<span class="sd">                scipy.optimize.curve_fit</span>
+<span class="sd">            lower_bounds (list), upper_bounds (list):</span>
+<span class="sd">                The bounds on allowable parameter values as</span>
+<span class="sd">                scipy.optimize.curve_fit runs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model_with_info</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">ModelWithFitSettings</span><span class="p">(</span>
+            <span class="n">model_rpd</span><span class="o">=</span><span class="n">poly</span><span class="o">.</span><span class="n">tri_pyramid_on_grid_2disobg_substructure_rpd</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Add fitting parameters to ModelWithFitSettings object</span>
+    <span class="p">(</span><span class="n">lower_bound_dict</span><span class="p">,</span>
+     <span class="n">upper_bound_dict</span><span class="p">,</span>
+     <span class="n">initial_params_dict</span><span class="p">)</span> <span class="o">=</span> <span class="n">create_default_fitting_params_dicts</span><span class="p">()</span>
+
+    <span class="c1"># Can optionally modify these dictionaries here:</span>
+    
+    <span class="n">initial_params</span> <span class="o">=</span> <span class="p">[</span><span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;side_1&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;side_2&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_sd&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;vertices_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;vertices_sd&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;substruct_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;substruct_sd&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_spacing&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_amp&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_sd&#39;</span><span class="p">],</span>
+                      <span class="n">initial_params_dict</span><span class="p">[</span><span class="s1">&#39;bg_slope&#39;</span><span class="p">]</span>
+                      <span class="p">]</span>
+
+    <span class="n">lower_bounds</span> <span class="o">=</span> <span class="p">[</span><span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;side_1&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;side_2&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_sd&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_sd&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_sd&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_spacing&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_amp&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_sd&#39;</span><span class="p">],</span>
+                    <span class="n">lower_bound_dict</span><span class="p">[</span><span class="s1">&#39;bg_slope&#39;</span><span class="p">]</span>
+                    <span class="p">]</span>
+
+
+    <span class="n">upper_bounds</span> <span class="o">=</span> <span class="p">[</span><span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;side_1&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;side_2&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;loc_prec_sd&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;vertices_sd&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;substruct_sd&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_spacing&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_amp&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;square_grid_sd&#39;</span><span class="p">],</span>
+                    <span class="n">upper_bound_dict</span><span class="p">[</span><span class="s1">&#39;bg_slope&#39;</span><span class="p">]</span>
+                    <span class="p">]</span>
+
+    <span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span><span class="n">lower_bounds</span><span class="p">,</span> <span class="n">upper_bounds</span><span class="p">)</span>
+
+    <span class="n">model_with_info</span><span class="o">.</span><span class="n">initial_params</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">initial_params</span>
+        <span class="p">)</span>
+    <span class="n">model_with_info</span><span class="o">.</span><span class="n">param_bounds</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">bounds</span>
+        <span class="p">)</span>
+    <span class="c1">#    model_with_info.vector_input_model = (</span>
+    <span class="c1">#        poly.tri_prism_on_grid_2disobg_substructure_rpd_vectorargs</span>
+    <span class="c1">#        )</span>
+
+    <span class="k">return</span> <span class="n">model_with_info</span></div>
+
+
+    
+<div class="viewcode-block" id="fitmodel_to_hist">
+<a class="viewcode-back" href="../../../perpl.modelling.html#perpl.modelling.dna_paint_data_fitting.fitmodel_to_hist">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">fitmodel_to_hist</span><span class="p">(</span>
+        <span class="n">distancehist</span><span class="p">,</span>
+        <span class="n">model</span><span class="o">=</span><span class="n">poly</span><span class="o">.</span><span class="n">tri_prism_on_grid_1_length_2disobg_substruct_rpd</span><span class="p">,</span>
+        <span class="n">fitlength</span><span class="o">=</span><span class="mf">400.</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fit model RPD to distance histogram. Designed to allow user editting of</span>
+<span class="sd">    parameter guesses and bounds for models of RPDs for simple polyhedra,</span>
+<span class="sd">    as in polyhedramodelling.py.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        distancehist (numpy array):</span>
+<span class="sd">            An array of Euclidean distances between localisations.</span>
+<span class="sd">        model:</span>
+<span class="sd">            The model RPD to be fitted.</span>
+<span class="sd">        fitlength:</span>
+<span class="sd">            The maximum distance between localisations used for the fit.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        popt:</span>
+<span class="sd">        perr</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">params_optimised</span><span class="p">,</span> <span class="n">params_covar</span> <span class="o">=</span> <span class="n">curve_fit</span><span class="p">(</span>
+        <span class="n">model</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">fitlength</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">distancehist</span><span class="p">,</span>
+        <span class="n">p0</span><span class="o">=</span><span class="p">(</span><span class="mf">100.</span><span class="p">,</span> <span class="mf">100.</span><span class="p">,</span> <span class="c1">#100.,  # a, b, c</span>
+            <span class="mf">10.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span>  <span class="c1"># locamp, locprec</span>
+            <span class="mf">10.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span>  <span class="c1"># structamp, spread</span>
+            <span class="mf">10.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span>  <span class="c1"># substructamp, substructspread</span>
+            <span class="mf">200.</span><span class="p">,</span> <span class="mf">100.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span>  <span class="c1"># gridspace, gridamp, gridspread</span>
+            <span class="mf">0.001</span><span class="p">),</span>  <span class="c1"># bgslope</span>
+
+        <span class="n">bounds</span><span class="o">=</span><span class="p">(</span>
+            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="c1">#0., # a, b, c</span>
+             <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span>  <span class="c1"># locamp, locprec</span>
+             <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span>  <span class="c1"># structamp, spread</span>
+             <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span>  <span class="c1"># substructamp, substructspread</span>
+             <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span>  <span class="c1"># gridspace, gridamp, gridspread</span>
+             <span class="mf">0.</span><span class="p">],</span>  <span class="c1"># bgslope</span>
+
+            <span class="p">[</span><span class="mf">200.</span><span class="p">,</span> <span class="mf">200.</span><span class="p">,</span> <span class="c1">#200., # a, b, c</span>
+             <span class="mf">100.</span><span class="p">,</span> <span class="mf">100.</span><span class="p">,</span>  <span class="c1"># locamp, locprec</span>
+             <span class="mf">100.</span><span class="p">,</span> <span class="mf">100.</span><span class="p">,</span>  <span class="c1"># structamp, spread</span>
+             <span class="mf">100.</span><span class="p">,</span> <span class="mf">100.</span><span class="p">,</span>  <span class="c1"># substructamp, substructspread</span>
+             <span class="mf">400.</span><span class="p">,</span> <span class="mf">1000.</span><span class="p">,</span> <span class="mf">100.</span><span class="p">,</span>  <span class="c1"># gridspace, gridamp, gridspread</span>
+             <span class="mf">0.1</span><span class="p">])</span>  <span class="c1"># bgslope</span>
+        <span class="p">)</span>
+    <span class="c1"># plt.plot(np.arange(fitlength) + 0.5,</span>
+    <span class="c1">#          model(np.arange(fitlength) + 0.5, *params_optimised))</span>
+    <span class="n">params_1sd_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">params_covar</span><span class="p">))</span>
+    <span class="n">params_table</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">params_optimised</span><span class="p">,</span> <span class="n">params_1sd_error</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">params_table</span><span class="p">)</span>
+
+    <span class="c1"># No. free parameters, including var. of residuals for least squares fit.</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">params_optimised</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Calculate AICc</span>
+    <span class="n">ssr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">model</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">fitlength</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span> <span class="o">*</span><span class="n">params_optimised</span><span class="p">)</span> <span class="o">-</span>
+                  <span class="n">distancehist</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">aic</span> <span class="o">=</span> <span class="n">fitlength</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ssr</span> <span class="o">/</span> <span class="n">fitlength</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">k</span>
+    <span class="n">aiccorr</span> <span class="o">=</span> <span class="n">aic</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">fitlength</span> <span class="o">-</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;SSR =&#39;</span><span class="p">,</span> <span class="n">ssr</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;AIC =&#39;</span><span class="p">,</span> <span class="n">aic</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;AICcorr =&#39;</span><span class="p">,</span> <span class="n">aiccorr</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">params_optimised</span><span class="p">,</span> <span class="n">params_covar</span><span class="p">,</span> <span class="n">params_1sd_error</span></div>
+
+
+
+<div class="viewcode-block" id="plot_xyz_distance_histogram">
+<a class="viewcode-back" href="../../../perpl.modelling.html#perpl.modelling.dna_paint_data_fitting.plot_xyz_distance_histogram">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_xyz_distance_histogram</span><span class="p">(</span><span class="n">distances</span><span class="p">,</span> <span class="n">fitlength</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plot histogram of experimental distances, with 1 nm bins.</span>
+<span class="sd">    Scales counts, so that mean = 1, to suit scipy.optimize.curve_fit</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        distances (numpy array-like):</span>
+<span class="sd">            Set of distances (nm) to plot.</span>
+<span class="sd">        fitlength (float):</span>
+<span class="sd">            The distance upto which the histogram will be calculated.</span>
+<span class="sd">        color (string):</span>
+<span class="sd">            Colour for the matplotlib histogram.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        hist_values (numpy array):</span>
+<span class="sd">            Histogram bin values.</span>
+<span class="sd">        bin_edges (numpy array):</span>
+<span class="sd">            Histogram bin edge positions. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Histogram figure with 1-nm bins</span>
+    <span class="n">histfig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+    <span class="n">histaxes</span> <span class="o">=</span> <span class="n">histfig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+    <span class="n">hist_values</span><span class="p">,</span> <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">histaxes</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span>
+        <span class="n">distances</span><span class="p">,</span>
+        <span class="n">bins</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">fitlength</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="n">weights</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">fitlength</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">distances</span><span class="p">),</span>
+                          <span class="nb">len</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span>
+                          <span class="p">),</span>
+        <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span>
+        <span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="c1"># 2 not required</span>
+    <span class="n">histaxes</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">fitlength</span><span class="p">])</span>
+    <span class="n">histaxes</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Histogram&#39;</span><span class="p">)</span>
+    <span class="n">histaxes</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\Delta$XYZ (nm)&#39;</span><span class="p">)</span>
+    <span class="n">histaxes</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Counts (scaled: mean = 1)&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">hist_values</span><span class="p">,</span> <span class="n">bin_edges</span></div>
+
+
+
+<div class="viewcode-block" id="plot_distance_hist_and_fit">
+<a class="viewcode-back" href="../../../perpl.modelling.html#perpl.modelling.dna_paint_data_fitting.plot_distance_hist_and_fit">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_distance_hist_and_fit</span><span class="p">(</span><span class="n">distances</span><span class="p">,</span>
+                               <span class="n">fitlength</span><span class="p">,</span>
+                               <span class="n">params_optimised</span><span class="p">,</span>
+                               <span class="n">params_covar</span><span class="p">,</span>
+                               <span class="n">model_with_info</span><span class="p">,</span>
+                               <span class="n">plot_95ci</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                               <span class="n">color</span><span class="o">=</span><span class="s1">&#39;xkcd:red&#39;</span><span class="p">):</span>
+    <span class="c1"># Use only distances within fitlength</span>
+    <span class="n">distances</span> <span class="o">=</span> <span class="n">distances</span><span class="p">[</span><span class="n">distances</span> <span class="o">&lt;=</span> <span class="n">fitlength</span><span class="p">]</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+    <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+
+    <span class="n">histogram_output</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">distances</span><span class="p">,</span>
+                                 <span class="n">bins</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">fitlength</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+                                 <span class="n">weights</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">fitlength</span><span class="p">)</span>
+                                                   <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">distances</span><span class="p">),</span>
+                                                   <span class="nb">len</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span>
+                                                   <span class="p">),</span>
+                                 <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span>
+                                 <span class="p">)</span>
+    <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">histogram_output</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">bin_centres</span> <span class="o">=</span> <span class="p">(</span><span class="n">bin_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">:(</span><span class="nb">len</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span> <span class="o">+</span> <span class="n">bin_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="n">axes</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">distances</span><span class="p">,</span>
+              <span class="n">model_with_info</span><span class="o">.</span><span class="n">model_rpd</span><span class="p">(</span><span class="n">distances</span><span class="p">,</span> <span class="o">*</span><span class="n">params_optimised</span><span class="p">),</span>
+              <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+              <span class="n">lw</span><span class="o">=</span><span class="mf">0.75</span>
+              <span class="p">)</span>
+    <span class="n">axes</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">fitlength</span><span class="p">])</span>
+    <span class="n">axes</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\Delta$XYZ (nm)&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Counts (scaled: mean = 1)&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Model: &#39;</span> <span class="o">+</span><span class="n">model_with_info</span><span class="o">.</span><span class="n">model_rpd</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+
+    <span class="c1"># Get 1 SD uncertainty on model result from uncertainty on parameters</span>
+    <span class="c1"># and plot 95% CI.</span>
+    <span class="k">if</span> <span class="n">plot_95ci</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">stdev</span> <span class="o">=</span> <span class="n">stdev_of_model</span><span class="p">(</span><span class="n">bin_centres</span><span class="p">,</span>
+                               <span class="n">params_optimised</span><span class="p">,</span>
+                               <span class="n">params_covar</span><span class="p">,</span>
+                               <span class="n">model_with_info</span><span class="o">.</span><span class="n">vector_input_model</span>
+                               <span class="p">)</span>
+
+        <span class="n">axes</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">bin_centres</span><span class="p">,</span>
+                        <span class="n">model_with_info</span><span class="o">.</span><span class="n">model_rpd</span><span class="p">(</span><span class="n">bin_centres</span><span class="p">,</span>
+                                                    <span class="o">*</span><span class="n">params_optimised</span><span class="p">)</span>
+                        <span class="o">-</span> <span class="n">stdev</span> <span class="o">*</span> <span class="mf">1.96</span><span class="p">,</span>
+                        <span class="n">model_with_info</span><span class="o">.</span><span class="n">model_rpd</span><span class="p">(</span><span class="n">bin_centres</span><span class="p">,</span>
+                                                    <span class="o">*</span><span class="n">params_optimised</span><span class="p">)</span>
+                        <span class="o">+</span> <span class="n">stdev</span> <span class="o">*</span> <span class="mf">1.96</span><span class="p">,</span>
+                        <span class="n">facecolor</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+                        <span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span>
+                        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span></div>
+
+
+
+<div class="viewcode-block" id="plot_model_components_tri_prism">
+<a class="viewcode-back" href="../../../perpl.modelling.html#perpl.modelling.dna_paint_data_fitting.plot_model_components_tri_prism">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_model_components_tri_prism</span><span class="p">(</span><span class="n">fitlength</span><span class="p">,</span>
+                                    <span class="n">side_length</span><span class="p">,</span>
+                                    <span class="n">locamp</span><span class="p">,</span> <span class="n">locprec</span><span class="p">,</span>
+                                    <span class="n">structamp</span><span class="p">,</span> <span class="n">spread</span><span class="p">,</span>
+                                    <span class="n">substructamp</span><span class="p">,</span> <span class="n">substructspread</span><span class="p">,</span>
+                                    <span class="n">gridspace</span><span class="p">,</span> <span class="n">gridamp</span><span class="p">,</span> <span class="n">gridspread</span><span class="p">,</span>
+                                    <span class="n">bgslope</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    fitlength: distance upto to which the model fit was performed</span>
+<span class="sd">    side_length: side length of the triangular prism (all sides equal)</span>
+<span class="sd">    locamp: Amplitude of sinlge molecule localisation precision component</span>
+<span class="sd">    locprec: Average single molecule localisation precision</span>
+<span class="sd">    structamp: Amplitude of components reflecting the structural features</span>
+<span class="sd">        of the complex.</span>
+<span class="sd">    spread: Spread owing to unresolvable complexity or inhomogeneity between</span>
+<span class="sd">        complexes.</span>
+<span class="sd">    substructamp: Amplitude of component reflecting unresolvable substructure</span>
+<span class="sd">        at one vertex.</span>
+<span class="sd">    substructspread: Spread in localisations at one vertex, as a result of</span>
+<span class="sd">        unresolvable substructure there.</span>
+<span class="sd">    gridspace: The spacing of a square grid the complexes are found on.</span>
+<span class="sd">    gridamp: Amplitude of components reflecting the nieghbouring complexes at</span>
+<span class="sd">        nearby grid points.</span>
+<span class="sd">    gridspread: Spread owing to different orientation at different grid points.</span>
+<span class="sd">    bgslope: Approximate background to 2D (relatively flat); this is the</span>
+<span class="sd">        linear slope.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">distance_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">fitlength</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+    <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+    <span class="n">axes</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">fitlength</span><span class="p">])</span>
+    <span class="n">axes</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\Delta$XYZ (nm)&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Counts (scaled: mean = 1)&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Model: Triangular pyramid, equal side lengths&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Background term</span>
+    <span class="n">bg_term</span> <span class="o">=</span> <span class="n">distance_values</span> <span class="o">*</span> <span class="n">bgslope</span> 
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">distance_values</span><span class="p">,</span> <span class="n">bg_term</span><span class="p">)</span>
+
+    <span class="c1"># Repeated localisations term</span>
+    <span class="n">rep_locs_term</span> <span class="o">=</span> <span class="p">(</span><span class="n">locamp</span>
+                     <span class="o">*</span> <span class="n">models</span><span class="o">.</span><span class="n">pairwise_correlation_3d</span><span class="p">(</span><span class="n">distance_values</span><span class="p">,</span>
+                                                      <span class="mf">0.</span><span class="p">,</span>
+                                                      <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">locprec</span>
+                                                      <span class="p">)</span>
+                     <span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">distance_values</span><span class="p">,</span> <span class="n">rep_locs_term</span><span class="p">)</span>
+
+    <span class="c1"># Plot substructure term</span>
+    <span class="n">substructure_term</span> <span class="o">=</span> <span class="p">(</span><span class="n">substructamp</span>
+                         <span class="o">*</span> <span class="n">models</span><span class="o">.</span><span class="n">pairwise_correlation_3d</span><span class="p">(</span><span class="n">distance_values</span><span class="p">,</span>
+                                                          <span class="mf">0.</span><span class="p">,</span>
+                                                          <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">locprec</span>
+                                                          <span class="p">)</span>
+                         <span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">distance_values</span><span class="p">,</span> <span class="n">substructure_term</span><span class="p">)</span>
+
+    <span class="c1"># Triangular prism peaks:</span>
+    <span class="c1"># Set up triangular prism</span>
+    <span class="n">verts</span> <span class="o">=</span> <span class="n">poly</span><span class="o">.</span><span class="n">tri_prism_vertices</span><span class="p">(</span><span class="n">side_length</span><span class="p">,</span> <span class="n">side_length</span><span class="p">)</span>
+    <span class="n">relpos</span> <span class="o">=</span> <span class="n">poly</span><span class="o">.</span><span class="n">get_1d_relpos_no_filter</span><span class="p">(</span><span class="n">verts</span><span class="p">)</span>
+    <span class="c1"># Get unique distances</span>
+    <span class="n">xyz_distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">relpos</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">relpos</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">relpos</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">xyz_distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">xyz_distances</span><span class="p">)</span>
+    <span class="c1"># Two peaks:</span>
+    <span class="c1"># 3 x shorter distance x 6 vertices</span>
+    <span class="n">tri_prism_peak_1</span> <span class="o">=</span> <span class="p">(</span><span class="mi">18</span> <span class="o">*</span> <span class="n">structamp</span>
+                        <span class="o">*</span> <span class="n">models</span><span class="o">.</span><span class="n">pairwise_correlation_3d</span><span class="p">(</span><span class="n">distance_values</span><span class="p">,</span>
+                                                         <span class="n">xyz_distances</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                                         <span class="n">spread</span>
+                                                         <span class="p">)</span>
+                        <span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">distance_values</span><span class="p">,</span> <span class="n">tri_prism_peak_1</span><span class="p">)</span>
+
+    <span class="c1"># 2 x longer distance x 6 vertices</span>
+    <span class="n">tri_prism_peak_2</span> <span class="o">=</span> <span class="p">(</span><span class="mi">12</span> <span class="o">*</span> <span class="n">structamp</span>
+                        <span class="o">*</span> <span class="n">models</span><span class="o">.</span><span class="n">pairwise_correlation_3d</span><span class="p">(</span><span class="n">distance_values</span><span class="p">,</span>
+                                                         <span class="n">xyz_distances</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                                         <span class="n">spread</span>
+                                                         <span class="p">)</span>
+                        <span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">distance_values</span><span class="p">,</span> <span class="n">tri_prism_peak_2</span><span class="p">)</span>
+
+    <span class="c1"># Plot square grid componenet</span>
+    <span class="n">square_grid_component</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">gridamp</span> <span class="o">*</span> <span class="n">models</span><span class="o">.</span><span class="n">pairwise_correlation_2d</span><span class="p">(</span><span class="n">distance_values</span><span class="p">,</span>
+                                                 <span class="n">gridspace</span><span class="p">,</span>
+                                                 <span class="n">gridspread</span>
+                                                 <span class="p">)</span>
+        <span class="o">+</span> <span class="n">gridamp</span> <span class="o">*</span> <span class="n">models</span><span class="o">.</span><span class="n">pairwise_correlation_2d</span><span class="p">(</span><span class="n">distance_values</span><span class="p">,</span>
+                                                   <span class="n">gridspace</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+                                                   <span class="n">gridspread</span>
+                                                   <span class="p">)</span>
+        <span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">distance_values</span><span class="p">,</span> <span class="n">square_grid_component</span><span class="p">)</span>
+
+    <span class="c1"># Plot total model</span>
+    <span class="n">total_model</span> <span class="o">=</span> <span class="p">(</span><span class="n">bg_term</span>
+                   <span class="o">+</span> <span class="n">rep_locs_term</span>
+                   <span class="o">+</span> <span class="n">substructure_term</span>
+                   <span class="o">+</span> <span class="n">tri_prism_peak_1</span>
+                   <span class="o">+</span> <span class="n">tri_prism_peak_2</span>
+                   <span class="o">+</span> <span class="n">square_grid_component</span>
+                   <span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">distance_values</span><span class="p">,</span> <span class="n">total_model</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;xkcd:red&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="dna_origami_fig_plot">
+<a class="viewcode-back" href="../../../perpl.modelling.html#perpl.modelling.dna_paint_data_fitting.dna_origami_fig_plot">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">dna_origami_fig_plot</span><span class="p">(</span>
+        <span class="n">relpos</span><span class="p">,</span>
+        <span class="n">model_with_info</span><span class="o">=</span><span class="n">set_up_tri_prism_on_grid_1_length_2disobg_substruct_with_fit_info</span><span class="p">(),</span>
+        <span class="n">fitlength</span><span class="o">=</span><span class="mi">250</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a histogram of the DNA origami data and plots a fitted model,</span>
+<span class="sd">    with a 95% confidence interval.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        relpos (numpy array):</span>
+<span class="sd">            Array of 3D relative positions between localisations with</span>
+<span class="sd">            shape (N, 3), where N is the number of relative positions.</span>
+<span class="sd">        model:</span>
+<span class="sd">            The fitted model</span>
+<span class="sd">        fitlength:</span>
+<span class="sd">            The maximum distance between localisations used for the fit.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Nothing</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Set up experimental data histogram and plot</span>
+    <span class="c1">#    plt.figure()</span>
+    <span class="c1">#    axes = plt.subplot(111)</span>
+    <span class="c1">#    distance_hist = make_xyz_histogram_nm(relpos,</span>
+    <span class="c1">#                                         fitlength=fitlength,</span>
+    <span class="c1">#                                         axes=axes)[0]</span>
+
+    <span class="n">xyz_distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">relpos</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>
+                            <span class="o">+</span> <span class="n">relpos</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>
+                            <span class="o">+</span> <span class="n">relpos</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">xyz_distances</span> <span class="o">=</span> <span class="n">xyz_distances</span><span class="p">[</span><span class="n">xyz_distances</span> <span class="o">&lt;</span> <span class="n">fitlength</span><span class="p">]</span>
+    <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">fitlength</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">distance_hist</span><span class="p">,</span> <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span>
+        <span class="n">xyz_distances</span><span class="p">,</span>
+        <span class="n">weights</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">fitlength</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">xyz_distances</span><span class="p">),</span>
+                          <span class="nb">len</span><span class="p">(</span><span class="n">xyz_distances</span><span class="p">)</span>
+                          <span class="p">),</span>
+        <span class="n">bins</span><span class="o">=</span><span class="n">bin_edges</span>
+        <span class="p">)</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="mf">1.</span>
+    <span class="n">bin_centres</span> <span class="o">=</span> <span class="p">(</span><span class="n">bin_edges</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">bin_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="n">fig_histogram</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">num</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                               <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
+                               <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                               <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span>
+                               <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+
+    <span class="n">axes</span> <span class="o">=</span> <span class="n">fig_histogram</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+    <span class="n">axes</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">bin_centres</span><span class="p">,</span>
+             <span class="n">distance_hist</span><span class="p">,</span>
+             <span class="n">align</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+             <span class="n">color</span><span class="o">=</span><span class="s1">&#39;lightblue&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span>
+             <span class="p">)</span>
+    <span class="n">axes</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Separation (nm)&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Counts (normalised)&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Fit model to experimental distance histogram</span>
+    <span class="p">(</span><span class="n">params_optimised</span><span class="p">,</span>
+     <span class="n">params_covar</span><span class="p">,</span>
+     <span class="n">params_1sd_error</span><span class="p">)</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">fit_model_to_experiment</span><span class="p">(</span>
+                             <span class="n">distance_hist</span><span class="p">,</span>
+                             <span class="n">model_with_info</span><span class="o">.</span><span class="n">model_rpd</span><span class="p">,</span>
+                             <span class="n">model_with_info</span><span class="o">.</span><span class="n">initial_params</span><span class="p">,</span>
+                             <span class="n">model_with_info</span><span class="o">.</span><span class="n">param_bounds</span><span class="p">,</span>
+                             <span class="n">fitlength</span><span class="o">=</span><span class="n">fitlength</span>
+                             <span class="p">)</span>
+
+    <span class="c1"># Plot fitted model</span>
+    <span class="c1"># x_values = np.arange(fitlength + 0.5)</span>
+    <span class="n">axes</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">bin_centres</span><span class="p">,</span>
+              <span class="n">model_with_info</span><span class="o">.</span><span class="n">model_rpd</span><span class="p">(</span><span class="n">bin_centres</span><span class="p">,</span> <span class="o">*</span><span class="n">params_optimised</span><span class="p">),</span>
+              <span class="n">color</span><span class="o">=</span><span class="s1">&#39;xkcd:red&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span>
+              <span class="p">)</span>
+
+    <span class="c1"># Plot 95% confidence interval</span>
+    <span class="n">stdev</span> <span class="o">=</span> <span class="n">stdev_of_model</span><span class="p">(</span><span class="n">bin_centres</span><span class="p">,</span>
+                           <span class="n">params_optimised</span><span class="p">,</span>
+                           <span class="n">params_covar</span><span class="p">,</span>
+                           <span class="n">model_with_info</span><span class="o">.</span><span class="n">vector_input_model</span>
+                           <span class="p">)</span>
+    <span class="n">axes</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">bin_centres</span><span class="p">,</span>
+                      <span class="n">model_with_info</span><span class="o">.</span><span class="n">model_rpd</span><span class="p">(</span><span class="n">bin_centres</span><span class="p">,</span> <span class="o">*</span><span class="n">params_optimised</span><span class="p">)</span>
+                      <span class="o">-</span> <span class="n">stdev</span> <span class="o">*</span> <span class="mf">1.96</span><span class="p">,</span>
+                      <span class="n">model_with_info</span><span class="o">.</span><span class="n">model_rpd</span><span class="p">(</span><span class="n">bin_centres</span><span class="p">,</span> <span class="o">*</span><span class="n">params_optimised</span><span class="p">)</span>
+                      <span class="o">+</span> <span class="n">stdev</span> <span class="o">*</span> <span class="mf">1.96</span><span class="p">,</span>
+                      <span class="n">color</span><span class="o">=</span><span class="s1">&#39;xkcd:red&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span>
+                      <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="model_akaike_weights">
+<a class="viewcode-back" href="../../../perpl.modelling.html#perpl.modelling.dna_paint_data_fitting.model_akaike_weights">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">model_akaike_weights</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate and tabulate Akaike weights, based on results recorded</span>
+<span class="sd">    for model fits.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        Nothing</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Table of models, AICc and Akaike weights.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;tri_prism_on_grid_1_length_2disobg_substruct&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;tri_prism_on_grid_2disobg_substructure_rpd&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;tri_pyramid_on_grid_2disobg_substructure_rpd&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;cuboid_on_grid_2disobg_substructure_rpd&#39;</span>
+              <span class="p">]</span>
+    <span class="n">aiccs</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">1748.52577</span><span class="p">,</span>
+             <span class="o">-</span><span class="mf">1746.32688</span><span class="p">,</span>
+             <span class="o">-</span><span class="mf">1477.75366</span><span class="p">,</span>
+             <span class="o">-</span><span class="mf">1438.53290</span>
+             <span class="p">]</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">akaike_weights</span><span class="p">(</span><span class="n">aiccs</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Model</span><span class="se">\t\t</span><span class="s1">AICc</span><span class="se">\t\t</span><span class="s1">Akaike weight&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">)):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="se">\t\t</span><span class="si">{1:.2f}</span><span class="s1"> </span><span class="se">\t</span><span class="si">{2:.2}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">models</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                                               <span class="n">aiccs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                                               <span class="n">weights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                                               <span class="p">)</span>
+              <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="plot_three_models">
+<a class="viewcode-back" href="../../../perpl.modelling.html#perpl.modelling.dna_paint_data_fitting.plot_three_models">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_three_models</span><span class="p">(</span><span class="n">relpos_xyz</span><span class="p">,</span> <span class="n">fitlength</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a histogram of distances in the DNA origami data and plots</span>
+<span class="sd">    three fitted models</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        relpos (numpy array):</span>
+<span class="sd">            Array of 3D relative positions between localisations with</span>
+<span class="sd">            shape (N, 3), where N is the number of relative positions.</span>
+<span class="sd">        fitlength:</span>
+<span class="sd">            The maximum distance between localisations used for the fit.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Nothing</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#    relpos_xyz = np.loadtxt(&#39;C:/Temp/DNA-PAINTdata/&#39;</span>
+    <span class="c1">#                            + &#39;dataset2_DNA-PAINT_xyz_1in4_3555locs_PERPL-&#39;</span>
+    <span class="c1">#                            + &#39;relposns_400.0filter.csv&#39;, delimiter=&#39;,&#39;)</span>
+    <span class="n">xyz_distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">relpos_xyz</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>
+                            <span class="o">+</span> <span class="n">relpos_xyz</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>
+                            <span class="o">+</span> <span class="n">relpos_xyz</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">xyz_distances</span> <span class="o">=</span> <span class="n">xyz_distances</span><span class="p">[</span><span class="n">xyz_distances</span> <span class="o">&lt;</span> <span class="n">fitlength</span><span class="p">]</span>
+    <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">fitlength</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">distance_hist</span><span class="p">,</span> <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span>
+        <span class="n">xyz_distances</span><span class="p">,</span>
+        <span class="n">weights</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">fitlength</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">xyz_distances</span><span class="p">),</span>
+                          <span class="nb">len</span><span class="p">(</span><span class="n">xyz_distances</span><span class="p">)</span>
+                          <span class="p">),</span>
+        <span class="n">bins</span><span class="o">=</span><span class="n">bin_edges</span>
+        <span class="p">)</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="mf">1.</span>
+    <span class="n">bin_centres</span> <span class="o">=</span> <span class="p">(</span><span class="n">bin_edges</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">bin_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="n">fig_histogram</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">num</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                               <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
+                               <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                               <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span>
+                               <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+
+    <span class="n">axes</span> <span class="o">=</span> <span class="n">fig_histogram</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+    <span class="n">axes</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">bin_centres</span><span class="p">,</span>
+             <span class="n">distance_hist</span><span class="p">,</span>
+             <span class="n">align</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+             <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span>
+             <span class="p">)</span>
+    <span class="n">axes</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Separation (nm)&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Counts (normalised)&#39;</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">model_with_info</span> <span class="ow">in</span> <span class="p">[</span>
+        <span class="n">set_up_tri_prism_on_grid_1_length_2disobg_substruct_with_fit_info</span><span class="p">(),</span>
+        <span class="n">set_up_model_cuboid_on_grid_2disobg_substructure_with_fit_info</span><span class="p">(),</span>
+        <span class="n">set_up_model_tri_pyramid_on_grid_2disobg_substructure_with_fit_info</span><span class="p">(),</span>
+        <span class="p">]:</span> 
+        <span class="p">(</span><span class="n">params_optimised</span><span class="p">,</span>
+         <span class="n">params_covar</span><span class="p">,</span>
+         <span class="n">params_1sd_error</span><span class="p">)</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">fit_model_to_experiment</span><span class="p">(</span>
+                                 <span class="n">distance_hist</span><span class="p">,</span>
+                                 <span class="n">model_with_info</span><span class="o">.</span><span class="n">model_rpd</span><span class="p">,</span>
+                                 <span class="n">model_with_info</span><span class="o">.</span><span class="n">initial_params</span><span class="p">,</span>
+                                 <span class="n">model_with_info</span><span class="o">.</span><span class="n">param_bounds</span><span class="p">,</span>
+                                 <span class="n">fitlength</span><span class="o">=</span><span class="n">fitlength</span>
+                                 <span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Model: &#39;</span> <span class="o">+</span> <span class="n">model_with_info</span><span class="o">.</span><span class="n">model_rpd</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Parameters / 1SD:&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">params_optimised</span><span class="p">,</span> <span class="n">params_1sd_error</span><span class="p">)))</span>
+        <span class="n">aicc</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">aic_from_least_sqr_fit</span><span class="p">(</span><span class="n">distance_hist</span><span class="p">,</span>
+                                            <span class="n">model_with_info</span><span class="o">.</span><span class="n">model_rpd</span><span class="p">,</span>
+                                            <span class="n">params_optimised</span><span class="p">,</span>
+                                            <span class="n">fitlength</span><span class="o">=</span><span class="n">fitlength</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;AICc: &#39;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="n">aicc</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="n">axes</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">bin_centres</span><span class="p">,</span>
+                  <span class="n">model_with_info</span><span class="o">.</span><span class="n">model_rpd</span><span class="p">(</span><span class="n">bin_centres</span><span class="p">,</span> <span class="o">*</span><span class="n">params_optimised</span><span class="p">)</span>
+                  <span class="c1">#lw=0.5</span>
+                  <span class="p">)</span></div>
+
+    
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">PERPL</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Alistair Curd.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

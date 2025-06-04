@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>perpl.io.plotting &#8212; PERPL  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for perpl.io.plotting</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">plotting.py</span>
+
+<span class="sd">Library to creates plots of the modelled data.</span>
+
+<span class="sd">Created on Mon Apr 29 14:52:57 2019</span>
+
+<span class="sd">Alistair Curd</span>
+<span class="sd">University of Leeds</span>
+<span class="sd">30 July 2018</span>
+
+<span class="sd">Software Engineering practices applied</span>
+
+<span class="sd">Joanna Leng</span>
+<span class="sd">(an EPSRC funded Research Software Engineering Fellow (EP/R025819/1))</span>
+<span class="sd">University of Leeds</span>
+<span class="sd">January 2019</span>
+
+<span class="sd">---</span>
+<span class="sd">Copyright 2018 Peckham Lab</span>
+
+<span class="sd">Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use</span>
+<span class="sd">this file except in compliance with the License. You may obtain a copy of the</span>
+<span class="sd">License at</span>
+<span class="sd">http://www.apache.org/licenses/LICENSE-2.0</span>
+
+<span class="sd">Unless required by applicable law or agreed to in writing, software distributed</span>
+<span class="sd">under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR</span>
+<span class="sd">CONDITIONS OF ANY KIND, either express or implied. See the License for the</span>
+<span class="sd">specific language governing permissions and limitations under the License.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sys</span><span class="w"> </span><span class="kn">import</span> <span class="n">platform</span> <span class="k">as</span> <span class="n">_platform</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.ndimage</span><span class="w"> </span><span class="kn">import</span> <span class="n">gaussian_filter1d</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.ndimage</span><span class="w"> </span><span class="kn">import</span> <span class="n">gaussian_filter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tifffile</span><span class="w"> </span><span class="kn">import</span> <span class="n">TiffWriter</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">perpl.modelling.modelling_general</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">models</span>
+
+<span class="c1"># information on backends is here</span>
+<span class="c1"># https://matplotlib.org/3.1.1/tutorials/introductory/usage.html#backends</span>
+<span class="c1"># if _platform == &quot;linux&quot; or _platform == &quot;linux2&quot;:</span>
+
+<span class="c1"># # linux</span>
+<span class="c1">#   matplotlib.use(&#39;TkAgg&#39;)</span>
+
+<span class="c1"># elif _platform == &quot;darwin&quot;:</span>
+<span class="c1"># # MAC OS X</span>
+<span class="c1">#   matplotlib.use(&#39;MacOSX&#39;)</span>
+
+<span class="c1"># elif _platform == &quot;win32&quot;:</span>
+<span class="c1"># # Windows</span>
+<span class="c1">#   matplotlib.use(&#39;TkAgg&#39;)</span>
+
+<span class="c1"># elif _platform == &quot;win64&quot;:</span>
+<span class="c1"># # Windows 64-bit</span>
+<span class="c1">#    matplotlib.use(&#39;TkAgg&#39;)</span>
+
+<span class="k">if</span> <span class="n">_platform</span> <span class="o">==</span> <span class="s2">&quot;darwin&quot;</span><span class="p">:</span>
+    <span class="c1"># MAC OS X</span>
+    <span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;MacOSX&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="draw_2d_scatter_plots">
+<a class="viewcode-back" href="../../../perpl.io.html#perpl.io.plotting.draw_2d_scatter_plots">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">draw_2d_scatter_plots</span><span class="p">(</span><span class="n">xyzcolour_values</span><span class="p">,</span> <span class="n">dims</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">zoom</span><span class="p">):</span>  <span class="c1"># xyz_values</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Farms out the scatter plots that need to be plotted to the</span>
+<span class="sd">    draw_2d_scatter_plot function.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       xyz_values (numpy array): A numpy array of the localizations.</span>
+<span class="sd">       dims (int): The dimensions of the data ie 2D or 3D.</span>
+<span class="sd">       info (dict): A python dictionary containing a collection of useful parameters.</span>
+<span class="sd">       zoom (int): A zoom of the central region can be created to this zoom factor.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       Nothing is returned.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">zoom</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Scatter plot of localisations in XY&quot;</span>
+        <span class="n">fig_name</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;scatter_plot_xy_localisations.png&#39;</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;results_dir&#39;</span><span class="p">]</span><span class="o">+</span><span class="sa">r</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">fig_name</span>
+        <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;short_names&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;short_results_dir&#39;</span><span class="p">]</span><span class="o">+</span><span class="sa">r</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">fig_name</span>
+        <span class="n">draw_2col_2d_scatter_plot</span><span class="p">(</span><span class="n">xyzcolour_values</span><span class="p">,</span>
+            <span class="n">title</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;X (nm)&#39;</span><span class="p">,</span> <span class="s1">&#39;Y (nm)&#39;</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">dims</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Scatter plot of localisations in XZ&quot;</span>
+            <span class="n">fig_name</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;scatter_plot_xz_localisations.png&#39;</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;results_dir&#39;</span><span class="p">]</span><span class="o">+</span><span class="sa">r</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">fig_name</span>
+            <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;short_names&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">filename</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;short_results_dir&#39;</span><span class="p">]</span><span class="o">+</span><span class="sa">r</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">fig_name</span>
+            <span class="n">draw_2col_2d_scatter_plot</span><span class="p">(</span><span class="n">xyzcolour_values</span><span class="p">,</span>
+                <span class="n">title</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;X (nm)&#39;</span><span class="p">,</span> <span class="s1">&#39;Z (nm)&#39;</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+
+            <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Scatter plot of localisations in YZ&quot;</span>
+            <span class="n">fig_name</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;scatter_plot_yz_localisations.png&#39;</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;results_dir&#39;</span><span class="p">]</span><span class="o">+</span><span class="sa">r</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">fig_name</span>
+            <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;short_names&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">filename</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;short_results_dir&#39;</span><span class="p">]</span><span class="o">+</span><span class="sa">r</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">fig_name</span>
+            <span class="n">draw_2col_2d_scatter_plot</span><span class="p">(</span><span class="n">xyzcolour_values</span><span class="p">,</span>
+                <span class="n">title</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;X (nm)&#39;</span><span class="p">,</span> <span class="s1">&#39;Z (nm)&#39;</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+
+    <span class="c1"># Zoomed-in xy-plot</span>
+    <span class="k">if</span> <span class="n">zoom</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># FIX ZOOM!!!!!</span>
+        <span class="c1"># Find total data ranges, zoom area and data subset</span>
+        <span class="n">x_range</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">xyzcolour_values</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">xyzcolour_values</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">x_centre</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">xyzcolour_values</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">x_range</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">y_range</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">xyzcolour_values</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">xyzcolour_values</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="n">y_centre</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">xyzcolour_values</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">y_range</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">zoomed_xmin</span> <span class="o">=</span> <span class="n">x_centre</span> <span class="o">-</span> <span class="n">x_range</span> <span class="o">/</span> <span class="n">zoom</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">zoomed_xmax</span> <span class="o">=</span> <span class="n">x_centre</span> <span class="o">+</span> <span class="n">x_range</span> <span class="o">/</span> <span class="n">zoom</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">zoomed_ymin</span> <span class="o">=</span> <span class="n">y_centre</span> <span class="o">-</span> <span class="n">y_range</span> <span class="o">/</span> <span class="n">zoom</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">zoomed_ymax</span> <span class="o">=</span> <span class="n">y_centre</span> <span class="o">+</span> <span class="n">y_range</span> <span class="o">/</span> <span class="n">zoom</span> <span class="o">/</span> <span class="mi">2</span>
+
+        <span class="c1"># Filter in x and y</span>
+        <span class="n">zoomed_xyzc</span> <span class="o">=</span> <span class="n">xyzcolour_values</span><span class="p">[</span><span class="n">xyzcolour_values</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">zoomed_xmin</span><span class="p">]</span>
+        <span class="n">zoomed_xyzc</span> <span class="o">=</span> <span class="n">zoomed_xyzc</span><span class="p">[</span><span class="n">zoomed_xyzc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">zoomed_xmax</span><span class="p">]</span>
+        <span class="n">zoomed_xyzc</span> <span class="o">=</span> <span class="n">zoomed_xyzc</span><span class="p">[</span><span class="n">zoomed_xyzc</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">zoomed_ymin</span><span class="p">]</span>
+        <span class="n">zoomed_xyzc</span> <span class="o">=</span> <span class="n">zoomed_xyzc</span><span class="p">[</span><span class="n">zoomed_xyzc</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">zoomed_ymax</span><span class="p">]</span>
+
+        <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Scatter plot of localisations in XY: zoom x</span><span class="si">{:d}</span><span class="s2"> on central region&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">zoom</span><span class="p">)</span>
+        <span class="n">fig_name</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;scatter_plot_xy_localisations_x&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">zoom</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;.png&#39;</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;results_dir&#39;</span><span class="p">]</span><span class="o">+</span><span class="sa">r</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">fig_name</span>
+        <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;short_names&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;short_results_dir&#39;</span><span class="p">]</span><span class="o">+</span><span class="sa">r</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">fig_name</span>
+        <span class="n">draw_2col_2d_scatter_plot</span><span class="p">(</span><span class="n">zoomed_xyzc</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;X (nm)&#39;</span><span class="p">,</span> <span class="s1">&#39;Y (nm)&#39;</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span></div>
+
+
+        <span class="c1">#if dims == 3:</span>
+            <span class="c1">#title = &quot;Scatter Plot of XZ Locations: Center with Zoom of x{:d}&quot;.format(zoom)</span>
+            <span class="c1">#fig_name = r&#39;scatter_plot_xz_locations_x&#39;+str(zoom)+&#39;.png&#39;</span>
+            <span class="c1">#filename = info[&#39;results_dir&#39;]+r&#39;/&#39;+fig_name</span>
+            <span class="c1">#draw_2d_scatter_plot(x_values_masked, z_values_masked,</span>
+             <span class="c1">#                    title, filename, &#39;x (nm)&#39;, &#39;z (nm)&#39;)</span>
+
+            <span class="c1">#title = &quot;Scatter Plot of YZ Locations: Center with Zoom of x{:d}&quot;.format(zoom)</span>
+            <span class="c1">#fig_name = r&#39;scatter_plot_yz_locations_x&#39;+str(zoom)+&#39;.png&#39;</span>
+            <span class="c1">#filename = info[&#39;results_dir&#39;]+r&#39;/&#39;+fig_name</span>
+            <span class="c1">#draw_2d_scatter_plot(y_values_masked, z_values_masked,</span>
+            <span class="c1">#                     title, filename, &#39;y (nm)&#39;, &#39;z (nm)&#39;)</span>
+
+
+<div class="viewcode-block" id="draw_2col_2d_scatter_plot">
+<a class="viewcode-back" href="../../../perpl.io.html#perpl.io.plotting.draw_2col_2d_scatter_plot">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">draw_2col_2d_scatter_plot</span><span class="p">(</span><span class="n">xyzcolour_values</span><span class="p">,</span>
+    <span class="n">title</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">x_label</span><span class="p">,</span> <span class="n">y_label</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a scatter plot and saves it to a .png file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        xyzcolour_values (numpy array): A numpy array of the xy(and z)-coordinates of the</span>
+<span class="sd">            localizations (first 2 or 3 columns) and their colour channels (final column).</span>
+<span class="sd">        title (str): the text string that has the title for the plot.</span>
+<span class="sd">        filename (str): The output file has all the text of the input</span>
+<span class="sd">            file plus some more information so it is easy to recognise which</span>
+<span class="sd">            it has been derived from.</span>
+<span class="sd">        info (dict): A python dictionary containing a collection of useful parameters</span>
+<span class="sd">            such as the filenames and paths.</span>
+<span class="sd">        axes (tuple): Axis indices for the coordinates to be plotted.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       Nothing is returned.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;colours_analysed&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">xyzcolour_values</span><span class="p">[:,</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">xyzcolour_values</span><span class="p">[:,</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">s</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">scatterplot</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">xyzcolour_values</span><span class="p">[:,</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">xyzcolour_values</span><span class="p">[:,</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+            <span class="n">c</span><span class="o">=</span><span class="n">xyzcolour_values</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">)</span>
+        <span class="n">legend</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="o">*</span><span class="n">scatterplot</span><span class="o">.</span><span class="n">legend_elements</span><span class="p">(),</span>
+            <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper right&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Channel&#39;</span>
+            <span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">add_artist</span><span class="p">(</span><span class="n">legend</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">x_label</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;fontsize&#39;</span><span class="p">:</span><span class="s1">&#39;14&#39;</span><span class="p">})</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">y_label</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;fontsize&#39;</span><span class="p">:</span><span class="s1">&#39;14&#39;</span><span class="p">})</span>
+    <span class="c1"># options on scaling are here</span>
+    <span class="c1"># https://matplotlib.org/devdocs/api/_as_gen/matplotlib.axes.Axes.set_aspect.html</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;scaled&#39;</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="find_thresholds">
+<a class="viewcode-back" href="../../../perpl.io.html#perpl.io.plotting.find_thresholds">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_thresholds</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">zoom</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculates the thresholds for the zoom into the scatter plots and applies</span>
+<span class="sd">    them to mask of the input array.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       arr (numpy array): A numpy array of one of the co-ordinates for the locationation.</span>
+<span class="sd">       zoom (int): A zoom of the central region can be created to this zoom factor.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       arr (numpy.ma.core.MaskedArray): A numpy mask array of one of the</span>
+<span class="sd">            thresholded co-ordinates for the locationation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">arr_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="n">arr_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+
+    <span class="n">data_range</span> <span class="o">=</span> <span class="n">arr_max</span> <span class="o">-</span> <span class="n">arr_min</span>
+    <span class="n">zoom_bin</span> <span class="o">=</span> <span class="n">data_range</span> <span class="o">/</span> <span class="n">zoom</span>
+
+    <span class="k">if</span> <span class="n">zoom</span><span class="o">%</span><span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">min_threshold</span> <span class="o">=</span> <span class="n">arr_min</span> <span class="o">+</span> <span class="p">(</span><span class="n">zoom_bin</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="n">zoom</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
+        <span class="n">max_threshold</span> <span class="o">=</span> <span class="n">arr_max</span> <span class="o">-</span> <span class="p">(</span><span class="n">zoom_bin</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="n">zoom</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">min_threshold</span> <span class="o">=</span> <span class="n">arr_min</span> <span class="o">+</span> <span class="p">(</span><span class="n">zoom_bin</span> <span class="o">*</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">zoom</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">-</span><span class="mf">0.5</span><span class="p">))</span>
+        <span class="n">max_threshold</span> <span class="o">=</span> <span class="n">arr_max</span> <span class="o">-</span> <span class="p">(</span><span class="n">zoom_bin</span> <span class="o">*</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">zoom</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">-</span><span class="mf">0.5</span><span class="p">))</span>
+
+    <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="n">arr_masked</span> <span class="o">=</span> \
+        <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_where</span><span class="p">(</span>\
+                <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_xor</span><span class="p">((</span><span class="n">min_threshold</span> <span class="o">&lt;</span> <span class="n">arr</span><span class="p">),</span> <span class="p">(</span><span class="n">arr</span> <span class="o">&lt;</span> <span class="n">max_threshold</span><span class="p">))),</span> \
+                <span class="n">arr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">arr_masked</span></div>
+
+
+
+<div class="viewcode-block" id="plot_histograms">
+<a class="viewcode-back" href="../../../perpl.io.html#perpl.io.plotting.plot_histograms">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_histograms</span><span class="p">(</span><span class="n">d_values</span><span class="p">,</span> <span class="n">dims</span><span class="p">,</span> <span class="n">filter_distance</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">binsize</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Farms out the histograms that need to be plotted to the plot_histogram</span>
+<span class="sd">    function.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       d_values (numpy array): A numpy array of the localizations and distance</span>
+<span class="sd">            between localisations.</span>
+<span class="sd">       dims (int): The dimensions of the data ie 2D or 3D.</span>
+<span class="sd">       filterdist (int): The distance within which relative positions were calculated.</span>
+<span class="sd">       info (dict): A python dictionary containing a collection of useful parameters</span>
+<span class="sd">            such as the filenames and paths.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Nothing is returned.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+    <span class="n">plot_histogram</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">d_values</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]),</span> <span class="s2">&quot;xy&quot;</span><span class="p">,</span> <span class="n">filter_distance</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">binsize</span><span class="o">=</span><span class="n">binsize</span><span class="p">)</span>
+    <span class="c1">#print(&quot;xy d_values[:, 3][0]: &quot;, d_values[:, 3][0])</span>
+
+    <span class="n">plot_histogram</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">d_values</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]),</span>
+        <span class="s2">&quot;xy&quot;</span><span class="p">,</span> <span class="n">filter_distance</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">standardise</span><span class="o">=</span><span class="s1">&#39;2d&#39;</span><span class="p">,</span> <span class="n">binsize</span><span class="o">=</span><span class="n">binsize</span>
+        <span class="p">)</span>
+
+    <span class="n">plot_histogram</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">d_values</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]),</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">filter_distance</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">binsize</span><span class="o">=</span><span class="n">binsize</span><span class="p">)</span>
+    <span class="c1">#print(&quot;x d_values[:, 0][0]: &quot;, d_values[:, 0][0])</span>
+    <span class="n">plot_histogram</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">d_values</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]),</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">filter_distance</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">binsize</span><span class="o">=</span><span class="n">binsize</span><span class="p">)</span>
+
+
+    <span class="k">if</span> <span class="n">dims</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">plot_histogram</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">d_values</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">]),</span> <span class="s2">&quot;xz&quot;</span><span class="p">,</span> <span class="n">filter_distance</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">binsize</span><span class="o">=</span><span class="n">binsize</span><span class="p">)</span>
+        <span class="n">plot_histogram</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">d_values</span><span class="p">[:,</span> <span class="mi">5</span><span class="p">]),</span> <span class="s2">&quot;yz&quot;</span><span class="p">,</span> <span class="n">filter_distance</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">binsize</span><span class="o">=</span><span class="n">binsize</span><span class="p">)</span>
+        <span class="n">plot_histogram</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">d_values</span><span class="p">[:,</span> <span class="mi">6</span><span class="p">]),</span> <span class="s2">&quot;xyz&quot;</span><span class="p">,</span> <span class="n">filter_distance</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">binsize</span><span class="o">=</span><span class="n">binsize</span><span class="p">)</span>
+
+        <span class="n">plot_histogram</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">d_values</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]),</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="n">filter_distance</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">binsize</span><span class="o">=</span><span class="n">binsize</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="plot_new_histogram">
+<a class="viewcode-back" href="../../../perpl.io.html#perpl.io.plotting.plot_new_histogram">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_new_histogram</span><span class="p">(</span><span class="n">data_values</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a histogram with a smooth curve fitted to it.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       data_values (numpy array): A numpy array of the distance between localisations.</span>
+
+<span class="sd">    Returns: No return value</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Unbinned axial relative positions</span>
+
+    <span class="n">fitlength</span> <span class="o">=</span> <span class="mf">100.</span>
+
+    <span class="c1"># In this case my relative positions</span>
+    <span class="c1">#ax_points = relpos.axial[(relpos.axial &lt; fitlength) &amp; (relpos.transverse &lt; 10)]</span>
+    <span class="n">ax_points</span> <span class="o">=</span> <span class="n">data_values</span><span class="p">[(</span><span class="n">data_values</span><span class="p">[:</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">fitlength</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">data_values</span><span class="p">[:,</span> <span class="mi">6</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">)]</span>
+
+    <span class="c1"># processing resulted in X distances (relpos.axial) and YZ distances (relpos.tranverse).</span>
+
+    <span class="c1"># Sort and remove duplicates</span>
+    <span class="n">ax_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ax_points</span><span class="p">)</span>
+    <span class="n">ax_points</span> <span class="o">=</span> <span class="n">ax_points</span><span class="p">[::</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="c1"># Plot histogram</span>
+    <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">ax_points</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">fitlength</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;xkcd:lightblue&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Smooth and plot histogram</span>
+    <span class="c1"># 4.4 here is np.sqrt(2) * localisation precision estimate</span>
+    <span class="n">line_smooth</span> <span class="o">=</span> <span class="n">gaussian_filter1d</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="mf">4.4</span><span class="p">)</span>
+
+    <span class="c1"># (which the user could input)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">fitlength</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">line_smooth</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;xkcd:red&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="plot_histogram">
+<a class="viewcode-back" href="../../../perpl.io.html#perpl.io.plotting.plot_histogram">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_histogram</span><span class="p">(</span><span class="n">data_values</span><span class="p">,</span> <span class="n">data_description</span><span class="p">,</span> <span class="n">filterdist</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">binsize</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">standardise</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a histogram and saves it into the .png file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data_values (numpy array):</span>
+<span class="sd">            A numpy array of the distance between localisations.</span>
+<span class="sd">        data_description (str):</span>
+<span class="sd">            A description of the distance eg xy or xz that</span>
+<span class="sd">            is added to the name of the .png file.</span>
+<span class="sd">        filterdist (int):</span>
+<span class="sd">            The distance within which relative positions were calculated.</span>
+<span class="sd">        info (dict):</span>
+<span class="sd">            A python dictionary containing a collection of useful parameters</span>
+<span class="sd">            such as the filenames and paths.</span>
+<span class="sd">        standardise (string): None, &#39;2d&#39; or &#39;3d&#39;</span>
+<span class="sd">            Standardisation of distance distributions:</span>
+<span class="sd">                &#39;2d&#39;: divides histogram bins by distance</span>
+<span class="sd">                &#39;3d&#39;: divides histogram bins by distance ^ 2</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       histogram_values (numpy array): A numpy array of the normalised probability</span>
+<span class="sd">           density values for each bin.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">data_max</span> <span class="o">=</span> <span class="n">data_values</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">data_max</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">data_max</span><span class="o">*</span><span class="mi">10</span><span class="p">)</span><span class="o">/</span><span class="mi">10</span>
+        <span class="c1"># edges = math.ceil(data_max*10) + 1</span>
+        <span class="c1"># bins = np.linspace(start, end, edges)</span>
+        <span class="c1"># Include end as final edge if end is integer * binsize</span>
+        <span class="k">if</span> <span class="n">end</span> <span class="o">%</span> <span class="n">binsize</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">+</span> <span class="n">binsize</span><span class="p">,</span> <span class="n">binsize</span><span class="p">)</span>
+        <span class="c1"># Else stop before final edge</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">binsize</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">filterdist</span>
+        <span class="c1"># edges = filterdist + 1</span>
+        <span class="c1"># bins = np.linspace(start, end, edges)</span>
+        <span class="c1"># Include end as final edge if end is integer * binsize</span>
+        <span class="k">if</span> <span class="n">end</span> <span class="o">%</span> <span class="n">binsize</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">+</span> <span class="n">binsize</span><span class="p">,</span> <span class="n">binsize</span><span class="p">)</span>
+        <span class="c1"># Else stop before final edge</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">binsize</span><span class="p">)</span>
+
+    <span class="c1"># Set up axes object for plotting</span>
+    <span class="n">fig_hist</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">num</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                          <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
+                          <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                          <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span>
+                          <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+    <span class="n">axes</span> <span class="o">=</span> <span class="n">fig_hist</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+
+    <span class="c1"># Set up filename</span>
+    <span class="n">fig_name_base</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;histogram_&#39;</span><span class="o">+</span><span class="n">data_description</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span><span class="o">+</span><span class="sa">r</span><span class="s1">&#39;_separation_in_nm&#39;</span>
+    <span class="c1"># Include potential standardisation of histogram</span>
+    <span class="k">if</span> <span class="n">standardise</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig_name_base</span> <span class="o">=</span> <span class="n">fig_name_base</span><span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span><span class="n">standardise</span><span class="o">+</span> <span class="s1">&#39;_standardised&#39;</span>
+    <span class="n">fig_name</span> <span class="o">=</span> <span class="n">fig_name_base</span> <span class="o">+</span> <span class="s1">&#39;.png&#39;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;results_dir&#39;</span><span class="p">]</span><span class="o">+</span><span class="sa">r</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">fig_name</span>
+    <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;short_names&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;short_results_dir&#39;</span><span class="p">]</span><span class="o">+</span><span class="sa">r</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">fig_name</span>
+
+    <span class="c1"># Title and axis labels</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;Distance histogram of &quot;</span><span class="o">+</span><span class="n">data_description</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">+</span><span class="sa">r</span><span class="s2">&quot; separations&quot;</span>
+    <span class="k">if</span> <span class="n">standardise</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="n">title</span> <span class="o">+</span> <span class="s1">&#39;, &#39;</span> <span class="o">+</span> <span class="n">standardise</span> <span class="o">+</span> <span class="s1">&#39; standardised&#39;</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="n">data_description</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">+</span><span class="sa">r</span><span class="s1">&#39; separation (nm)&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Counts&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">standardise</span> <span class="o">==</span> <span class="s1">&#39;2d&#39;</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Counts / distance (nm)&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">standardise</span> <span class="o">==</span> <span class="s1">&#39;3d&#39;</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Counts / distance ^ 2 (nm ^ 2)&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Get histogram count values and bin positions</span>
+    <span class="n">bin_heights</span><span class="p">,</span> <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">data_values</span><span class="p">[</span><span class="n">data_values</span> <span class="o">&lt;</span> <span class="n">filterdist</span><span class="p">],</span> <span class="n">bins</span><span class="p">)</span>
+    <span class="n">bin_centres</span> <span class="o">=</span> <span class="p">(</span><span class="n">bin_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">bin_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">)])</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="c1"># Standardise bin counts if desired</span>
+    <span class="k">if</span> <span class="n">standardise</span> <span class="o">==</span> <span class="s1">&#39;2d&#39;</span><span class="p">:</span>
+        <span class="n">bin_heights</span> <span class="o">=</span> <span class="n">bin_heights</span> <span class="o">/</span> <span class="n">bin_centres</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">bin_centres</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="n">standardise</span> <span class="o">==</span> <span class="s1">&#39;3d&#39;</span><span class="p">:</span>
+        <span class="n">bin_heights</span> <span class="o">=</span> <span class="n">bin_heights</span> <span class="o">/</span> <span class="n">bin_centres</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">bin_centres</span><span class="p">)]</span> <span class="o">**</span> <span class="mi">2</span>
+
+    <span class="c1"># PREVIOUS VERSION</span>
+    <span class="c1"># axes.hist(data_values, bins, color=&#39;darkblue&#39;, edgecolor=&#39;k&#39;, linewidth=1,\</span>
+    <span class="c1">#           alpha=0.5)</span>
+
+    <span class="c1"># Plot data and save figure</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="n">binsize</span>
+    <span class="n">axes</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">bin_centres</span><span class="p">,</span>
+             <span class="n">bin_heights</span><span class="p">,</span>
+             <span class="n">align</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span>
+             <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+             <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+             <span class="n">color</span><span class="o">=</span><span class="s1">&#39;lightgrey&#39;</span><span class="p">)</span>
+
+    <span class="n">fig_hist</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+    <span class="c1">#fig_hist.show()</span>
+
+    <span class="c1"># Save histogram data</span>
+    <span class="n">histo_name_base</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;histogram_&#39;</span><span class="o">+</span><span class="n">data_description</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+    <span class="c1"># Add standardisation info if relevant</span>
+    <span class="k">if</span> <span class="n">standardise</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">histo_name_base</span> <span class="o">=</span> <span class="n">histo_name_base</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">standardise</span> <span class="o">+</span> <span class="s1">&#39;_standardised&#39;</span>
+    <span class="n">histo_name</span> <span class="o">=</span> <span class="n">histo_name_base</span> <span class="o">+</span> <span class="sa">r</span><span class="s1">&#39;.csv&#39;</span>
+    <span class="n">filename1</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;results_dir&#39;</span><span class="p">]</span><span class="o">+</span><span class="sa">r</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">histo_name</span>
+    <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;short_names&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">filename1</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;short_results_dir&#39;</span><span class="p">]</span><span class="o">+</span><span class="sa">r</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">histo_name</span>
+
+    <span class="n">data_values</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">bin_heights</span><span class="p">),</span>
+                             <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">head</span> <span class="o">=</span> <span class="s2">&quot;normalised probability density,bin edges&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">filename1</span><span class="p">,</span> <span class="n">data_values</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="n">head</span><span class="p">,</span> <span class="n">comments</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">EOFError</span><span class="p">,</span> <span class="ne">IOError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Unexpected error:&quot;</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;Could not create and open the output data file.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">bin_heights</span></div>
+
+
+
+<div class="viewcode-block" id="estimate_rpd_churchman_1d">
+<a class="viewcode-back" href="../../../perpl.io.html#perpl.io.plotting.estimate_rpd_churchman_1d">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">estimate_rpd_churchman_1d</span><span class="p">(</span><span class="n">input_distances</span><span class="p">,</span>
+                              <span class="n">calculation_points</span><span class="p">,</span>
+                              <span class="n">combined_precision</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimates a smooth 1D RPD (relative position distribution) from a set</span>
+<span class="sd">    of distances, using Churchman&#39;s distribution for distances between</span>
+<span class="sd">    localisations in two clusters as a smoothing kernel.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input_distances (numpy array):</span>
+<span class="sd">            The distances between localisations in the input data.</span>
+<span class="sd">        calculation_points (numpy array):</span>
+<span class="sd">            The distances at which the RPD will be estimated.</span>
+<span class="sd">        combined_precision (float):</span>
+<span class="sd">            The width (sigma) of the smoothing function. In later version,</span>
+<span class="sd">            this may be an array with one values per input distance.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        estimated_rpd (numpy array):</span>
+<span class="sd">            The 1D RPD estimated at the calculation points.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">estimated_rpd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">calculation_points</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">input_distance</span> <span class="ow">in</span> <span class="n">input_distances</span><span class="p">:</span>
+        <span class="n">estimated_rpd</span> <span class="o">=</span> <span class="n">estimated_rpd</span> <span class="o">+</span> <span class="n">models</span><span class="o">.</span><span class="n">pairwise_correlation_1d</span><span class="p">(</span>
+            <span class="n">calculation_points</span><span class="p">,</span> <span class="n">input_distance</span><span class="p">,</span> <span class="n">combined_precision</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">estimated_rpd</span></div>
+
+
+
+<div class="viewcode-block" id="estimate_rpd_churchman_2d">
+<a class="viewcode-back" href="../../../perpl.io.html#perpl.io.plotting.estimate_rpd_churchman_2d">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">estimate_rpd_churchman_2d</span><span class="p">(</span><span class="n">input_distances</span><span class="p">,</span>
+                              <span class="n">calculation_points</span><span class="p">,</span>
+                              <span class="n">combined_precision</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimates a smooth distance distribuion from a 2D RPD</span>
+<span class="sd">    (relative position distribution) from a set of distances, using</span>
+<span class="sd">    Churchman&#39;s distribution for distances between localisations in</span>
+<span class="sd">    two clusters as a smoothing kernel.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input_distances (numpy array):</span>
+<span class="sd">            The distances between localisations in the input data.</span>
+<span class="sd">        calculation_points (numpy array):</span>
+<span class="sd">            The distances at which the RPD will be estimated.</span>
+<span class="sd">        combined_precision (float):</span>
+<span class="sd">            The width (sigma) of the smoothing function. In later versions,</span>
+<span class="sd">            this may be an array with one values per input distance.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        estimated_rpd (numpy array):</span>
+<span class="sd">            The distance distribution for the 2D RPD estimated at the</span>
+<span class="sd">            calculation points.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">estimated_rpd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">calculation_points</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">input_distance</span> <span class="ow">in</span> <span class="n">input_distances</span><span class="p">:</span>
+        <span class="n">estimated_rpd</span> <span class="o">=</span> <span class="n">estimated_rpd</span> <span class="o">+</span> <span class="n">models</span><span class="o">.</span><span class="n">pairwise_correlation_2d</span><span class="p">(</span>
+            <span class="n">calculation_points</span><span class="p">,</span> <span class="n">input_distance</span><span class="p">,</span> <span class="n">combined_precision</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">estimated_rpd</span></div>
+
+
+
+<div class="viewcode-block" id="create_histogram_3d">
+<a class="viewcode-back" href="../../../perpl.io.html#perpl.io.plotting.create_histogram_3d">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_histogram_3d</span><span class="p">(</span><span class="n">rel_pos_xyz</span><span class="p">,</span> <span class="n">filterdist</span><span class="p">,</span> <span class="n">smoothing</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates a 3D histogram of relative positions among localisations,</span>
+<span class="sd">    in bins of 1 nm^3.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        rel_pos_xyz (numpy array):</span>
+<span class="sd">            At least three columns, where the first three columns are</span>
+<span class="sd">            X, Y, Z coordinates of relative positions (nm).</span>
+<span class="sd">        filterdist (int):</span>
+<span class="sd">            The maximum distance (nm) in X, Y and Z upto which the histogram</span>
+<span class="sd">            should be generated.</span>
+<span class="sd">        smoothing (float):</span>
+<span class="sd">            Kernel size (SD, in nm) for isotropic 3D Gaussian smoothing</span>
+<span class="sd">            of the histogram.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        histogram (numpy array):</span>
+<span class="sd">            3D histogram bin values.</span>
+<span class="sd">            Dimensions X, Y, Z will be histogrammed along dimensions 1, 2, 3.</span>
+<span class="sd">            Includes central reference point sharing the maximum bin value</span>
+<span class="sd">            in the histogram.</span>
+<span class="sd">        bin_edge_vector (numpy array):</span>
+<span class="sd">            1D vector of bin_edges, which are equal for all dimensions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Set Gaussian smoothing kernel, if any</span>
+    <span class="k">if</span> <span class="n">smoothing</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Would you like to apply 3D smoothing to the histogram (y/n)?&#39;</span><span class="p">)</span>
+        <span class="n">smoothing_choice</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">smoothing_choice</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Please provide the SD (in nm)&#39;</span><span class="p">)</span>
+            <span class="n">smoothing</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">input</span><span class="p">(</span><span class="s1">&#39; for the Gaussian smoothing kernel: &#39;</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Ok, no smoothing.&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Make 3D histogram</span>
+    <span class="n">bin_edge_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="n">filterdist</span><span class="p">,</span> <span class="n">filterdist</span> <span class="o">+</span> <span class="mi">2</span><span class="p">))</span> <span class="o">-</span> <span class="mf">0.5</span>
+    <span class="n">histogram</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogramdd</span><span class="p">(</span><span class="n">rel_pos_xyz</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="p">(</span><span class="n">bin_edge_vector</span><span class="p">,</span>
+                                                  <span class="n">bin_edge_vector</span><span class="p">,</span>
+                                                  <span class="n">bin_edge_vector</span>
+                                                  <span class="p">)</span>
+                               <span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># No need for returned variable [1] (edges)</span>
+
+    <span class="c1"># Apply smoothing, if any</span>
+    <span class="k">if</span> <span class="n">smoothing</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">histogram</span> <span class="o">=</span> <span class="n">gaussian_filter</span><span class="p">(</span><span class="n">histogram</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">smoothing</span><span class="p">)</span>
+
+    <span class="c1"># Add central reference point</span>
+    <span class="n">histogram</span><span class="p">[</span><span class="n">filterdist</span><span class="p">,</span> <span class="n">filterdist</span><span class="p">,</span> <span class="n">filterdist</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">histogram</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">histogram</span><span class="p">,</span> <span class="n">bin_edge_vector</span></div>
+
+
+
+<div class="viewcode-block" id="save_tiff_histogram_3d">
+<a class="viewcode-back" href="../../../perpl.io.html#perpl.io.plotting.save_tiff_histogram_3d">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">save_tiff_histogram_3d</span><span class="p">(</span><span class="n">rel_pos_xyz</span><span class="p">,</span> <span class="n">filterdist</span><span class="p">,</span> <span class="n">smoothing</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates a 3D histogram of relative positions among localisations,</span>
+<span class="sd">    in bins of 1 mm^3. Then saves as a 32-bit multipage tiff file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        rel_pos_xyz (numpy array):</span>
+<span class="sd">            At least three columns, where the first three columns are</span>
+<span class="sd">            X, Y, Z coordinates of relative positions (nm).</span>
+<span class="sd">        filterdist (int):</span>
+<span class="sd">            The maximum distance (nm) in X, Y and Z upto which the histogram</span>
+<span class="sd">            should be generated.</span>
+<span class="sd">        smoothing (float):</span>
+<span class="sd">            Kernel size (SD, in nm) for isotropic 3D Gaussian smoothing</span>
+<span class="sd">            of the histogram.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Nothing</span>
+
+<span class="sd">    Saves:</span>
+<span class="sd">        temp.tif in the working directory, containing the 3D histogram.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">histogram</span> <span class="o">=</span> <span class="n">create_histogram_3d</span><span class="p">(</span><span class="n">rel_pos_xyz</span><span class="p">,</span>
+                                    <span class="n">filterdist</span><span class="p">,</span>
+                                    <span class="n">smoothing</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># Output [1] not needed</span>
+    <span class="n">histogram</span> <span class="o">=</span> <span class="n">histogram</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="c1"># Re-order as ZYX.</span>
+    <span class="n">histogram</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">histogram</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="c1"># Save</span>
+    <span class="k">with</span> <span class="n">TiffWriter</span><span class="p">(</span><span class="s1">&#39;temp.tif&#39;</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s1">&#39;&lt;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tif</span><span class="p">:</span>
+        <span class="n">tif</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">histogram</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="plot_histogram_with_curves">
+<a class="viewcode-back" href="../../../perpl.io.html#perpl.io.plotting.plot_histogram_with_curves">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_histogram_with_curves</span><span class="p">(</span><span class="n">bin_values</span><span class="p">,</span> <span class="n">xy_histogram</span><span class="p">,</span> <span class="n">symmetries</span><span class="p">,</span> <span class="n">x_values</span><span class="p">,</span> <span class="n">curve_values</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39; Plots a histogram of seprations with curves that show how well various models</span>
+<span class="sd">    fit this histogram.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        bin_values: An array of the histogram bin boundaries.</span>
+<span class="sd">        xy_histogram: An array of floats giving the separations.</span>
+<span class="sd">        symmetries: Array of the range of rotational symmerties the model tests.</span>
+<span class="sd">        x_values: An array of the points on the x axesthat the curve are on the plot.</span>
+<span class="sd">        curve_values: A 2d array of the curves for each symmertry.</span>
+<span class="sd">        info (dict): A python dictionary containing a collection of useful</span>
+<span class="sd">                     parameters such as the filenames and paths.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        nothing</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">fig_histogram</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">num</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                               <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
+                               <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                               <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span>
+                               <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+
+    <span class="n">axes</span> <span class="o">=</span> <span class="n">fig_histogram</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+    <span class="n">center</span> <span class="o">=</span> <span class="p">(</span><span class="n">bin_values</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">bin_values</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">axes</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">center</span><span class="p">,</span>
+             <span class="n">xy_histogram</span><span class="p">,</span>
+             <span class="n">align</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span>
+             <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+             <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+             <span class="n">color</span><span class="o">=</span><span class="s1">&#39;lightgrey&#39;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">symm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">symmetries</span><span class="p">):</span>
+        <span class="n">line_label</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">symm</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;-fold symmetry&quot;</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_values</span><span class="p">,</span>
+                  <span class="n">curve_values</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                  <span class="n">label</span><span class="o">=</span><span class="n">line_label</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;5-fold to 11-fold fits&#39;</span><span class="p">,</span>
+              <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span>
+              <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;XY separation (nm)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Counts (scaled)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;results_dir&#39;</span><span class="p">]</span><span class="o">+</span><span class="sa">r</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="sa">r</span><span class="s1">&#39;Histogram_with_Fitted_Curves.png&#39;</span>
+    <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;short_names&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;short_results_dir&#39;</span><span class="p">]</span><span class="o">+</span><span class="sa">r</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="sa">r</span><span class="s1">&#39;Histogram_with_Fitted_Curves.png&#39;</span>
+    <span class="n">fig_histogram</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span></div>
+
+    <span class="c1">#fig_histogram.show()</span>
+
+
+<div class="viewcode-block" id="plot_rot_2d_geometry">
+<a class="viewcode-back" href="../../../perpl.io.html#perpl.io.plotting.plot_rot_2d_geometry">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_rot_2d_geometry</span><span class="p">(</span><span class="n">sym</span><span class="p">,</span> <span class="n">diameter</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39; Plots the rotational geometry used in a model.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        sym: Integer that represents the rotational symetry of the model.</span>
+<span class="sd">        diamter: Integer that represents the diamter of the model</span>
+<span class="sd">        info (dict): A python dictionary containing a collection of useful</span>
+<span class="sd">                     parameters such as the filenames and paths.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        nothing</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="c1">#small_font = 6</span>
+    <span class="c1">#medium_font = 8</span>
+    <span class="c1">#plt.rc(&#39;axes&#39;, titlesize=medium_font)     # fontsize of the axes title</span>
+    <span class="c1">#plt.rc(&#39;axes&#39;, labelsize=medium_font)    # fontsize of the x and y labels</span>
+    <span class="c1">#plt.rc(&#39;xtick&#39;, labelsize=small_font)    # fontsize of the tick labels</span>
+    <span class="c1">#plt.rc(&#39;ytick&#39;, labelsize=small_font)</span>
+    <span class="c1">#plt.rc(&#39;legend&#39;, fontsize=small_font)    # legend fontsize</span>
+    <span class="c1">#plt.rc(&#39;figure&#39;, titlesize=medium_font)  # fontsize of the figure title</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">num</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">),</span>
+                     <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+                     <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span>
+                     <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+
+    <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Plot of geometry with</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">sym</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;-fold rotational symmetry&quot;</span>
+
+    <span class="n">fig_name</span> <span class="o">=</span> <span class="s2">&quot;GeometryPlotRotationqalSymmetry&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">sym</span><span class="p">)</span><span class="o">+</span><span class="sa">r</span><span class="s2">&quot;Fold.png&quot;</span>
+
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;results_dir&#39;</span><span class="p">]</span><span class="o">+</span><span class="sa">r</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">fig_name</span>
+    <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;short_names&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;short_results_dir&#39;</span><span class="p">]</span><span class="o">+</span><span class="sa">r</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">fig_name</span>
+
+    <span class="n">verts</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">generate_polygon_points</span><span class="p">(</span><span class="n">sym</span><span class="p">,</span> <span class="n">diameter</span><span class="p">)</span>
+
+    <span class="n">x_values</span> <span class="o">=</span> <span class="n">verts</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">y_values</span> <span class="o">=</span> <span class="n">verts</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">area</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="mi">20</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_values</span><span class="p">,</span> <span class="n">y_values</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="n">area</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">point</span> <span class="o">&lt;</span> <span class="n">sym</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">x_point</span> <span class="o">=</span> <span class="p">(</span><span class="n">x_values</span><span class="p">[</span><span class="n">point</span><span class="p">],</span> <span class="n">x_values</span><span class="p">[</span><span class="n">point</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">y_point</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_values</span><span class="p">[</span><span class="n">point</span><span class="p">],</span> <span class="n">y_values</span><span class="p">[</span><span class="n">point</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">point</span> <span class="o">==</span> <span class="n">sym</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">x_point</span> <span class="o">=</span> <span class="p">(</span><span class="n">x_values</span><span class="p">[</span><span class="n">point</span><span class="p">],</span> <span class="n">x_values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">y_point</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_values</span><span class="p">[</span><span class="n">point</span><span class="p">],</span> <span class="n">y_values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_point</span><span class="p">,</span> <span class="n">y_point</span><span class="p">,</span> <span class="s1">&#39;k-&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;x (nm)&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;y (nm)&#39;</span><span class="p">)</span>
+
+    <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span></div>
+
+    <span class="c1">#fig.show()</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">PERPL</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Alistair Curd.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

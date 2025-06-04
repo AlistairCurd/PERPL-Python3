@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>perpl.io package &#8212; PERPL  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="perpl-io-package">
+<h1>perpl.io package<a class="headerlink" href="#perpl-io-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-perpl.io.plotting">
+<span id="perpl-io-plotting-module"></span><h2>perpl.io.plotting module<a class="headerlink" href="#module-perpl.io.plotting" title="Link to this heading">¶</a></h2>
+<p>plotting.py</p>
+<p>Library to creates plots of the modelled data.</p>
+<p>Created on Mon Apr 29 14:52:57 2019</p>
+<p>Alistair Curd
+University of Leeds
+30 July 2018</p>
+<p>Software Engineering practices applied</p>
+<p>Joanna Leng
+(an EPSRC funded Research Software Engineering Fellow (EP/R025819/1))
+University of Leeds
+January 2019</p>
+<p>—
+Copyright 2018 Peckham Lab</p>
+<p>Licensed under the Apache License, Version 2.0 (the “License”); you may not use
+this file except in compliance with the License. You may obtain a copy of the
+License at
+<a class="reference external" href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a></p>
+<p>Unless required by applicable law or agreed to in writing, software distributed
+under the License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR
+CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.io.plotting.create_histogram_3d">
+<span class="sig-prename descclassname"><span class="pre">perpl.io.plotting.</span></span><span class="sig-name descname"><span class="pre">create_histogram_3d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rel_pos_xyz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filterdist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/io/plotting.html#create_histogram_3d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.io.plotting.create_histogram_3d" title="Link to this definition">¶</a></dt>
+<dd><p>Generates a 3D histogram of relative positions among localisations,
+in bins of 1 nm^3.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rel_pos_xyz</strong> (<em>numpy array</em>) – At least three columns, where the first three columns are
+X, Y, Z coordinates of relative positions (nm).</p></li>
+<li><p><strong>filterdist</strong> (<em>int</em>) – The maximum distance (nm) in X, Y and Z upto which the histogram
+should be generated.</p></li>
+<li><p><strong>smoothing</strong> (<em>float</em>) – Kernel size (SD, in nm) for isotropic 3D Gaussian smoothing
+of the histogram.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>3D histogram bin values.</dt><dd><p>Dimensions X, Y, Z will be histogrammed along dimensions 1, 2, 3.
+Includes central reference point sharing the maximum bin value
+in the histogram.</p>
+</dd>
+<dt>bin_edge_vector (numpy array):</dt><dd><p>1D vector of bin_edges, which are equal for all dimensions.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>histogram (numpy array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.io.plotting.draw_2col_2d_scatter_plot">
+<span class="sig-prename descclassname"><span class="pre">perpl.io.plotting.</span></span><span class="sig-name descname"><span class="pre">draw_2col_2d_scatter_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyzcolour_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">1)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/io/plotting.html#draw_2col_2d_scatter_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.io.plotting.draw_2col_2d_scatter_plot" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a scatter plot and saves it to a .png file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xyzcolour_values</strong> (<em>numpy array</em>) – A numpy array of the xy(and z)-coordinates of the
+localizations (first 2 or 3 columns) and their colour channels (final column).</p></li>
+<li><p><strong>title</strong> (<em>str</em>) – the text string that has the title for the plot.</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – The output file has all the text of the input
+file plus some more information so it is easy to recognise which
+it has been derived from.</p></li>
+<li><p><strong>info</strong> (<em>dict</em>) – A python dictionary containing a collection of useful parameters
+such as the filenames and paths.</p></li>
+<li><p><strong>axes</strong> (<em>tuple</em>) – Axis indices for the coordinates to be plotted.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Nothing is returned.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.io.plotting.draw_2d_scatter_plots">
+<span class="sig-prename descclassname"><span class="pre">perpl.io.plotting.</span></span><span class="sig-name descname"><span class="pre">draw_2d_scatter_plots</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyzcolour_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/io/plotting.html#draw_2d_scatter_plots"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.io.plotting.draw_2d_scatter_plots" title="Link to this definition">¶</a></dt>
+<dd><p>Farms out the scatter plots that need to be plotted to the
+draw_2d_scatter_plot function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xyz_values</strong> (<em>numpy array</em>) – A numpy array of the localizations.</p></li>
+<li><p><strong>dims</strong> (<em>int</em>) – The dimensions of the data ie 2D or 3D.</p></li>
+<li><p><strong>info</strong> (<em>dict</em>) – A python dictionary containing a collection of useful parameters.</p></li>
+<li><p><strong>zoom</strong> (<em>int</em>) – A zoom of the central region can be created to this zoom factor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Nothing is returned.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.io.plotting.estimate_rpd_churchman_1d">
+<span class="sig-prename descclassname"><span class="pre">perpl.io.plotting.</span></span><span class="sig-name descname"><span class="pre">estimate_rpd_churchman_1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_distances</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calculation_points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">combined_precision</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/io/plotting.html#estimate_rpd_churchman_1d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.io.plotting.estimate_rpd_churchman_1d" title="Link to this definition">¶</a></dt>
+<dd><p>Estimates a smooth 1D RPD (relative position distribution) from a set
+of distances, using Churchman’s distribution for distances between
+localisations in two clusters as a smoothing kernel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_distances</strong> (<em>numpy array</em>) – The distances between localisations in the input data.</p></li>
+<li><p><strong>calculation_points</strong> (<em>numpy array</em>) – The distances at which the RPD will be estimated.</p></li>
+<li><p><strong>combined_precision</strong> (<em>float</em>) – The width (sigma) of the smoothing function. In later version,
+this may be an array with one values per input distance.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The 1D RPD estimated at the calculation points.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>estimated_rpd (numpy array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.io.plotting.estimate_rpd_churchman_2d">
+<span class="sig-prename descclassname"><span class="pre">perpl.io.plotting.</span></span><span class="sig-name descname"><span class="pre">estimate_rpd_churchman_2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_distances</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calculation_points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">combined_precision</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/io/plotting.html#estimate_rpd_churchman_2d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.io.plotting.estimate_rpd_churchman_2d" title="Link to this definition">¶</a></dt>
+<dd><p>Estimates a smooth distance distribuion from a 2D RPD
+(relative position distribution) from a set of distances, using
+Churchman’s distribution for distances between localisations in
+two clusters as a smoothing kernel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_distances</strong> (<em>numpy array</em>) – The distances between localisations in the input data.</p></li>
+<li><p><strong>calculation_points</strong> (<em>numpy array</em>) – The distances at which the RPD will be estimated.</p></li>
+<li><p><strong>combined_precision</strong> (<em>float</em>) – The width (sigma) of the smoothing function. In later versions,
+this may be an array with one values per input distance.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The distance distribution for the 2D RPD estimated at the
+calculation points.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>estimated_rpd (numpy array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.io.plotting.find_thresholds">
+<span class="sig-prename descclassname"><span class="pre">perpl.io.plotting.</span></span><span class="sig-name descname"><span class="pre">find_thresholds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/io/plotting.html#find_thresholds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.io.plotting.find_thresholds" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates the thresholds for the zoom into the scatter plots and applies
+them to mask of the input array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arr</strong> (<em>numpy array</em>) – A numpy array of one of the co-ordinates for the locationation.</p></li>
+<li><p><strong>zoom</strong> (<em>int</em>) – A zoom of the central region can be created to this zoom factor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A numpy mask array of one of the</dt><dd><p>thresholded co-ordinates for the locationation.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>arr (numpy.ma.core.MaskedArray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.io.plotting.plot_histogram">
+<span class="sig-prename descclassname"><span class="pre">perpl.io.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_histogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_description</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filterdist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">standardise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/io/plotting.html#plot_histogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.io.plotting.plot_histogram" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a histogram and saves it into the .png file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_values</strong> (<em>numpy array</em>) – A numpy array of the distance between localisations.</p></li>
+<li><p><strong>data_description</strong> (<em>str</em>) – A description of the distance eg xy or xz that
+is added to the name of the .png file.</p></li>
+<li><p><strong>filterdist</strong> (<em>int</em>) – The distance within which relative positions were calculated.</p></li>
+<li><p><strong>info</strong> (<em>dict</em>) – A python dictionary containing a collection of useful parameters
+such as the filenames and paths.</p></li>
+<li><p><strong>standardise</strong> (<em>string</em>) – <p>None, ‘2d’ or ‘3d’
+Standardisation of distance distributions:</p>
+<blockquote>
+<div><p>’2d’: divides histogram bins by distance
+‘3d’: divides histogram bins by distance ^ 2</p>
+</div></blockquote>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A numpy array of the normalised probability</dt><dd><p>density values for each bin.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>histogram_values (numpy array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.io.plotting.plot_histogram_with_curves">
+<span class="sig-prename descclassname"><span class="pre">perpl.io.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_histogram_with_curves</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bin_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xy_histogram</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symmetries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">curve_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/io/plotting.html#plot_histogram_with_curves"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.io.plotting.plot_histogram_with_curves" title="Link to this definition">¶</a></dt>
+<dd><p>Plots a histogram of seprations with curves that show how well various models
+fit this histogram.
+:param bin_values: An array of the histogram bin boundaries.
+:param xy_histogram: An array of floats giving the separations.
+:param symmetries: Array of the range of rotational symmerties the model tests.
+:param x_values: An array of the points on the x axesthat the curve are on the plot.
+:param curve_values: A 2d array of the curves for each symmertry.
+:param info: A python dictionary containing a collection of useful</p>
+<blockquote>
+<div><p>parameters such as the filenames and paths.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nothing</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.io.plotting.plot_histograms">
+<span class="sig-prename descclassname"><span class="pre">perpl.io.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_histograms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/io/plotting.html#plot_histograms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.io.plotting.plot_histograms" title="Link to this definition">¶</a></dt>
+<dd><p>Farms out the histograms that need to be plotted to the plot_histogram
+function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>d_values</strong> (<em>numpy array</em>) – A numpy array of the localizations and distance
+between localisations.</p></li>
+<li><p><strong>dims</strong> (<em>int</em>) – The dimensions of the data ie 2D or 3D.</p></li>
+<li><p><strong>filterdist</strong> (<em>int</em>) – The distance within which relative positions were calculated.</p></li>
+<li><p><strong>info</strong> (<em>dict</em>) – A python dictionary containing a collection of useful parameters
+such as the filenames and paths.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Nothing is returned.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.io.plotting.plot_new_histogram">
+<span class="sig-prename descclassname"><span class="pre">perpl.io.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_new_histogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/io/plotting.html#plot_new_histogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.io.plotting.plot_new_histogram" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a histogram with a smooth curve fitted to it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data_values</strong> (<em>numpy array</em>) – A numpy array of the distance between localisations.</p>
+</dd>
+</dl>
+<p>Returns: No return value</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.io.plotting.plot_rot_2d_geometry">
+<span class="sig-prename descclassname"><span class="pre">perpl.io.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_rot_2d_geometry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sym</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diameter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/io/plotting.html#plot_rot_2d_geometry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.io.plotting.plot_rot_2d_geometry" title="Link to this definition">¶</a></dt>
+<dd><p>Plots the rotational geometry used in a model.
+:param sym: Integer that represents the rotational symetry of the model.
+:param diamter: Integer that represents the diamter of the model
+:param info: A python dictionary containing a collection of useful</p>
+<blockquote>
+<div><p>parameters such as the filenames and paths.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nothing</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.io.plotting.save_tiff_histogram_3d">
+<span class="sig-prename descclassname"><span class="pre">perpl.io.plotting.</span></span><span class="sig-name descname"><span class="pre">save_tiff_histogram_3d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rel_pos_xyz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filterdist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/io/plotting.html#save_tiff_histogram_3d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.io.plotting.save_tiff_histogram_3d" title="Link to this definition">¶</a></dt>
+<dd><p>Generates a 3D histogram of relative positions among localisations,
+in bins of 1 mm^3. Then saves as a 32-bit multipage tiff file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rel_pos_xyz</strong> (<em>numpy array</em>) – At least three columns, where the first three columns are
+X, Y, Z coordinates of relative positions (nm).</p></li>
+<li><p><strong>filterdist</strong> (<em>int</em>) – The maximum distance (nm) in X, Y and Z upto which the histogram
+should be generated.</p></li>
+<li><p><strong>smoothing</strong> (<em>float</em>) – Kernel size (SD, in nm) for isotropic 3D Gaussian smoothing
+of the histogram.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Nothing</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Saves:</dt><dd><p>temp.tif in the working directory, containing the 3D histogram.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-perpl.io.reports">
+<span id="perpl-io-reports-module"></span><h2>perpl.io.reports module<a class="headerlink" href="#module-perpl.io.reports" title="Link to this heading">¶</a></h2>
+<p>Created on Tue Oct  8 15:11:32 2019</p>
+<p>Functions to produce html reports.</p>
+<p>Alistair Curd
+University of Leeds
+2 October 2019</p>
+<p>Software Engineering practices applied</p>
+<p>Joanna Leng (an EPSRC funded Research Software Engineering Fellow (EP/R025819/1)
+University of Leeds
+October 2019</p>
+<p>—
+Copyright 2019 Peckham Lab</p>
+<p>Licensed under the Apache License, Version 2.0 (the “License”); you may not use
+this file except in compliance with the License. You may obtain a copy of the
+License at
+<a class="reference external" href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a></p>
+<p>Unless required by applicable law or agreed to in writing, software distributed
+under the License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR
+CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.io.reports.write_html_report_end">
+<span class="sig-prename descclassname"><span class="pre">perpl.io.reports.</span></span><span class="sig-name descname"><span class="pre">write_html_report_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fout</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/io/reports.html#write_html_report_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.io.reports.write_html_report_end" title="Link to this definition">¶</a></dt>
+<dd><p>Ends and closes an html report which is generic for the PERPL
+scripts.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.io.reports.write_html_report_start">
+<span class="sig-prename descclassname"><span class="pre">perpl.io.reports.</span></span><span class="sig-name descname"><span class="pre">write_html_report_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/io/reports.html#write_html_report_start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.io.reports.write_html_report_start" title="Link to this definition">¶</a></dt>
+<dd><p>Creates the start of an html report which is generic for the PERPL
+scripts. It does not create the file name or open the file.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.io.reports.write_rel_pos_html_report">
+<span class="sig-prename descclassname"><span class="pre">perpl.io.reports.</span></span><span class="sig-name descname"><span class="pre">write_rel_pos_html_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">info</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/io/reports.html#write_rel_pos_html_report"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.io.reports.write_rel_pos_html_report" title="Link to this definition">¶</a></dt>
+<dd><p>Creates and saves a html report. Contains images of graphs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dims</strong> (<em>int</em>) – The dimensions of the data ie 2D or 3D.</p></li>
+<li><p><strong>info</strong> (<em>dict</em>) – A python dictionary containing a collection of useful parameters
+such as the filenames and paths.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Nothing is returned.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.io.reports.write_rot_2d_html_report">
+<span class="sig-prename descclassname"><span class="pre">perpl.io.reports.</span></span><span class="sig-name descname"><span class="pre">write_rot_2d_html_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symmetries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aiccs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/io/reports.html#write_rot_2d_html_report"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.io.reports.write_rot_2d_html_report" title="Link to this definition">¶</a></dt>
+<dd><p>Creates and saves a html report. Contains images of graphs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dims</strong> (<em>int</em>) – The dimensions of the data ie 2D or 3D.</p></li>
+<li><p><strong>info</strong> (<em>dict</em>) – A python dictionary containing a collection of useful
+parameters such as the filenames and paths.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Nothing is returned.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-perpl.io.utils">
+<span id="perpl-io-utils-module"></span><h2>perpl.io.utils module<a class="headerlink" href="#module-perpl.io.utils" title="Link to this heading">¶</a></h2>
+<p>utils.py</p>
+<p>Created on Tue Sep 10 13:34:20 2019</p>
+<p>Authored by Joanna Leng who works at the University of Leeds who is funded by
+EPSRC as a Research Software Engineering Fellow (EP/R025819/1).</p>
+<p>—
+Copyright 2019 Peckham Lab</p>
+<p>Licensed under the Apache License, Version 2.0 (the “License”); you may not use
+this file except in compliance with the License. You may obtain a copy of the
+License at
+<a class="reference external" href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a></p>
+<p>Unless required by applicable law or agreed to in writing, software distributed
+under the License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR
+CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.io.utils.find_exponent">
+<span class="sig-prename descclassname"><span class="pre">perpl.io.utils.</span></span><span class="sig-name descname"><span class="pre">find_exponent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_string</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/io/utils.html#find_exponent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.io.utils.find_exponent" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the number of significant digits in a number. This takes into account
+strings formatted in 1.23e+3 format and even strings such as 123.450</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.io.utils.find_hostname_and_ip">
+<span class="sig-prename descclassname"><span class="pre">perpl.io.utils.</span></span><span class="sig-name descname"><span class="pre">find_hostname_and_ip</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/io/utils.html#find_hostname_and_ip"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.io.utils.find_hostname_and_ip" title="Link to this definition">¶</a></dt>
+<dd><p>Finds the hostname and IP address to go in the log file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>arguments</strong> (<em>No</em>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Name of the host machine executing the script.
+ip_address (str): IP adress of the machine that runs the script.
+operating_system (str): Operating system of the machine that runs the script.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>host (str)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.io.utils.plus_and_minus">
+<span class="sig-prename descclassname"><span class="pre">perpl.io.utils.</span></span><span class="sig-name descname"><span class="pre">plus_and_minus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uncertainty</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/io/utils.html#plus_and_minus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.io.utils.plus_and_minus" title="Link to this definition">¶</a></dt>
+<dd><p>Takes a value and its uncertainty and provides string values for each
+which can be used in the format ‘value +/- uncertainty’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> – A float the value that has an error value.</p></li>
+<li><p><strong>uncertainty</strong> – A float the uncetainty of the value which is generally
+smaller than the value.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A string with the value given to the number of relevant places</dt><dd><p>as determined by the uncertainty.</p>
+</dd>
+</dl>
+<p>uncertainty_str: A string with the uncertainty given to 2 decimal places.</p>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>value_str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.io.utils.primary_filename_and_path_setup">
+<span class="sig-prename descclassname"><span class="pre">perpl.io.utils.</span></span><span class="sig-name descname"><span class="pre">primary_filename_and_path_setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">info</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/io/utils.html#primary_filename_and_path_setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.io.utils.primary_filename_and_path_setup" title="Link to this definition">¶</a></dt>
+<dd><p>Takes information from the python dictionary, info, on the location of the
+input data file to create the data strings nescessary to create the output
+path and file names for images of plots, the html report and output data
+files. The filename and path is different for relative_positions.py as it
+reads experimental data as a primary source to models which read the output
+of relative_positions.py. This function is for relative_positions.py.</p>
+<p>Args:
+info (dict):</p>
+<blockquote>
+<div><p>A python dictionary containing a collection of useful
+parameters such as the filenames and paths. New values written
+to the dictionary do not need to be explicitly returned by
+the function as they can be seen in info in other functions.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.io.utils.secondary_filename_and_path_setup">
+<span class="sig-prename descclassname"><span class="pre">perpl.io.utils.</span></span><span class="sig-name descname"><span class="pre">secondary_filename_and_path_setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">info</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/io/utils.html#secondary_filename_and_path_setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.io.utils.secondary_filename_and_path_setup" title="Link to this definition">¶</a></dt>
+<dd><p>Takes information from the python dictionary, info, on the location of the
+input data file to create the data strings nescessary to create the output
+path and file names for images of plots, the html report and output data
+files. The filename and path is different for relative_positions.py as it
+reads experimental data as a primary source to models which read the output
+of relative_positions.py. This function is for model scripts.</p>
+<p>Args:
+info (dict):</p>
+<blockquote>
+<div><p>A python dictionary containing a collection of useful
+parameters such as the filenames and paths. New values written
+to the dictionary do not need to be explicitly returned by
+the function as they can be seen in info in other functions.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.io.utils.secondary_read_data_in">
+<span class="sig-prename descclassname"><span class="pre">perpl.io.utils.</span></span><span class="sig-name descname"><span class="pre">secondary_read_data_in</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">info</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/io/utils.html#secondary_read_data_in"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.io.utils.secondary_read_data_in" title="Link to this definition">¶</a></dt>
+<dd><dl>
+<dt>Reads data from the input file thats filename is provided as an argument</dt><dd><p>to this program or from the command line while this program executes.
+This reader is for a model and so only reads data that is ouput from
+relative_positions.py.
+Also extracts unful substrings from the input filename that will be used
+to outpur results files and puts them in the
+info dictionary. These are:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>results_dir (str): All output files are saved in a directory at the same</dt><dd><p>level in the directory structure as the input data and with the
+name that consists of the input file and a date stamp.</p>
+</dd>
+</dl>
+<p>in_file_no_path (str): The input file name with no path.
+filename_without_extension (str): Input file name wihtout the path and</p>
+<blockquote>
+<div><p>file extension. It is used to create a unique name of the output
+data file and directory.</p>
+</div></blockquote>
+</div></blockquote>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>info</strong> (<em>dict</em>) – A python dictionary containing a collection of useful parameters
+such as the filenames and paths.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A numpy array of the x, y (and z) localisations.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xyz_values (numpy array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-perpl.io">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-perpl.io" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">PERPL</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Alistair Curd.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/perpl.io.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
