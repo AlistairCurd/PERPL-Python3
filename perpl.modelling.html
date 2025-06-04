@@ -14,6 +14,7 @@
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="perpl.io package" href="perpl.io.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -174,8 +175,525 @@ separation_values.</p>
 </dd></dl>
 
 </section>
-<section id="perpl-modelling-centriole-analysis-module">
-<h2>perpl.modelling.centriole_analysis module<a class="headerlink" href="#perpl-modelling-centriole-analysis-module" title="Link to this heading">¶</a></h2>
+<section id="module-perpl.modelling.centriole_analysis">
+<span id="perpl-modelling-centriole-analysis-module"></span><h2>perpl.modelling.centriole_analysis module<a class="headerlink" href="#module-perpl.modelling.centriole_analysis" title="Link to this heading">¶</a></h2>
+<p>centriole_analysis.py</p>
+<p>Created on Tue Sep 25 12:00:00 2019</p>
+<p>Functions for analysing segmented top-view centriolar protein localisations.</p>
+<p>Alistair Curd
+University of Leeds
+16 September 2019</p>
+<p>—
+Copyright 2019 Peckham Lab</p>
+<p>Licensed under the Apache License, Version 2.0 (the “License”); you may not use
+this file except in compliance with the License. You may obtain a copy of the
+License at
+<a class="reference external" href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a></p>
+<p>Unless required by applicable law or agreed to in writing, software distributed
+under the License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR
+CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.modelling.centriole_analysis.centriole_model_xy_distances_9fold_variable_vertices">
+<span class="sig-prename descclassname"><span class="pre">perpl.modelling.centriole_analysis.</span></span><span class="sig-name descname"><span class="pre">centriole_model_xy_distances_9fold_variable_vertices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">separation_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diameter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertssd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertamp1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertamp2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertamp3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertamp4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replocssd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replocsamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">substructsd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">substructamp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/modelling/centriole_analysis.html#centriole_model_xy_distances_9fold_variable_vertices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.modelling.centriole_analysis.centriole_model_xy_distances_9fold_variable_vertices" title="Link to this definition">¶</a></dt>
+<dd><p>Parametric model for XY distances between localisations of a centriolar
+protein.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>separation_values</strong> (<em>numpy array</em>) – Distances at which density values of the model will be obtained.</p></li>
+<li><p><strong>diameter</strong> (<em>float</em>) – Diameter of the circle containing the vertices of the polygon.</p></li>
+<li><p><strong>vertssd</strong> (<em>float</em>) – Broadening of the peaks located at
+distances between the vertices.</p></li>
+<li><p><strong>vertamp1</strong> (<em>float</em>) – Amplitudes of the contributions of the different inter-vertex
+distances.</p></li>
+<li><p><strong>vertamp2</strong> (<em>float</em>) – Amplitudes of the contributions of the different inter-vertex
+distances.</p></li>
+<li><p><strong>vertamp3</strong> (<em>float</em>) – Amplitudes of the contributions of the different inter-vertex
+distances.</p></li>
+<li><p><strong>vertamp4</strong> (<em>float</em>) – Amplitudes of the contributions of the different inter-vertex
+distances.</p></li>
+<li><p><strong>replocssd</strong> (<em>float</em>) – Spread representing localisation precision for repeated
+localisations of the same fluorescent molecule.</p></li>
+<li><p><strong>replocsamp</strong> (<em>float</em>) – Amplitude of the contribution of repeated localisations
+of the same fluorescent molecule.</p></li>
+<li><p><strong>substructsd</strong> (<em>float</em>) – Spread of a contribution resulting from unresolvable
+substructure, or mislocalisations resulting from
+a combination of simultaneous nearby emitters.</p></li>
+<li><p><strong>substructamp</strong> (<em>float</em>) – Amplitude of the contribution of unresolvable
+substructure, or mislocalisations resulting from
+a combination of simultaneous nearby emitters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The relative position density given by the model
+at distances r.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>rpd (numpy array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.modelling.centriole_analysis.centriole_model_xy_distances_9fold_variable_vertices_internal_bg">
+<span class="sig-prename descclassname"><span class="pre">perpl.modelling.centriole_analysis.</span></span><span class="sig-name descname"><span class="pre">centriole_model_xy_distances_9fold_variable_vertices_internal_bg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">separation_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diameter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertssd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertamp1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertamp2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertamp3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertamp4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replocssd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replocsamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">substructsd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">substructamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bg_dia</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bg_amp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/modelling/centriole_analysis.html#centriole_model_xy_distances_9fold_variable_vertices_internal_bg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.modelling.centriole_analysis.centriole_model_xy_distances_9fold_variable_vertices_internal_bg" title="Link to this definition">¶</a></dt>
+<dd><p>Parametric model for XY distances between localisations of a centriolar
+protein. Background is modelled as resulting from a disk with isotropic
+localisations (this provides a reasonable fit to the distance
+histograms for the less-ordered centriole images).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>separation_values</strong> (<em>numpy array</em>) – Distances at which density values of the model will be obtained.</p></li>
+<li><p><strong>diameter</strong> (<em>float</em>) – Diameter of the circle containing the vertices of the polygon.</p></li>
+<li><p><strong>vertssd</strong> (<em>float</em>) – Broadening of the peaks located at
+distances between the vertices.</p></li>
+<li><p><strong>vertamp1</strong> (<em>float</em>) – Amplitudes of the contributions of the different inter-vertex
+distances.</p></li>
+<li><p><strong>vertamp2</strong> (<em>float</em>) – Amplitudes of the contributions of the different inter-vertex
+distances.</p></li>
+<li><p><strong>vertamp3</strong> (<em>float</em>) – Amplitudes of the contributions of the different inter-vertex
+distances.</p></li>
+<li><p><strong>vertamp4</strong> (<em>float</em>) – Amplitudes of the contributions of the different inter-vertex
+distances.</p></li>
+<li><p><strong>replocssd</strong> (<em>float</em>) – Spread representing localisation precision for repeated
+localisations of the same fluorescent molecule.</p></li>
+<li><p><strong>replocsamp</strong> (<em>float</em>) – Amplitude of the contribution of repeated localisations
+of the same fluorescent molecule.</p></li>
+<li><p><strong>substructsd</strong> (<em>float</em>) – Spread of a contribution resulting from unresolvable
+substructure, or mislocalisations resulting from
+a combination of simultaneous nearby emitters.</p></li>
+<li><p><strong>substructamp</strong> (<em>float</em>) – Amplitude of the contribution of unresolvable
+substructure, or mislocalisations resulting from
+a combination of simultaneous nearby emitters.</p></li>
+<li><p><strong>bg_dia</strong> (<em>float</em>) – Diameter of the disk containing the modelled background
+localisations.</p></li>
+<li><p><strong>bg_amp</strong> (<em>float</em>) – Amplitude of the background component.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The relative position density given by the model
+at distances r.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>rpd (numpy array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.modelling.centriole_analysis.centriole_model_xy_distances_9fold_variable_vertices_internal_bg_vectorargs">
+<span class="sig-prename descclassname"><span class="pre">perpl.modelling.centriole_analysis.</span></span><span class="sig-name descname"><span class="pre">centriole_model_xy_distances_9fold_variable_vertices_internal_bg_vectorargs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_vector</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/modelling/centriole_analysis.html#centriole_model_xy_distances_9fold_variable_vertices_internal_bg_vectorargs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.modelling.centriole_analysis.centriole_model_xy_distances_9fold_variable_vertices_internal_bg_vectorargs" title="Link to this definition">¶</a></dt>
+<dd><p>Function to calculate the values given by
+centriole_model_xy_distances_9fold_variable_vertices, but using a
+vector input for the parameters, so that the numdifftools package can be
+used to calculate partial derivatives for correct error propagation in the
+model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input_vector</strong> (<em>list</em><em> or </em><em>numpy array</em>) – <dl>
+<dt>A concatenation of:</dt><dd><p>1. A distance at which density values of the model will be
+obtained (numpy array)</p>
+<p>2. The parameters used by
+centriole_model_xy_distances_9fold_variable_vertices</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The relative position density given by the model at the input
+distances (called separation_values_1d).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>rpd (numpy array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.modelling.centriole_analysis.centriole_model_xy_distances_9fold_variable_vertices_vectorargs">
+<span class="sig-prename descclassname"><span class="pre">perpl.modelling.centriole_analysis.</span></span><span class="sig-name descname"><span class="pre">centriole_model_xy_distances_9fold_variable_vertices_vectorargs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_vector</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/modelling/centriole_analysis.html#centriole_model_xy_distances_9fold_variable_vertices_vectorargs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.modelling.centriole_analysis.centriole_model_xy_distances_9fold_variable_vertices_vectorargs" title="Link to this definition">¶</a></dt>
+<dd><p>Function to calculate the values given by
+centriole_model_xy_distances_9fold_variable_vertices, but using a
+vector input for the parameters, so that the numdifftools package can be
+used to calculate partial derivatives for correct error propagation in the
+model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input_vector</strong> (<em>list</em><em> or </em><em>numpy array</em>) – <dl>
+<dt>A concatenation of:</dt><dd><p>1. A distance at which density values of the model will be
+obtained (numpy array)</p>
+<p>2. The parameters used by
+centriole_model_xy_distances_9fold_variable_vertices</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The relative position density given by the model at the input
+distances (called separation_values_1d).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>rpd (numpy array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.modelling.centriole_analysis.create_default_fitting_params_dicts">
+<span class="sig-prename descclassname"><span class="pre">perpl.modelling.centriole_analysis.</span></span><span class="sig-name descname"><span class="pre">create_default_fitting_params_dicts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/modelling/centriole_analysis.html#create_default_fitting_params_dicts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.modelling.centriole_analysis.create_default_fitting_params_dicts" title="Link to this definition">¶</a></dt>
+<dd><p>Create lists for initial guesses and bounds for parameters during
+fitting. Sets the defaults for scipy.optimise.curve_fit</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><p>Dictionary of default lower bound options for parameter values.
+upper_bound_dict (dict):</p>
+<blockquote>
+<div><p>Dictionary of default upper bound options for parameter values.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>initial_params_dict (dict):</dt><dd><p>Dictionary of default initial parameter value options.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>lower_bound_dict (dict)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.modelling.centriole_analysis.get_input_data">
+<span class="sig-prename descclassname"><span class="pre">perpl.modelling.centriole_analysis.</span></span><span class="sig-name descname"><span class="pre">get_input_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">infile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'S:/Peckham/Bioimaging2/Alistair/Centriole-EPFL/forAlistair_310718/Cep152_A647_Top.mat'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/modelling/centriole_analysis.html#get_input_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.modelling.centriole_analysis.get_input_data" title="Link to this definition">¶</a></dt>
+<dd><p>Import and extract a list of dSTORM data on centrioles
+from Christian Sieben’s MATLAB file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>infile</strong> (<em>string</em>) – The path to the data to be extracted.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of arrays of dSTORM localisations, one element per
+centriole.
+For each centriole, columns [0] and [1] of the array
+are (x, y) for each localisation; column [3] is estimated
+localisation precision in nm.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>simul (list of numpy arrays)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.modelling.centriole_analysis.get_xy_distances">
+<span class="sig-prename descclassname"><span class="pre">perpl.modelling.centriole_analysis.</span></span><span class="sig-name descname"><span class="pre">get_xy_distances</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">localisations_per_centriole</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc_precision_filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/modelling/centriole_analysis.html#get_xy_distances"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.modelling.centriole_analysis.get_xy_distances" title="Link to this definition">¶</a></dt>
+<dd><p>Get the XY between localisations in each centriole,
+filtered by localisation precision.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>centriole_localisations</strong> (<em>list</em><em> of </em><em>numpy arrays</em>) – A list of arrays of dSTORM localisations, one element per
+centriole.
+For each centriole, columns [0] and [1] of the array
+are (x, y) for each localisation; column [3] is estimated
+localisation precision in nm.</p></li>
+<li><p><strong>loc_precision_filter</strong> (<em>float</em>) – Upper limit on estimated localisation precision. Localisations
+with an estimate above this value will not be included.</p></li>
+<li><p><strong>filter_distance</strong> (<em>float</em>) – Required by relative_positions. Set to 1000 by default to
+comfortably include all distances in each centriole.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List containing the XY-distances found within each
+centriole, one centriole per list item.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>distances_xy_per_centriole (list of numpy arrays)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.modelling.centriole_analysis.main">
+<span class="sig-prename descclassname"><span class="pre">perpl.modelling.centriole_analysis.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/modelling/centriole_analysis.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.modelling.centriole_analysis.main" title="Link to this definition">¶</a></dt>
+<dd><p>Do stuff.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.modelling.centriole_analysis.make_distance_histogram">
+<span class="sig-prename descclassname"><span class="pre">perpl.modelling.centriole_analysis.</span></span><span class="sig-name descname"><span class="pre">make_distance_histogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distance_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/modelling/centriole_analysis.html#make_distance_histogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.modelling.centriole_analysis.make_distance_histogram" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate distance histogram bin values, in bins of 1 nm,
+upto a maximum distance. Bin values will be normalised so that
+their mean is 1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>distance_values</strong> (<em>numpy array</em>) – Distances between localisations in a centriole</p></li>
+<li><p><strong>max_distance</strong> (<em>float</em>) – Upper limit on distnaces included in the histogram.</p></li>
+<li><p><strong>normalise</strong> (<em>bool</em>) – Decide whether to normalise the histograms so that the mean
+bin value is 1 (good for scipy’s curve_fit on individual
+centriole data).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>Distance histogram bin values, normalised so that the mean is 1.
+bin_edges (numpy array):</p>
+<blockquote>
+<div><p>Distance histogram bin edge locations.</p>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>hist (numpy array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.modelling.centriole_analysis.make_distance_histograms_per_centriole">
+<span class="sig-prename descclassname"><span class="pre">perpl.modelling.centriole_analysis.</span></span><span class="sig-name descname"><span class="pre">make_distance_histograms_per_centriole</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distances_per_centriole</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/modelling/centriole_analysis.html#make_distance_histograms_per_centriole"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.modelling.centriole_analysis.make_distance_histograms_per_centriole" title="Link to this definition">¶</a></dt>
+<dd><p>Make a distance histogram for each centriole.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>per_centriole</strong> (<em>distances</em>) – List containing the XY-distances found within each
+centriole, one centriole per list item.</p></li>
+<li><p><strong>max_distance</strong> (<em>float</em>) – Upper limit on distaces included in the histograms.</p></li>
+<li><p><strong>normalise</strong> (<em>bool</em>) – Decide whether to normalise the histograms so that the mean
+bin value is 1 (good for scipy’s curve_fit on individual
+centriole data).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of distance histogram bin values; each row contains
+the distance histogram for one centriole.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dist_hist_list (2D numpy array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.modelling.centriole_analysis.make_fit_results_table_variable_vertices_model_9fold_no_bg">
+<span class="sig-prename descclassname"><span class="pre">perpl.modelling.centriole_analysis.</span></span><span class="sig-name descname"><span class="pre">make_fit_results_table_variable_vertices_model_9fold_no_bg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distance_histograms_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_with_info</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/modelling/centriole_analysis.html#make_fit_results_table_variable_vertices_model_9fold_no_bg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.modelling.centriole_analysis.make_fit_results_table_variable_vertices_model_9fold_no_bg" title="Link to this definition">¶</a></dt>
+<dd><p>Make tables of fitted parameter estimates and uncertainties, and
+their ratios.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>distance_histograms_list</strong> (<em>list</em><em> of </em><em>numpy arrays</em><em> (</em><em>e.g. 2D numpy array</em><em>)</em>) – List with each element being the distance histogram for one
+centriole image. We assume the distance histograms to have the
+same length, and the bin centres to be at distances of
+(integer + 0.5) nm</p></li>
+<li><p><strong>model_with_info</strong> (<em>ModelWithFitSettings object</em>) – The model to be fitted, with initial parameter guesses and
+bounds on allowable parameter values.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Dataframe containing the index and fitted parameter</dt><dd><p>estimates for each distance histogram in distance_histograms_list.</p>
+</dd>
+<dt>error_on_params_df (pandas dataframe):</dt><dd><p>Dataframe containing the index and errors on the fitted
+parameters for each distance histogram in distance_histograms_list.</p>
+</dd>
+<dt>ratios (pandas dataframe):</dt><dd><p>Dataframe containing the index and error/estimate ratios for
+each parameter for each distance histogram in
+distance_histograms_list.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>estimated_params_df (pandas dataframe)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.modelling.centriole_analysis.plot_95_ci">
+<span class="sig-prename descclassname"><span class="pre">perpl.modelling.centriole_analysis.</span></span><span class="sig-name descname"><span class="pre">plot_95_ci</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_optimised</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_covar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_input_model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/modelling/centriole_analysis.html#plot_95_ci"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.modelling.centriole_analysis.plot_95_ci" title="Link to this definition">¶</a></dt>
+<dd><p>Plot 95% confidence interval for a fitted model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>axes</strong> – matplotlib Axes on which to plot the CI.</p></li>
+<li><p><strong>x_values</strong> (<em>numpy array</em>) – x-values at which to calculate and plot the CI.</p></li>
+<li><p><strong>model</strong> (<em>function name</em>) – The parametric model optimised to fit experimental data.</p></li>
+<li><p><strong>params_optimised</strong> (<em>numpy array</em>) – The optimised parameters for the fitted model.</p></li>
+<li><p><strong>params_covar</strong> (<em>numpy array</em>) – The covariance matrix for the fitted parameters.</p></li>
+<li><p><strong>vector_input_model</strong> (<em>function name</em>) – The version of the parametric model with input required to be a
+vector of the parameter values, for differentiation and error
+propagation with numdifftools.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Standard deviation of the model estimate at each x_value.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>stdev (numpy array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.modelling.centriole_analysis.plot_95_ci_internal_bg">
+<span class="sig-prename descclassname"><span class="pre">perpl.modelling.centriole_analysis.</span></span><span class="sig-name descname"><span class="pre">plot_95_ci_internal_bg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_optimised</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_covar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bg_dia</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_input_model_below_bg_dia</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_input_model_above_bg_dia</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/modelling/centriole_analysis.html#plot_95_ci_internal_bg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.modelling.centriole_analysis.plot_95_ci_internal_bg" title="Link to this definition">¶</a></dt>
+<dd><p>Plot 95% confidence interval for a fitted model with internal
+background. This requires splitting into below and above the diameter
+of the background disk</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>axes</strong> – matplotlib Axes on which to plot the CI.</p></li>
+<li><p><strong>x_values</strong> (<em>numpy array</em>) – x-values at which to calculate and plot the CI.</p></li>
+<li><p><strong>model</strong> (<em>function name</em>) – The parametric model optimised to fit experimental data.</p></li>
+<li><p><strong>params_optimised</strong> (<em>numpy array</em>) – The optimised parameters for the fitted model.</p></li>
+<li><p><strong>params_covar</strong> (<em>numpy array</em>) – The covariance matrix for the fitted parameters.</p></li>
+<li><p><strong>bg_dia</strong> (<em>float</em>) – The diameter of the background disk of localisations.</p></li>
+<li><p><strong>vector_input_model_below_bg_dia</strong> (<em>function name</em>) – The version of the parametric model for separations less than
+the diameter of the background disk, with input required to be a
+vector of the parameter values, for differentiation and error
+propagation with numdifftools.</p></li>
+<li><p><strong>vector_input_model_above_bg_dia</strong> (<em>function name</em>) – The version of the parametric model for separations greater than
+the diameter of the background disk, with input required to be a
+vector of the parameter values, for differentiation and error
+propagation with numdifftools.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Standard deviation of the model estimate at each x_value.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>stdev (numpy array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.modelling.centriole_analysis.plot_distance_histogram">
+<span class="sig-prename descclassname"><span class="pre">perpl.modelling.centriole_analysis.</span></span><span class="sig-name descname"><span class="pre">plot_distance_histogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">histogram_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bin_edges</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/modelling/centriole_analysis.html#plot_distance_histogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.modelling.centriole_analysis.plot_distance_histogram" title="Link to this definition">¶</a></dt>
+<dd><p>Plot distance histogram.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>histogram_values</strong> (<em>numpy array</em>) – Histogram bin values.</p></li>
+<li><p><strong>bin_edges</strong> (<em>numpy array</em>) – Histogram bin edge locations.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Matplotlib Axes instance containing the histogram plot.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>axes</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.modelling.centriole_analysis.reconstruct_centrioles">
+<span class="sig-prename descclassname"><span class="pre">perpl.modelling.centriole_analysis.</span></span><span class="sig-name descname"><span class="pre">reconstruct_centrioles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">centriole_localisation_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binsize_nm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing_nm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'inferno'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/modelling/centriole_analysis.html#reconstruct_centrioles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.modelling.centriole_analysis.reconstruct_centrioles" title="Link to this definition">¶</a></dt>
+<dd><p>Produces centriole reconstructions from localisation data and plots
+if desired.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>centriole_localisation_data</strong> (<em>list</em><em> of </em><em>numpy arrays</em>) – A list of arrays of dSTORM localisations, one element per
+centriole.
+For each centriole, columns [0] and [1] of the array
+are (x, y) for each localisation.</p></li>
+<li><p><strong>index</strong> (<em>list</em>) – If desired, the inidices of selected centrioles in the list.
+If not specified, a reconstruction is produced for all centrioles.</p></li>
+<li><p><strong>plot</strong> (<em>Boolean</em>) – Choose whether plots will be produced of each centriole.</p></li>
+<li><p><strong>binsize_nm</strong> (<em>float</em>) – The pixel size in the reconstructions, in nm.</p></li>
+<li><p><strong>smoothing_nm</strong> (<em>float</em>) – The kernal for Gaussian smoothing of the histogram, in nm.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>Indices of the chosen centrioles for reconstruction.
+list_of_reconstructions (list of 2D numpy arrays):</p>
+<blockquote>
+<div><p>Reconstructions of the centrioles, one centriole per list
+element.</p>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>indices (list of integers)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.modelling.centriole_analysis.select_centrioles_by_error_ratio_threshold_on_peaks">
+<span class="sig-prename descclassname"><span class="pre">perpl.modelling.centriole_analysis.</span></span><span class="sig-name descname"><span class="pre">select_centrioles_by_error_ratio_threshold_on_peaks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ratios_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ratio_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_peaks_required_below_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/modelling/centriole_analysis.html#select_centrioles_by_error_ratio_threshold_on_peaks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.modelling.centriole_analysis.select_centrioles_by_error_ratio_threshold_on_peaks" title="Link to this definition">¶</a></dt>
+<dd><p>Choose centrioles based on the number of peaks corresponding to
+inter-vertex distances) in the fitted model that have error/estimate
+ratio below a threshold.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ratios_df</strong> (<em>pandas dataframe</em>) – Dataframe containing the index and error/estimate ratios for
+each parameter for at least one distance histogram.</p></li>
+<li><p><strong>ratio_threshold</strong> (<em>float</em>) – Ratio of error/estimate for peak amplitudes, above which
+centrioles will be excluded from the selection.</p></li>
+<li><p><strong>n_peaks_required_below_threshold</strong> (<em>int</em>) – The number of peaks required to be below the error/estimate
+threshold, for the distance histogram to be selected.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of indices for centrioles with the required
+error/estimate ratios for the peak amplitudes corresponding
+to inter-vertex distances.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>selected_centriole_numbers (list of integers)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.modelling.centriole_analysis.set_up_variable_vertices_model_9fold_internal_bg_with_fit_settings">
+<span class="sig-prename descclassname"><span class="pre">perpl.modelling.centriole_analysis.</span></span><span class="sig-name descname"><span class="pre">set_up_variable_vertices_model_9fold_internal_bg_with_fit_settings</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/modelling/centriole_analysis.html#set_up_variable_vertices_model_9fold_internal_bg_with_fit_settings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.modelling.centriole_analysis.set_up_variable_vertices_model_9fold_internal_bg_with_fit_settings" title="Link to this definition">¶</a></dt>
+<dd><p>Set up the RPD model with its fitting settings to pass to scipy’s
+curve_fit, and the vector-input version of it for differentiation with
+numdifftools.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.modelling.centriole_analysis.set_up_variable_vertices_model_9fold_no_bg_with_fit_settings">
+<span class="sig-prename descclassname"><span class="pre">perpl.modelling.centriole_analysis.</span></span><span class="sig-name descname"><span class="pre">set_up_variable_vertices_model_9fold_no_bg_with_fit_settings</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/modelling/centriole_analysis.html#set_up_variable_vertices_model_9fold_no_bg_with_fit_settings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.modelling.centriole_analysis.set_up_variable_vertices_model_9fold_no_bg_with_fit_settings" title="Link to this definition">¶</a></dt>
+<dd><p>Set up the RPD model with its fitting settings to pass to scipy’s
+curve_fit, and the vector-input version of it for differentiation with
+numdifftools.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perpl.modelling.centriole_analysis.sum_distance_histograms">
+<span class="sig-prename descclassname"><span class="pre">perpl.modelling.centriole_analysis.</span></span><span class="sig-name descname"><span class="pre">sum_distance_histograms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distance_histogram_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perpl/modelling/centriole_analysis.html#sum_distance_histograms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perpl.modelling.centriole_analysis.sum_distance_histograms" title="Link to this definition">¶</a></dt>
+<dd><p>Add together distance histograms from a list, to aggregate results over
+multiple centrioles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>distance_histograms_list</strong> (<em>2D numpy array</em>) – List of distance histogram bin values. One distance histogram
+per row.</p></li>
+<li><p><strong>normalise</strong> (<em>bool</em>) – Decide whether to normalise the histograms so that the mean
+bin value is 1 (good for scipy’s curve_fit on individual
+centriole data).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Sum of the distance histograms.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>result (numpy array)</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="module-perpl.modelling.dna_paint_data_fitting">
 <span id="perpl-modelling-dna-paint-data-fitting-module"></span><h2>perpl.modelling.dna_paint_data_fitting module<a class="headerlink" href="#module-perpl.modelling.dna_paint_data_fitting" title="Link to this heading">¶</a></h2>
@@ -3246,11 +3764,23 @@ of the Z-disk)</p></li>
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">perpl</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="perpl.html">perpl package</a></li>
+</ul>
+</li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">perpl</a><ul>
+  <li><a href="perpl.html">perpl package</a><ul>
+      <li>Previous: <a href="perpl.io.html" title="previous chapter">perpl.io package</a></li>
+  </ul></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>
