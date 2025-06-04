@@ -5,7 +5,7 @@
 
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../../src'))  # Adjust to include your package
+sys.path.insert(0, os.path.abspath('../../src/perpl'))  # Adjust to include your package
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
