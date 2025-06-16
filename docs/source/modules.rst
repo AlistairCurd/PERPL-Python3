@@ -1,5 +1,10 @@
-API
-===
+perpl
+=====
 
-.. autosummary::
-   :toctree: generated
+.. toctree::
+   :maxdepth: 4
+
+   perpl
+   perpl.io
+   perpl.modelling
+   perpl.statistics
