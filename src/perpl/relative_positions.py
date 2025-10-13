@@ -577,7 +577,6 @@ def get_vectors(d_values, dims):
             with rows sorted by distance (smallest to largest).
 
     """
-    print(d_values.shape)
     #for i in range(0, 10):
     #    print(d_values[i])
     x_square_values = np.square(d_values[:, 0])
@@ -664,7 +663,7 @@ def save_relative_positions(d_values, filterdist, dims, info, nns=0):
     return out_file_name
 
 
-def main():
+def main(argv=None):
     """Reads input data of point density locations and calculates relative
         poasitions as vectors. Outputs are writen to a file in a directory
         with the name of the inputfile and a time stamp above the directory of
