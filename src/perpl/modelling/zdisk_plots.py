@@ -40,7 +40,7 @@ from perpl.modelling.zdisk_modelling import set_up_model_5_variable_peaks_with_f
 from perpl.modelling.zdisk_modelling import fitmodel_to_hist
 
 
-def plot_distance_hist(distances, fitlength, color='gray'):
+def plot_distance_hist(distances, fitlength, bin_size, transverse_limit, color='gray'):
     """Plot histogram of experimental distances, with 1 nm bins.
 
     Args:
@@ -48,6 +48,10 @@ def plot_distance_hist(distances, fitlength, color='gray'):
             Set of distances (nm) to plot.
         fitlength (float):
             The distance upto which the histogram will be calculated.
+        bin_size (float):
+            Bin size in nm
+        transverse_limit (float):
+            Transverse distance filter
         color (string):
             Colour for the matplotlib histogram.
     Returns:
@@ -60,20 +64,20 @@ def plot_distance_hist(distances, fitlength, color='gray'):
     histfig = plt.figure()
     histaxes = histfig.add_subplot(111)
     hist_values, bin_edges = histaxes.hist(distances,
-                                           bins=np.arange(fitlength + 1),
+                                           bins=np.arange(0, fitlength + 1, bin_size),
                                            color=color, alpha=0.5
                                            )[0:2] # 2 not required
     histaxes.set_xlim([0, fitlength])
     # histaxes.set_ylim([0, 82])
     histaxes.set_ylim(bottom=0)
     histaxes.set_title('Histogram')
-    histaxes.set_xlabel(r'$\Delta$X (nm) ($\Delta$YZ < 10 nm)')
+    histaxes.set_xlabel(f'$\Delta$Axial (nm) ($\Delta$Transverse < {transverse_limit} nm)')
     histaxes.set_ylabel('Counts')
 
     return hist_values, bin_edges
 
 
-def plot_distance_kde(distances, locprec, fitlength, color='gray'):
+def plot_distance_kde(distances, locprec, fitlength, transverse_limit, color='gray'):
     """Plot KDE (using localisation precision) of experimental distances.
 
     Args:
@@ -83,6 +87,8 @@ def plot_distance_kde(distances, locprec, fitlength, color='gray'):
             Average localisation precision of the localisations involved.
         fitlength (float):
             The distance upto which the KDE will be evaluated.
+        transverse_limit (float):
+            Transverse distance filter
         color (string):
             Colour for the shaded KDE.
     Returns:
@@ -102,7 +108,7 @@ def plot_distance_kde(distances, locprec, fitlength, color='gray'):
     kdeaxes.set_xlim([3 * kernel_size, fitlength])
     # kdeaxes.set_ylim([0, 82])
     kdeaxes.set_ylim(bottom=0)
-    kdeaxes.set_xlabel(r'$\Delta$X (nm) ($\Delta$YZ < 10 nm)')
+    kdeaxes.set_xlabel(rf'$\Delta$Axial (nm) ($\Delta$Transverse < {transverse_limit} nm)')
     kdeaxes.set_title('KDE\n(Gaussian kernel, '
                       +r'$\sigma$ = {:.1f} nm)'.format(kernel_size))
     kdeaxes.set_ylabel('Counts')
@@ -113,6 +119,7 @@ def plot_distance_kde(distances, locprec, fitlength, color='gray'):
 def plot_distance_hist_and_fit(
                 axpoints,
                 fitlength,
+                bin_size,
                 params_optimised,
                 params_covar,
                 model_with_info,
@@ -122,7 +129,7 @@ def plot_distance_hist_and_fit(
 
     axes = plt.subplot(111)
 
-    bin_edges = np.arange(fitlength + 1)
+    bin_edges = np.arange(0, fitlength + 1, bin_size)
     bin_centres = (bin_edges[:-1] + bin_edges[1:]) / 2
 
     axes.hist(axpoints,
