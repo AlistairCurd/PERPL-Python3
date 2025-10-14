@@ -213,7 +213,7 @@ def fitmodel_to_hist(x,
     print('AIC =', aic)
     print('AICcorr =', aiccorr)
 
-    return popt, pcov, perr
+    return popt, pcov, perr, ssr, aic
 
 
 def create_default_fitting_params_dicts():

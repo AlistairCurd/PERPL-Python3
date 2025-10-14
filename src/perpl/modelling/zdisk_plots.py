@@ -26,6 +26,8 @@ specific language governing permissions and limitations under the License.
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from scipy.signal import find_peaks
+
 import perpl.modelling.linearrepeatmodels as linmods
 import perpl.modelling.zdisk_modelling as zdisk_modelling
 from perpl.modelling.modelling_general import kde_1nm
@@ -40,7 +42,7 @@ from perpl.modelling.zdisk_modelling import set_up_model_5_variable_peaks_with_f
 from perpl.modelling.zdisk_modelling import fitmodel_to_hist
 
 
-def plot_distance_hist(distances, fitlength, bin_size, transverse_limit, color='gray'):
+def plot_distance_hist(distances, fitlength, bin_size, transverse_limit, color='gray', close_plots=False):
     """Plot histogram of experimental distances, with 1 nm bins.
 
     Args:
@@ -73,6 +75,8 @@ def plot_distance_hist(distances, fitlength, bin_size, transverse_limit, color='
     histaxes.set_title('Histogram')
     histaxes.set_xlabel(f'$\Delta$Axial (nm) ($\Delta$Transverse < {transverse_limit} nm)')
     histaxes.set_ylabel('Counts')
+    if close_plots:
+        plt.close()
 
     return hist_values, bin_edges
 
@@ -124,7 +128,8 @@ def plot_distance_hist_and_fit(
                 params_covar,
                 model_with_info,
                 plot_95ci=False,
-                color='xkcd:red'):
+                color='xkcd:red',
+                n_locs=10):
     fig = plt.figure()
 
     axes = plt.subplot(111)
@@ -149,7 +154,9 @@ def plot_distance_hist_and_fit(
     # axes.set_ylim([0, 82])
     axes.set_ylim(bottom=0)
     axes.set_ylabel('Counts')
-    axes.set_title('Model: ' +model_with_info.model_rpd.__name__)
+    axes.set_title('Model: ' +model_with_info.model_rpd.__name__ + ", bin size: " +  str(bin_size) +  " num locs: " + str(n_locs))
+
+    print("Fit peaks: ", bin_centres[find_peaks(model_with_info.model_rpd(bin_centres, *params_optimised))[0]])
 
     # Get 1 SD uncertainty on model result from uncertainty on parameters
     # and plot 95% CI.
@@ -192,6 +199,8 @@ def plot_fitted_model(
               color=color,
               lw=0.75
               )
+    
+    print("Fit peaks: ", axpoints_fitted[find_peaks(model_with_info.model_rpd(axpoints_fitted, *params_optimised))[0]])
 
     # Get 1 SD uncertainty on model result from uncertainty on parameters
     # at n + 0.5 nm, and plot 95% CI.
