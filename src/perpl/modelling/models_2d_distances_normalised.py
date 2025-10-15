@@ -118,3 +118,32 @@ def twopeaks_normalised_flat_bg_vectorinput(vector_input):
                                       amp_1, amp_2,
                                       bgoffset)
     return rpd
+
+def twopeaks_normalised_no_bg(x_values,
+                                dist_1, dist_2, broadening,
+                                amp_1, amp_2):
+    """A model for the normalised distance distribution for 2D localisations with
+    a characteristic distance between them.
+    
+    See docstring below imports.
+    """
+    # Characteristic distance peaks
+    peak_1 = (amp_1 * model.pairwise_correlation_2d(x_values, dist_1, broadening)
+              / x_values # Normalisation
+              )
+    peak_2 = (amp_2 * model.pairwise_correlation_2d(x_values, dist_2, broadening)
+              / x_values # Normalisation
+              )
+    rpd = peak_1 + peak_2
+
+    return rpd
+
+
+def twopeaks_normalised_no_bg_vectorinput(vector_input):
+    (x_values,
+     dist_1, dist_2, broadening,
+     amp_1, amp_2) = vector_input
+    rpd = twopeaks_normalised_no_bg(x_values,
+                                      dist_1, dist_2, broadening,
+                                      amp_1, amp_2)
+    return rpd

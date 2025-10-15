@@ -207,7 +207,10 @@ def fitmodel_to_hist(x,
     ssr = np.sum((model(x, *popt)
                   - experimentaldist) ** 2)
     aic = len(x) * np.log(ssr / len(x)) + 2 * k
-    aiccorr = aic + 2 * k * (k + 1) / (len(x) - k - 1)
+    if len(x) - k - 1 == 0:
+        aiccorr = 1e6
+    else:
+        aiccorr = aic + 2 * k * (k + 1) / (len(x) - k - 1)
 
     print('SSR =', ssr)
     print('AIC =', aic)
@@ -1084,9 +1087,10 @@ def set_up_model_4_variable_peaks_with_fit_settings():
         bounds
         )
     model_with_fit_settings.vector_input_model = (
-        [linmods.linrepnoreps4_bg_linear_vectorinput,
-         linmods.linrepnoreps4_bg_zero_vectorinput
-         ]
+        linmods.linrepnoreps4_bg_linear_vectorinput
+        #[linmods.linrepnoreps4_bg_linear_vectorinput,
+        # linmods.linrepnoreps4_bg_zero_vectorinput
+        # ]
         )
 
     return model_with_fit_settings
@@ -1747,6 +1751,78 @@ def set_up_model_2d_twopeaks_flat_bg_with_fit_settings():
         )
     model_with_fit_settings.vector_input_model = (
         mods2d.twopeaks_normalised_flat_bg_vectorinput
+        )
+
+    return model_with_fit_settings
+
+def set_up_model_2d_twopeaks_no_bg_with_fit_settings():
+    """Set up the RPD model with fitting settings.
+
+    This model has two peaks representing characteristic
+    distances. No background.
+
+    The fitting settings are to pass to scipy's
+    curve_fit, and the vector-input version of the model is for
+    differentiation and error propagation with numdifftools.
+
+    Args:
+        None
+
+    Returns:
+        A ModelWithFitSettings object containing:
+            model_rpd (function name):
+                Relative position density as a function of separation
+                between localisations.
+            initial_params (list):
+                Starting guesses for the parameter values by
+                scipy.optimize.curve_fit
+            lower_bounds (list), upper_bounds (list):
+                The bounds on allowable parameter values as
+                scipy.optimize.curve_fit runs.
+    """
+    # Generate ModelWithFitSettings object, conatining a model_rpd
+    model_with_fit_settings = (
+        ModelWithFitSettings(model_rpd=mods2d.twopeaks_normalised_no_bg)
+        )
+
+    # Add fitting parameters to ModelWithFitSettings object
+    (lower_bound_dict,
+     upper_bound_dict,
+     initial_params_dict) = create_default_fitting_params_dicts()
+
+    # Can optionally modify these dictionaries here:
+
+    initial_params = [initial_params_dict['repeat_distance'],
+                      initial_params_dict['repeat_distance'] * 2.,   
+                      initial_params_dict['repeat_broadening'],
+                      initial_params_dict['amp_peak_1'],
+                      initial_params_dict['amp_peak_2'],                      
+                      ]
+
+    lower_bounds = [lower_bound_dict['repeat_distance'],
+                    lower_bound_dict['repeat_distance'],
+                    lower_bound_dict['repeat_broadening'],
+                    lower_bound_dict['amp_peak_1'],
+                    lower_bound_dict['amp_peak_2'],
+                    ]
+
+    upper_bounds = [upper_bound_dict['repeat_distance'],
+                    50.,#upper_bound_dict['repeat_distance'],    
+                    upper_bound_dict['repeat_broadening'],
+                    upper_bound_dict['amp_peak_1'],
+                    upper_bound_dict['amp_peak_2'],
+                    ]
+
+    bounds = (lower_bounds, upper_bounds)
+
+    model_with_fit_settings.initial_params = (
+        initial_params
+        )
+    model_with_fit_settings.param_bounds = (
+        bounds
+        )
+    model_with_fit_settings.vector_input_model = (
+        mods2d.twopeaks_normalised_no_bg_vectorinput
         )
 
     return model_with_fit_settings
