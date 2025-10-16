@@ -191,11 +191,16 @@ def fitmodel_to_hist(x,
         fitlength:
             The maximum distance that may be included in the fit.
     """
-    popt, pcov = curve_fit(
+    
+    try:
+        popt, pcov = curve_fit(
             model, x, experimentaldist,
             p0=initial_params,
             bounds=param_bounds
             )
+    except RuntimeError:
+        print("Model didn't fit well so exceeded runtime...")
+        return None, None, None, 1e10, 1e10
     # plt.plot(x, model(x, *popt))
     perr = np.sqrt(np.diag(pcov))
     params = np.column_stack((popt, perr))
