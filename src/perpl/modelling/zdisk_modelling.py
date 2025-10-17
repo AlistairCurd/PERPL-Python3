@@ -201,7 +201,7 @@ def fitmodel_to_hist(x,
             )
     except RuntimeError:
         print("Model didn't fit well so exceeded runtime...")
-        return None, None, None, 1e10, 1e10
+        return None, None, None, 1e10, 1e10, 1e10
     # plt.plot(x, model(x, *popt))
     perr = np.sqrt(np.diag(pcov))
     params = np.column_stack((popt, perr))
