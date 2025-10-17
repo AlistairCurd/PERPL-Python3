@@ -147,3 +147,28 @@ def twopeaks_normalised_no_bg_vectorinput(vector_input):
                                       dist_1, dist_2, broadening,
                                       amp_1, amp_2)
     return rpd
+
+
+def threepeaks_squarelattice_noreplocs_no_bg_normalised(x_values,
+                                dist_1, broadening,
+                                amp_1, amp_2, amp_3):
+    """A model for the distance distribution for 2D localisations with
+    a characteristic distance between them.
+    
+    See docstring below imports.
+    """
+    # Characteristic distance peaks
+    peak_1 = (amp_1 * model.pairwise_correlation_2d(x_values, dist_1, broadening)) / x_values
+    peak_2 = (amp_2 * model.pairwise_correlation_2d(x_values, dist_1 * (2**0.5), broadening)) / x_values
+    peak_3 = (amp_3 * model.pairwise_correlation_2d(x_values, dist_1 * 2, broadening)) / x_values
+    rpd = peak_1 + peak_2 + peak_3
+
+    return rpd
+
+
+def threepeaks_squarelattice_noreplocs_no_bg_normalised_vectorinput(vector_input):
+    (x_values,
+     dist_1, broadening,
+     amp_1, amp_2, amp_3) = vector_input
+    rpd = threepeaks_squarelattice_noreplocs_no_bg_normalised(x_values, dist_1, broadening, amp_1, amp_2, amp_3)
+    return rpd
