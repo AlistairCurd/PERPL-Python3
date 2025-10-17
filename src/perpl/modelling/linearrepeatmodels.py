@@ -185,6 +185,24 @@ def onepeaknoreps_vectorinput(vector_input):
     return rpd
 
 
+def onepeaknorepsnobg(x_values, rep, broadening, a):
+
+    rpd = a * model.pairwise_correlation_1d(x_values, rep, broadening)
+
+    return rpd
+
+
+def onepeaknorepsnobg_vectorinput(vector_input):
+    (x_values, rep, broadening, a) = vector_input
+    rpd = onepeaknorepsnobg(
+        x_values, 
+        rep, 
+        broadening,
+        a
+    )
+    return rpd
+
+
 def linrepplusreps(x_values, rep, broadening,
                    a, b, c, d,  # e, f,
                    locprec, ampreplocs,
@@ -685,6 +703,30 @@ def linrepplusreps5(x_values, rep, broadening,
     for i, amp in enumerate(amps):
         rpd = rpd + amp * model.pairwise_correlation_1d(x_values, (i + 1) * rep, broadening)    
     rpd = rpd + ampreplocs * model.pairwise_correlation_1d(x_values, 0., np.sqrt(2) * locprec) # rep locs
+
+    return rpd
+
+
+def linrepplusreps5_no_bg(x_values, rep, broadening,
+                   a, b, c, d, e,
+                   locprec, ampreplocs
+                   ):
+    rpd = x_values * 0.
+    amps = [a, b, c, d, e]
+    for i, amp in enumerate(amps):
+        rpd = rpd + amp * model.pairwise_correlation_1d(x_values, (i + 1) * rep, broadening)    
+    rpd = rpd + ampreplocs * model.pairwise_correlation_1d(x_values, 0., np.sqrt(2) * locprec) # rep locs
+
+    return rpd
+
+
+def linrepplusreps5_no_bg_vectorinput(vector_input):
+    (x_values, rep, broadening,
+     a, b, c, d, e,
+     locprec, ampreplocs) = vector_input
+    rpd = linrepplusreps5_no_bg(x_values, rep, broadening,
+                                  a, b, c, d, e,
+                                  locprec, ampreplocs)
 
     return rpd
 

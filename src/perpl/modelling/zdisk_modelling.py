@@ -222,7 +222,7 @@ def fitmodel_to_hist(x,
     print('AIC =', aic)
     print('AICcorr =', aiccorr)
 
-    return popt, pcov, perr, ssr, aic
+    return popt, pcov, perr, ssr, aic, aiccorr
 
 
 def create_default_fitting_params_dicts():
@@ -669,6 +669,81 @@ def set_up_model_5_variable_peaks_with_fit_settings():
     return model_with_fit_settings
 
 
+def set_up_model_5_variable_peaks_no_bg_with_fit_settings():
+    """Set up the RPD model with fitting settings.
+    The fitting settings are to pass to scipy's
+    curve_fit, and the vector-input version of the model is for
+    differentiation and error propagation with numdifftools.
+
+    Args:
+        None
+
+    Returns:
+        A ModelWithFitSettings object containing:
+            model_rpd (function name):
+                Relative position density as a function of separation
+                between localisations.
+            initial_params (list):
+                Starting guesses for the parameter values by
+                scipy.optimize.curve_fit
+            lower_bounds (list), upper_bounds (list):
+                The bounds on allowable parameter values as
+                scipy.optimize.curve_fit runs.
+    """
+    # Generate ModelWithFitSettings object, conatining a model_rpd
+    model_with_fit_settings = (
+        ModelWithFitSettings(model_rpd=linmods.linrepnoreps5_bg_zero)
+        )
+
+    # Add fitting parameters to ModelWithFitSettings object
+    (lower_bound_dict,
+     upper_bound_dict,
+     initial_params_dict) = create_default_fitting_params_dicts()
+
+    # Can optionally modify these dictionaries here:
+
+    initial_params = [initial_params_dict['repeat_distance'],
+                      initial_params_dict['repeat_broadening'],
+                      initial_params_dict['amp_peak_1'],
+                      initial_params_dict['amp_peak_2'],
+                      initial_params_dict['amp_peak_3'],
+                      initial_params_dict['amp_peak_4'],
+                      initial_params_dict['amp_peak_5'],
+                      ]
+
+    lower_bounds = [lower_bound_dict['repeat_distance'],
+                    lower_bound_dict['repeat_broadening'],
+                    lower_bound_dict['amp_peak_1'],
+                    lower_bound_dict['amp_peak_2'],
+                    lower_bound_dict['amp_peak_3'],
+                    lower_bound_dict['amp_peak_4'],
+                    lower_bound_dict['amp_peak_5'],
+                    ]
+
+    upper_bounds = [upper_bound_dict['repeat_distance'],
+                    upper_bound_dict['repeat_broadening'],
+                    upper_bound_dict['amp_peak_1'],
+                    upper_bound_dict['amp_peak_2'],
+                    upper_bound_dict['amp_peak_3'],
+                    upper_bound_dict['amp_peak_4'],
+                    upper_bound_dict['amp_peak_5'],
+                    ]
+
+    bounds = (lower_bounds, upper_bounds)
+
+    model_with_fit_settings.initial_params = (
+        initial_params
+        )
+    model_with_fit_settings.param_bounds = (
+        bounds
+        )
+    model_with_fit_settings.vector_input_model = (
+        linmods.linrepnoreps5_bg_zero_vectorinput
+        )
+
+    return model_with_fit_settings
+
+
 def set_up_model_5_variable_peaks_bg_flat_with_fit_settings():
     """Set up the RPD model with fitting settings.
 
@@ -746,6 +821,92 @@ def set_up_model_5_variable_peaks_bg_flat_with_fit_settings():
         )
     model_with_fit_settings.vector_input_model = (
         linmods.linrepnoreps5_bg_flat_vectorinput
+        )
+
+    return model_with_fit_settings
+
+
+def set_up_model_5_variable_peaks_with_replocs_no_bg_with_fit_settings():
+    """Set up the RPD model with fitting settings.
+
+    This model has five peaks on a linear repeat with independent
+    amplitudes. With a flat background level. With repeated
+    localisations.
+
+    The fitting settings are to pass to scipy's
+    curve_fit, and the vector-input version of the model is for
+    differentiation and error propagation with numdifftools.
+
+    Args:
+        None
+
+    Returns:
+        A ModelWithFitSettings object containing:
+            model_rpd (function name):
+                Relative position density as a function of separation
+                between localisations.
+            initial_params (list):
+                Starting guesses for the parameter values by
+                scipy.optimize.curve_fit
+            lower_bounds (list), upper_bounds (list):
+                The bounds on allowable parameter values as
+                scipy.optimize.curve_fit runs.
+    """
+    # Generate ModelWithFitSettings object, conatining a model_rpd
+    model_with_fit_settings = (
+        ModelWithFitSettings(model_rpd=linmods.linrepplusreps5_no_bg)
+        )
+
+    # Add fitting parameters to ModelWithFitSettings object
+    (lower_bound_dict,
+     upper_bound_dict,
+     initial_params_dict) = create_default_fitting_params_dicts()
+
+    # Can optionally modify these dictionaries here:
+
+    initial_params = [initial_params_dict['repeat_distance'],
+                      initial_params_dict['repeat_broadening'],
+                      initial_params_dict['amp_peak_1'],
+                      initial_params_dict['amp_peak_2'],
+                      initial_params_dict['amp_peak_3'],
+                      initial_params_dict['amp_peak_4'],
+                      initial_params_dict['amp_peak_5'],
+                      initial_params_dict['loc_prec_sd'],
+                      initial_params_dict['loc_prec_amp'],
+                      ]
+
+    lower_bounds = [lower_bound_dict['repeat_distance'],
+                    lower_bound_dict['repeat_broadening'],
+                    lower_bound_dict['amp_peak_1'],
+                    lower_bound_dict['amp_peak_2'],
+                    lower_bound_dict['amp_peak_3'],
+                    lower_bound_dict['amp_peak_4'],
+                    lower_bound_dict['amp_peak_5'],
+                    lower_bound_dict['loc_prec_sd'],
+                    lower_bound_dict['loc_prec_amp'],
+                    ]
+
+    upper_bounds = [upper_bound_dict['repeat_distance'],
+                    upper_bound_dict['repeat_broadening'],
+                    upper_bound_dict['amp_peak_1'],
+                    upper_bound_dict['amp_peak_2'],
+                    upper_bound_dict['amp_peak_3'],
+                    upper_bound_dict['amp_peak_4'],
+                    upper_bound_dict['amp_peak_5'],
+                    50,# upper_bound_dict['loc_prec_sd'],
+                    upper_bound_dict['loc_prec_amp'],
+                    ]
+
+    bounds = (lower_bounds, upper_bounds)
+
+    model_with_fit_settings.initial_params = (
+        initial_params
+        )
+    model_with_fit_settings.param_bounds = (
+        bounds
+        )
+    model_with_fit_settings.vector_input_model = (
+        linmods.linrepplusreps5_no_bg_vectorinput
         )
 
     return model_with_fit_settings
@@ -1377,6 +1538,73 @@ def set_up_model_onepeak_with_fit_settings():
         )
     model_with_fit_settings.vector_input_model = (
         linmods.onepeaknoreps_vectorinput
+        )
+
+    return model_with_fit_settings
+
+
+def set_up_model_onepeak_noreplocs_no_bg_with_fit_settings():
+    """Set up the RPD model with fitting settings.
+
+    This model has one peak representing a characteristic
+    distance, and no repeated localisations and no background.
+
+    The fitting settings are to pass to scipy's
+    curve_fit, and the vector-input version of the model is for
+    differentiation and error propagation with numdifftools.
+
+    Args:
+        None
+
+    Returns:
+        A ModelWithFitSettings object containing:
+            model_rpd (function name):
+                Relative position density as a function of separation
+                between localisations.
+            initial_params (list):
+                Starting guesses for the parameter values by
+                scipy.optimize.curve_fit
+            lower_bounds (list), upper_bounds (list):
+                The bounds on allowable parameter values as
+                scipy.optimize.curve_fit runs.
+    """
+    # Generate ModelWithFitSettings object, conatining a model_rpd
+    model_with_fit_settings = (
+        ModelWithFitSettings(model_rpd=linmods.onepeaknorepsnobg)
+        )
+
+    # Add fitting parameters to ModelWithFitSettings object
+    (lower_bound_dict,
+     upper_bound_dict,
+     initial_params_dict) = create_default_fitting_params_dicts()
+
+    # Can optionally modify these dictionaries here:
+
+    initial_params = [initial_params_dict['repeat_distance'],
+                      initial_params_dict['repeat_broadening'],
+                      initial_params_dict['amp_peak_1'],
+                      ]
+
+    lower_bounds = [lower_bound_dict['repeat_distance'],
+                    lower_bound_dict['repeat_broadening'],
+                    lower_bound_dict['amp_peak_1'],
+                    ]
+
+    upper_bounds = [upper_bound_dict['repeat_distance'],
+                    upper_bound_dict['repeat_broadening'],
+                    upper_bound_dict['amp_peak_1'],
+                    ]
+
+    bounds = (lower_bounds, upper_bounds)
+
+    model_with_fit_settings.initial_params = (
+        initial_params
+        )
+    model_with_fit_settings.param_bounds = (
+        bounds
+        )
+    model_with_fit_settings.vector_input_model = (
+        linmods.onepeaknorepsnobg_vectorinput
         )
 
     return model_with_fit_settings
