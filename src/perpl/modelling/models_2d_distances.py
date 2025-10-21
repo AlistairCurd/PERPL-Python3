@@ -137,6 +137,78 @@ def twopeaks_no_bg_vectorinput(vector_input):
     return rpd
 
 
+def twopeaksplusreps_flat_bg(x_values, dist_1, dist_2, broadening,
+                            amp_1, amp_2,
+                            locprec, ampreplocs,
+                            bgoffset):
+    """A model for the distance distribution for 2D localisations with
+    a characteristic distance between them.
+    
+    See docstring below imports.
+    """
+    # Background
+    rpd = 0. * x_values + bgoffset
+    # Characteristic distance peak
+    peak_1 = amp_1 * model.pairwise_correlation_2d(x_values, dist_1, broadening)
+    peak_2 = amp_2 * model.pairwise_correlation_2d(x_values, dist_2, broadening)
+    rpd = rpd + peak_1 + peak_2
+    # Repeated localisations of the same/unresolvable molecule(s)
+    reps = ampreplocs * model.pairwise_correlation_2d(x_values, 0., np.sqrt(2) * locprec)
+    rpd = rpd + reps
+
+    return rpd
+
+
+def twopeaksplusreps_flat_bg_vectorinput(vector_input):
+    """Version of twopeaksplusreps_flat_bg to take vector input
+    so that numdifftools can calculate the Jacobian, and we can get confidence
+    intervals.
+    """
+    (x_values, dist_1, dist_2, broadening,
+     amp_1, amp_2,
+     locprec, ampreplocs,
+     bgoffset) = vector_input
+    rpd = twopeaksplusreps_flat_bg(x_values, dist_1, dist_2, broadening,
+                                  amp_1, amp_2,
+                                  locprec, ampreplocs,
+                                  bgoffset)
+    return rpd
+
+
+def twopeaksplusreps_no_bg(x_values, dist_1, dist_2, broadening,
+                            amp_1, amp_2,
+                            locprec, ampreplocs):
+    """A model for the distance distribution for 2D localisations with
+    a characteristic distance between them.
+    
+    See docstring below imports.
+    """
+
+    # Characteristic distance peak
+    peak_1 = amp_1 * model.pairwise_correlation_2d(x_values, dist_1, broadening)
+    peak_2 = amp_2 * model.pairwise_correlation_2d(x_values, dist_2, broadening)
+    rpd = peak_1 + peak_2
+    # Repeated localisations of the same/unresolvable molecule(s)
+    reps = ampreplocs * model.pairwise_correlation_2d(x_values, 0., np.sqrt(2) * locprec)
+    rpd = rpd + reps
+
+    return rpd
+
+
+def twopeaksplusreps_no_bg_vectorinput(vector_input):
+    """Version of twopeaksplusreps_flat_bg to take vector input
+    so that numdifftools can calculate the Jacobian, and we can get confidence
+    intervals.
+    """
+    (x_values, dist_1, dist_2, broadening,
+     amp_1, amp_2,
+     locprec, ampreplocs) = vector_input
+    rpd = twopeaksplusreps_no_bg(x_values, dist_1, dist_2, broadening,
+                                  amp_1, amp_2,
+                                  locprec, ampreplocs)
+    return rpd
+
+
 def threepeaks_squarelattice_noreplocs_no_bg(x_values,
                                 dist_1, broadening,
                                 amp_1, amp_2, amp_3):
