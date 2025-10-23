@@ -39,6 +39,119 @@ from scipy import stats
 from scipy.optimize import curve_fit
 
 
+class PERPLModel:
+    """Generic model to be fit"""
+
+    def __init__(
+            self,
+            dimension=1, # 1 or 2
+            background=None, # none, flat, linear
+            n_peaks=0, # 0, 1, ...
+            peak_type="variable", # variable or fixed
+            repeats=False,
+            offset=False,
+            normalise=False,
+            **kwargs,
+        ):  
+        
+        if dimension not in [1,2,3]:
+            raise ValueError("Dimension should be 1,2 or 3")
+        if background not in [None, "flat", "linear"]:
+            raise ValueError("Background should be None, flat or linear")
+        if not type(n_peaks) == int:
+            raise ValueError("n peaks should be an integer")
+        if peak_type not in ["variable", "fixed_ratio"]:
+            raise ValueError("Peak type should be variable or fixed_ratio")
+        if not type(repeats) == bool:
+            raise ValueError("Repeats should be True or False")
+        if not type(offset) == bool:
+            raise ValueError("Offset should be True or False")
+        if not type(normalise) == bool:
+            raise ValueError("Normalise should be True or False")
+
+        # background
+        self.bg_offset = 0.
+        self.bg_slope = 0.
+        if background == "flat":
+            self.bg_offset = kwargs["bg_offset"]
+        elif background == "linear":
+            self.bg_offset = kwargs["bg_offset"]
+            self.bg_slope = kwargs["bg_slope"]
+
+        # dimension of data
+        if dimension == 1:
+            self.pairwise_correlation = pairwise_correlation_1d
+        elif dimension == 2:
+            self.pairwise_correlation = pairwise_correlation_2d
+        elif dimension == 3:
+            self.pairwise_correlation = pairwise_correlation_3d
+
+        # peaks in the data
+        if n_peaks <= 0:
+            self.amps = []
+        else:
+            if peak_type == "fixed_ratio":
+                self.amps = [(1-i/5) * kwargs["amp_peak_1"] for i in range(n_peaks)]
+            elif peak_type == "variable":
+                self.amps = [kwargs[f"amp_peak_{i+1}"] for i in range(n_peaks)]
+
+            self.repeat_distance = kwargs["repeat_distance"]
+            self.repeat_broadening = kwargs["repeat_broadening"]
+    
+        # repeats
+        if repeats:
+            self.loc_prec_amp = kwargs["loc_prec_amp"]
+            self.loc_prec_sd = kwargs["loc_prec_sd"]
+        else:
+            self.amp_rep_locs = 0.0
+            self.loc_pred_sd = 0.0
+
+        # normalise
+        if normalise:
+            raise NotImplementedError("Not implemented normalise yet")
+    
+        # offset
+        if offset:
+            raise NotImplementedError("Offset not implemented yet")
+
+
+        self.initial_params = ...
+        self.param_bounds = ...
+        self.vector_input_model = ...
+
+
+
+    def generate_rpd(self, x_values, **kwargs):
+
+        # background
+        rpd = self.bg_offset + self.bg_slope * x_values
+
+        # peaks
+        for index, amp in enumerate(self.amps):
+            rpd += amp * self.pairwise_correlation(
+                x_values,
+                (index + 1) * self.repeat_distance,
+                self.repeat_broadening,
+            )
+
+        # repeats
+        rpd += self.amp_rep_locs * self.pairwise_correlation(
+            x_values,
+            0.,
+            np.sqrt2 * (self.loc_prec_sd)
+        )
+
+        # normalise
+
+        # offset
+
+        self.model_rpd = rpd
+
+
+
+
+
+
 class ModelWithFitSettings:
     """Class containing a model relative position distribution (model_rpd)
     that will be fitted, together with other input required

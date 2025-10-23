@@ -288,6 +288,20 @@ def create_default_fitting_params_dicts():
     return lower_bound_dict, upper_bound_dict, initial_params_dict
 
 
+class zdisk_model(OVERLOAD...):
+    """General model for z disk
+    
+    Attributes:
+        """
+    
+    
+    
+
+
+
+        
+
+
 def set_up_model_3_peaks_fixed_ratio_with_fit_settings():
     """Set up the RPD model with fitting settings.
     The fitting settings are to pass to scipy's
