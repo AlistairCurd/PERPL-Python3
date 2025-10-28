@@ -161,6 +161,7 @@ def plot_distance_hist_and_fit(
     # Get 1 SD uncertainty on model result from uncertainty on parameters
     # and plot 95% CI.
     if plot_95ci is True:
+        raise ValueError("Using old version of stddev")
         stdev = stdev_of_model(bin_centres,
                                params_optimised,
                                params_covar,
@@ -220,6 +221,7 @@ def plot_fitted_model(
             estimate_points_bg_linear = estimate_points[estimate_points
                                                         < x_when_bg_is_zero
                                                         ]
+            raise ValueError("Using old version of stddev")
             stdev_bg_linear = stdev_of_model(estimate_points_bg_linear,
                                             params_optimised,
                                             params_covar,
@@ -230,6 +232,7 @@ def plot_fitted_model(
                                                     >= x_when_bg_is_zero
                                                     ]
             # print('Number of points with bg zero is ' + repr(len(estimate_points_bg_zero)))
+            raise ValueError("Using old version of stddev")
             stdev_bg_zero = stdev_of_model(estimate_points_bg_zero,
                                         params_optimised[0:-2],
                                         params_covar[0:-2, 0:-2],
@@ -239,6 +242,7 @@ def plot_fitted_model(
             stdev = np.append(stdev_bg_linear, stdev_bg_zero)
         
         else: # For one continuous model:
+            raise ValueError("Using old version of stddev")
             stdev = stdev_of_model(estimate_points,
                                    params_optimised,
                                    params_covar,
