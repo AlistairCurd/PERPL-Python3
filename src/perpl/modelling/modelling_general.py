@@ -275,17 +275,6 @@ class PERPLModel:
 
         # Find estimates and covariances of model parameters
         try:
-            popt, pcov = curve_fit(
-                self.model_rpd, 
-                x, 
-                y,
-                p0=self.initial_params,
-                bounds=self.param_bounds
-                )
-            print("Optimal params: ", popt)
-            print("Param covar: ", pcov)
-            print("Param err: ", np.sqrt(np.diag(pcov)))
-        
             res = least_squares(
                 self.error_fn,
                 self.initial_params,
@@ -392,7 +381,6 @@ class PERPLModel:
             stdev[i] = np.sqrt(variance)
 
         return stdev
-    
 
 
 class ModelWithFitSettings:
