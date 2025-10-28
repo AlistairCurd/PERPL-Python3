@@ -256,7 +256,9 @@ class PERPLModel:
                 self.error_fn,
                 np.array(list(self.initial_params.values())),
                 bounds=self.param_bounds,
-                args=(x, y))
+                args=(x, y),
+                # not sure whether to include this or not...
+                x_scale=(self.param_bounds[0] + self.param_bounds[1])/2)
             
             # Param optimal and covariance
             popt = res.x
