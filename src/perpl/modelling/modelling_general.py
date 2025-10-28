@@ -97,26 +97,23 @@ class PERPLModel:
         
         # number of params
         n_params = 0
+        self.initial_params = {}
+        self.params_lower = {}
+        self.params_upper = {}
 
         # background
-        bg_offset = 0.
-        bg_offset_lower = 0.
-        bg_offset_upper = 1e-303
-        bg_slope = 0.
-        bg_slope_lower = 0.
-        bg_slope_upper = 1e-303
         if background == "flat":
-            bg_offset = params_initial["bg_offset"]
-            bg_offset_lower = params_lower["bg_offset"]
-            bg_offset_upper = params_upper["bg_offset"]
+            self.initial_params["bg_offset"] = params_initial["bg_offset"]
+            self.params_lower["bg_offset"] = params_lower["bg_offset"]
+            self.params_upper["bg_offset"] = params_upper["bg_offset"]
             n_params += 1
         elif background == "linear":
-            bg_offset = params_initial["bg_offset"]
-            bg_offset_lower = params_lower["bg_offset"]
-            bg_offset_upper = params_upper["bg_offset"]
-            bg_slope = params_initial["bg_slope"]
-            bg_slope_lower = params_lower["bg_slope"]
-            bg_slope_upper = params_upper["bg_slope"]
+            self.initial_params["bg_offset"] = params_initial["bg_offset"]
+            self.params_lower["bg_offset"] = params_lower["bg_offset"]
+            self.params_upper["bg_offset"] = params_upper["bg_offset"]
+            self.initial_params["bg_slope"] = params_initial["bg_slope"]
+            self.params_lower["bg_slope"] = params_lower["bg_slope"]
+            self.params_upper["bg_slope"] = params_upper["bg_slope"]
             n_params += 2
 
         # dimension of data
@@ -128,56 +125,42 @@ class PERPLModel:
             self.pairwise_correlation = pairwise_correlation_3d
 
         # peaks in the data
-        if n_peaks <= 0:
-            amps = []
-            amps_lower = []
-            amps_upper = []
-
-            repeat_distance = 0.0
-            repeat_distance_lower = 0.0
-            repeat_distance_upper = 1e-303
-
-            repeat_broadening = 0.0
-            repeat_broadening_lower = 0.0
-            repeat_broadening_upper = 1e-303
-        else:
+        self.n_peaks = n_peaks
+        self.peak_type = peak_type
+        if n_peaks > 0:
             if peak_type == "fixed_ratio":
-                amps = [(1-i/5) * params_initial["amp_peak_1"] for i in range(n_peaks)]
-                amps_lower = [(1-i/5) * params_lower["amp_peak_1"] for i in range(n_peaks)]
-                amps_upper = [(1-i/5) * params_upper["amp_peak_1"] for i in range(n_peaks)]
+                self.initial_params[f"amp_peak_1"] = params_initial["amp_peak_1"]
+                self.params_lower[f"amp_peak_1"] = params_lower["amp_peak_1"]
+                self.params_upper[f"amp_peak_1"] = params_upper["amp_peak_1"]
                 n_params += 1
             elif peak_type == "variable":
-                amps = [params_initial[f"amp_peak_{i+1}"] for i in range(n_peaks)]
-                amps_lower = [params_lower[f"amp_peak_{i+1}"] for i in range(n_peaks)]
-                amps_upper = [params_upper[f"amp_peak_{i+1}"] for i in range(n_peaks)]
+                for i in range(n_peaks):
+                    self.initial_params[f"amp_peak_{i+1}"] = params_initial[f"amp_peak_{i+1}"]
+                    self.params_lower[f"amp_peak_{i+1}"] = params_lower[f"amp_peak_{i+1}"]
+                    self.params_upper[f"amp_peak_{i+1}"] =  params_upper[f"amp_peak_{i+1}"]
                 n_params += n_peaks
 
-            repeat_distance = params_initial["repeat_distance"]
-            repeat_distance_lower = params_lower["repeat_distance"]
-            repeat_distance_upper = params_upper["repeat_distance"]
+            self.initial_params["repeat_distance"] = params_initial["repeat_distance"]
+            self.params_lower["repeat_distance"] = params_lower["repeat_distance"]
+            self.params_upper["repeat_distance"] = params_upper["repeat_distance"]
 
-            repeat_broadening = params_initial["repeat_broadening"]
-            repeat_broadening_lower = params_lower["repeat_broadening"]
-            repeat_broadening_upper = params_upper["repeat_broadening"]
+            self.initial_params["repeat_broadening"] = params_initial["repeat_broadening"]
+            self.params_lower["repeat_broadening"] = params_lower["repeat_broadening"]
+            self.params_upper["repeat_broadening"] = params_upper["repeat_broadening"]
 
             n_params += 2
-    
+
         # repeats
         if repeats:
-            loc_prec_amp = params_initial["loc_prec_amp"]
-            loc_prec_amp_lower = params_lower["loc_prec_amp"]
-            loc_prec_amp_upper = params_upper["loc_prec_amp"]
-            loc_prec_sd = params_initial["loc_prec_sd"]
-            loc_prec_sd_lower = params_lower["loc_prec_sd"]
-            loc_prec_sd_upper = params_upper["loc_prec_sd"]
+            self.initial_params["loc_prec_amp"] = params_initial["loc_prec_amp"]
+            self.params_lower["loc_prec_amp"] = params_lower["loc_prec_amp"]
+            self.params_upper["loc_prec_amp"] = params_upper["loc_prec_amp"]
+
+            self.initial_params["loc_prec_sd"] = params_initial["loc_prec_sd"]
+            self.params_lower["loc_prec_sd"] = params_lower["loc_prec_sd"]
+            self.params_upper["loc_prec_sd"] = params_upper["loc_prec_sd"]
+
             n_params += 2
-        else:
-            loc_prec_amp = 0.0
-            loc_prec_amp_lower = 0.0
-            loc_prec_amp_upper = 1e-303
-            loc_prec_sd = 0.0
-            loc_prec_sd_lower = 0.0
-            loc_prec_sd_upper = 1e-303
 
         # normalise
         if normalise:
@@ -186,56 +169,38 @@ class PERPLModel:
         # offset
         if offset:
             raise NotImplementedError("Offset not implemented yet")
-
-        # model parameters
-        self.initial_params = [repeat_distance, 
-                               repeat_broadening, 
-                               loc_prec_sd,
-                               loc_prec_amp, 
-                               bg_slope,
-                               bg_offset,
-                               *amps]
-        params_lower = [repeat_distance_lower, 
-                        repeat_broadening_lower, 
-                        loc_prec_sd_lower,
-                        loc_prec_amp_lower, 
-                        bg_slope_lower,
-                        bg_offset_lower,
-                        *amps_lower]
-        params_upper = [repeat_distance_upper, 
-                        repeat_broadening_upper,
-                        loc_prec_sd_upper,
-                        loc_prec_amp_upper, 
-                        bg_slope_upper,
-                        bg_offset_upper,
-                        *amps_upper]
         
-        self.param_bounds = (params_lower, params_upper)
+        self.param_bounds = (np.array(list(self.params_lower.values())), np.array(list(self.params_upper.values())))
         self.n_params = n_params
+        self.param_names = list(self.initial_params.keys())
 
     def model_rpd(self, 
                   x_values,
-                  repeat_distance,
-                  repeat_broadening,
-                  loc_prec_sd,
-                  amp_rep_locs,
-                  bg_slope,
-                  bg_offset,
-                  *amps):
+                  repeat_distance=0.0,
+                  repeat_broadening=0.0,
+                  loc_prec_sd=0.0,
+                  loc_prec_amp=0.0,
+                  bg_slope=0.0,
+                  bg_offset=0.0,
+                  amps=[]):
 
         # background
         rpd = bg_offset + bg_slope * x_values
 
         # peaks
-        for index, amp in enumerate(amps):
+        for peak_idx in range(self.n_peaks):
+            if self.peak_type == "fixed_ratio":
+                amp = amps[0] * (1 - peak_idx/self.n_peaks)
+            elif self.peak_type == "variable":
+                amp = amps[peak_idx]
             rpd += amp * self.pairwise_correlation(
                 x_values,
-                (index + 1) * repeat_distance,
+                (peak_idx + 1) * repeat_distance,
                 repeat_broadening,
             )
 
         # repeats
-        rpd += amp_rep_locs * self.pairwise_correlation(
+        rpd += loc_prec_amp * self.pairwise_correlation(
             x_values,
             0.,
             np.sqrt(2) * (loc_prec_sd)
@@ -246,16 +211,28 @@ class PERPLModel:
         # offset
 
         return rpd
-    
-    
-    def model_rpd_vector(self, vector_input):
 
-        return self.model_rpd(*vector_input)
+    def model_rpd_wrapper(self, x, params):
+
+        # dict(zip(self.initial_params.keys(), params)
+        kwargs = dict(zip(self.param_names, params))
+
+        amps = []
+        for i in range(self.n_peaks):
+            amps.append(kwargs[f"amp_peak_{i+1}"])
+            kwargs.pop(f"amp_peak_{i+1}")
+
+        return self.model_rpd(x, **kwargs, amps=amps)
     
+    def model_rpd_wrapper_vector(self, vector_input):
+
+        return self.model_rpd_wrapper(vector_input[0], vector_input[1:])
 
     def error_fn(self, params, x, y):
 
-        return self.model_rpd(x, *params) - y
+        output = self.model_rpd_wrapper(x, params)
+    
+        return output - y
 
 
     def fit_to_experiment(self,
@@ -277,7 +254,7 @@ class PERPLModel:
         try:
             res = least_squares(
                 self.error_fn,
-                self.initial_params,
+                np.array(list(self.initial_params.values())),
                 bounds=self.param_bounds,
                 args=(x, y))
             
@@ -300,6 +277,7 @@ class PERPLModel:
             else:
                 raise ValueError("Covariance calculation failed")
 
+            print("Param names : ", self.param_names)
             print("Optimal params: ", popt)
             print("Param covar: ", pcov)
             print("Param err: ", np.sqrt(np.diag(pcov)))
@@ -316,7 +294,7 @@ class PERPLModel:
                                 # including var. of residuals
                                 # for least squares fit.
 
-        ssr = np.sum((self.model_rpd(x, *popt) - y) ** 2)
+        ssr = np.sum((self.model_rpd_wrapper(x, popt) - y) ** 2)
         aic = len(x) * np.log(ssr / len(x)) + 2 * k
         if len(x) - k - 1 == 0:
             aiccorr = 1e6
@@ -369,10 +347,10 @@ class PERPLModel:
         stdev = np.zeros(len(x))
 
         for i, x_value in enumerate(x):
-
+            
             # Pass arguments as required for differentiation
             vector_input = np.concatenate(([x_value], self.params_optimised))
-            grads = nd.Gradient(self.model_rpd_vector)(vector_input)
+            grads = nd.Gradient(self.model_rpd_wrapper_vector)(vector_input)
 
             # From gradients with respect to each parameter and the covariance
             # matrix, calculate the total variance.
