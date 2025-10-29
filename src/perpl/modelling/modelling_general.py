@@ -58,6 +58,8 @@ class PERPLModel:
             background=None, # none, flat, linear
             n_peaks=0, # 0, 1, ...
             peak_type="variable", # variable or fixed
+            repeat_distance="one", # one, multiple_fixed or multiple_ratio
+            repeat_distance_ratio=[], # floats representing ratio of repeat distances
             repeats=False,
             offset=False,
             normalise=False,
@@ -72,6 +74,13 @@ class PERPLModel:
             background: None, "flat" or "linear" background
             n_peaks: Number of peaks (0, 1, 2, ...)
             peak_type: "variable" or "fixed" peaks
+            repeat_distance: How to model the repeat distance.
+                one: One repeat distance
+                multiple_fixed : As many repeats as peaks at user defined
+                    distances
+                multiple_: As many repeats as peaks, at distances calculated 
+                    by scaling up one repeat distance by different ratios
+            repeat_distance_ratio: 
             repeats: TRUE or FALSE to have repeated localisations
             offset: TRUE or FALSE to include offset
             normalise: TRUE or FALSE to normalise
@@ -88,6 +97,13 @@ class PERPLModel:
             raise ValueError("n peaks should be an integer")
         if peak_type not in ["variable", "fixed_ratio"]:
             raise ValueError("Peak type should be variable or fixed_ratio")
+        if repeat_distance not in ["one", "multiple_fixed", "multiple_ratio"]:
+            raise ValueError("Repeat distance should be one, multiple_fixed or multiple_ratio")
+        if repeat_distance == "multiple_ratio":
+            if len(repeat_distance_ratio) != n_peaks:
+                raise ValueError("Should be one repeat distance ratio per peak")
+            if repeat_distance_ratio[0] != 1.0:
+                raise ValueError("First peak should have ratio 1.0")
         if not type(repeats) == bool:
             raise ValueError("Repeats should be True or False")
         if not type(offset) == bool:
@@ -140,15 +156,29 @@ class PERPLModel:
                     self.params_upper[f"amp_peak_{i+1}"] =  params_upper[f"amp_peak_{i+1}"]
                 n_params += n_peaks
 
-            self.initial_params["repeat_distance"] = params_initial["repeat_distance"]
-            self.params_lower["repeat_distance"] = params_lower["repeat_distance"]
-            self.params_upper["repeat_distance"] = params_upper["repeat_distance"]
+            # repeat distances
+            self.repeat_distance_type = repeat_distance
+            self.repeat_distances_ratio = repeat_distance_ratio
+
+            self.initial_params["repeat_distance_1"] = params_initial["repeat_distance_1"]
+            self.params_lower["repeat_distance_1"] = params_lower["repeat_distance_1"]
+            self.params_upper["repeat_distance_1"] = params_upper["repeat_distance_1"]
 
             self.initial_params["repeat_broadening"] = params_initial["repeat_broadening"]
             self.params_lower["repeat_broadening"] = params_lower["repeat_broadening"]
             self.params_upper["repeat_broadening"] = params_upper["repeat_broadening"]
 
             n_params += 2
+
+            if repeat_distance == "multiple_fixed":
+                for i in range(n_peaks):
+                    if i == 0:
+                        continue
+                    self.initial_params[f"repeat_distance_{i+1}"] = params_initial[f"repeat_distance_{i+1}"]
+                    self.params_lower[f"repeat_distance_{i+1}"] = params_lower[f"repeat_distance_{i+1}"]
+                    self.params_upper[f"repeat_distance_{i+1}"] =  params_upper[f"repeat_distance_{i+1}"]
+                
+                n_params += n_peaks - 1
 
         # repeats
         if repeats:
@@ -174,12 +204,13 @@ class PERPLModel:
         self.n_params = n_params
         self.param_names = list(self.initial_params.keys())
 
+
     def model_rpd(self, 
                   x_values,
-                  repeat_distance=0.0,
+                  repeat_distances=[],
                   repeat_broadening=0.0,
                   loc_prec_sd=0.0,
-                  loc_prec_amp=0.0,
+                  loc_prec_amp=None,
                   bg_slope=0.0,
                   bg_offset=0.0,
                   amps=[]):
@@ -193,18 +224,30 @@ class PERPLModel:
                 amp = amps[0] * (1 - peak_idx/self.n_peaks)
             elif self.peak_type == "variable":
                 amp = amps[peak_idx]
+
+            if self.repeat_distance_type == "one":
+                repeat_distance = repeat_distances[0] * (peak_idx + 1)
+
+            elif self.repeat_distance_type == "multiple_fixed":
+                repeat_distance = repeat_distances[peak_idx]
+
+            elif self.repeat_distance_type == "multiple_ratio":
+                repeat_distance = repeat_distances[0] * self.repeat_distances_ratio[peak_idx]
+
             rpd += amp * self.pairwise_correlation(
                 x_values,
-                (peak_idx + 1) * repeat_distance,
+                repeat_distance,
                 repeat_broadening,
             )
 
         # repeats
-        rpd += loc_prec_amp * self.pairwise_correlation(
-            x_values,
-            0.,
-            np.sqrt(2) * (loc_prec_sd)
-        )
+        if loc_prec_amp is not None:
+            rpd += loc_prec_amp * self.pairwise_correlation(
+                x_values,
+                0.,
+                np.sqrt(2) * (loc_prec_sd)
+            )
+
 
         # normalise
 
@@ -212,21 +255,37 @@ class PERPLModel:
 
         return rpd
 
+
     def model_rpd_wrapper(self, x, params):
 
         # dict(zip(self.initial_params.keys(), params)
         kwargs = dict(zip(self.param_names, params))
 
-        amps = []
-        for i in range(self.n_peaks):
-            amps.append(kwargs[f"amp_peak_{i+1}"])
-            kwargs.pop(f"amp_peak_{i+1}")
+        amps = [kwargs["amp_peak_1"]]
+        kwargs.pop("amp_peak_1")
+        if self.peak_type == "variable":
+            for i in range(self.n_peaks):
+                if i == 0:
+                    continue
+                amps.append(kwargs[f"amp_peak_{i+1}"])
+                kwargs.pop(f"amp_peak_{i+1}")
 
-        return self.model_rpd(x, **kwargs, amps=amps)
-    
+        repeat_distances = [kwargs["repeat_distance_1"]]
+        kwargs.pop("repeat_distance_1")
+        if self.repeat_distance_type == "multiple_fixed":
+            for i in range(self.n_peaks):
+                if i == 0:
+                    continue
+                repeat_distances.append(kwargs[f"repeat_distance_{i+1}"])
+                kwargs.pop(f"repeat_distance_{i+1}")
+
+        return self.model_rpd(x, **kwargs, amps=amps, repeat_distances=repeat_distances)
+
+
     def model_rpd_wrapper_vector(self, vector_input):
 
         return self.model_rpd_wrapper(vector_input[0], vector_input[1:])
+
 
     def error_fn(self, params, x, y):
 
@@ -258,7 +317,8 @@ class PERPLModel:
                 bounds=self.param_bounds,
                 args=(x, y),
                 # not sure whether to include this or not...
-                x_scale=(self.param_bounds[0] + self.param_bounds[1])/2)
+                x_scale=(self.param_bounds[0] + self.param_bounds[1])/2,
+                )
             
             # Param optimal and covariance
             popt = res.x
