@@ -63,7 +63,7 @@ import perpl.modelling.modelling_general as models
 
 if _platform == "darwin":
     # MAC OS X
-    matplotlib.use('MacOSX')
+    matplotlib.use("MacOSX")
 
 
 def draw_2d_scatter_plots(xyzcolour_values, dims, info, zoom):  # xyz_values
@@ -81,29 +81,32 @@ def draw_2d_scatter_plots(xyzcolour_values, dims, info, zoom):  # xyz_values
     """
     if zoom == 0:
         title = "Scatter plot of localisations in XY"
-        fig_name = r'scatter_plot_xy_localisations.png'
-        filename = info['results_dir']+r'/'+fig_name
-        if info['short_names'] is True:
-            filename = info['short_results_dir']+r'/'+fig_name
-        draw_2col_2d_scatter_plot(xyzcolour_values,
-            title, filename, 'X (nm)', 'Y (nm)', info)
+        fig_name = r"scatter_plot_xy_localisations.png"
+        filename = info["results_dir"] + r"/" + fig_name
+        if info["short_names"] is True:
+            filename = info["short_results_dir"] + r"/" + fig_name
+        draw_2col_2d_scatter_plot(
+            xyzcolour_values, title, filename, "X (nm)", "Y (nm)", info
+        )
 
         if dims == 3:
             title = "Scatter plot of localisations in XZ"
-            fig_name = r'scatter_plot_xz_localisations.png'
-            filename = info['results_dir']+r'/'+fig_name
-            if info['short_names'] is True:
-                filename = info['short_results_dir']+r'/'+fig_name
-            draw_2col_2d_scatter_plot(xyzcolour_values,
-                title, filename, 'X (nm)', 'Z (nm)', info, axes=(0, 2))
+            fig_name = r"scatter_plot_xz_localisations.png"
+            filename = info["results_dir"] + r"/" + fig_name
+            if info["short_names"] is True:
+                filename = info["short_results_dir"] + r"/" + fig_name
+            draw_2col_2d_scatter_plot(
+                xyzcolour_values, title, filename, "X (nm)", "Z (nm)", info, axes=(0, 2)
+            )
 
             title = "Scatter plot of localisations in YZ"
-            fig_name = r'scatter_plot_yz_localisations.png'
-            filename = info['results_dir']+r'/'+fig_name
-            if info['short_names'] is True:
-                filename = info['short_results_dir']+r'/'+fig_name
-            draw_2col_2d_scatter_plot(xyzcolour_values,
-                title, filename, 'X (nm)', 'Z (nm)', info, axes=(1, 2))
+            fig_name = r"scatter_plot_yz_localisations.png"
+            filename = info["results_dir"] + r"/" + fig_name
+            if info["short_names"] is True:
+                filename = info["short_results_dir"] + r"/" + fig_name
+            draw_2col_2d_scatter_plot(
+                xyzcolour_values, title, filename, "X (nm)", "Z (nm)", info, axes=(1, 2)
+            )
 
     # Zoomed-in xy-plot
     if zoom > 0:  # FIX ZOOM!!!!!
@@ -124,30 +127,36 @@ def draw_2d_scatter_plots(xyzcolour_values, dims, info, zoom):  # xyz_values
         zoomed_xyzc = zoomed_xyzc[zoomed_xyzc[:, 1] > zoomed_ymin]
         zoomed_xyzc = zoomed_xyzc[zoomed_xyzc[:, 1] < zoomed_ymax]
 
-        title = "Scatter plot of localisations in XY: zoom x{:d} on central region".format(zoom)
-        fig_name = r'scatter_plot_xy_localisations_x'+str(zoom)+'.png'
-        filename = info['results_dir']+r'/'+fig_name
-        if info['short_names'] is True:
-            filename = info['short_results_dir']+r'/'+fig_name
-        draw_2col_2d_scatter_plot(zoomed_xyzc, title, filename, 'X (nm)', 'Y (nm)', info)
+        title = (
+            "Scatter plot of localisations in XY: zoom x{:d} on central region".format(
+                zoom
+            )
+        )
+        fig_name = r"scatter_plot_xy_localisations_x" + str(zoom) + ".png"
+        filename = info["results_dir"] + r"/" + fig_name
+        if info["short_names"] is True:
+            filename = info["short_results_dir"] + r"/" + fig_name
+        draw_2col_2d_scatter_plot(
+            zoomed_xyzc, title, filename, "X (nm)", "Y (nm)", info
+        )
 
-        #if dims == 3:
-            #title = "Scatter Plot of XZ Locations: Center with Zoom of x{:d}".format(zoom)
-            #fig_name = r'scatter_plot_xz_locations_x'+str(zoom)+'.png'
-            #filename = info['results_dir']+r'/'+fig_name
-            #draw_2d_scatter_plot(x_values_masked, z_values_masked,
-             #                    title, filename, 'x (nm)', 'z (nm)')
+        # if dims == 3:
+        # title = "Scatter Plot of XZ Locations: Center with Zoom of x{:d}".format(zoom)
+        # fig_name = r'scatter_plot_xz_locations_x'+str(zoom)+'.png'
+        # filename = info['results_dir']+r'/'+fig_name
+        # draw_2d_scatter_plot(x_values_masked, z_values_masked,
+        #                    title, filename, 'x (nm)', 'z (nm)')
 
-            #title = "Scatter Plot of YZ Locations: Center with Zoom of x{:d}".format(zoom)
-            #fig_name = r'scatter_plot_yz_locations_x'+str(zoom)+'.png'
-            #filename = info['results_dir']+r'/'+fig_name
-            #draw_2d_scatter_plot(y_values_masked, z_values_masked,
-            #                     title, filename, 'y (nm)', 'z (nm)')
+        # title = "Scatter Plot of YZ Locations: Center with Zoom of x{:d}".format(zoom)
+        # fig_name = r'scatter_plot_yz_locations_x'+str(zoom)+'.png'
+        # filename = info['results_dir']+r'/'+fig_name
+        # draw_2d_scatter_plot(y_values_masked, z_values_masked,
+        #                     title, filename, 'y (nm)', 'z (nm)')
 
 
-def draw_2col_2d_scatter_plot(xyzcolour_values,
-    title, filename, x_label, y_label, info, axes=(0, 1)
-    ):
+def draw_2col_2d_scatter_plot(
+    xyzcolour_values, title, filename, x_label, y_label, info, axes=(0, 1)
+):
     """Creates a scatter plot and saves it to a .png file.
 
     Args:
@@ -164,24 +173,27 @@ def draw_2col_2d_scatter_plot(xyzcolour_values,
     Returns:
        Nothing is returned.
     """
-    fig, ax = plt.subplots(figsize=(10, 8), dpi=200, facecolor='w', edgecolor='k')
-    if info['colours_analysed'] is None:
+    fig, ax = plt.subplots(figsize=(10, 8), dpi=200, facecolor="w", edgecolor="k")
+    if info["colours_analysed"] is None:
         ax.scatter(xyzcolour_values[:, axes[0]], xyzcolour_values[:, axes[1]], s=1)
     else:
-        scatterplot = ax.scatter(xyzcolour_values[:, axes[0]], xyzcolour_values[:, axes[1]],
-            c=xyzcolour_values[:, -1], s=1
-            )
-        legend = ax.legend(*scatterplot.legend_elements(),
-            loc='upper right', title='Channel'
-            )
+        scatterplot = ax.scatter(
+            xyzcolour_values[:, axes[0]],
+            xyzcolour_values[:, axes[1]],
+            c=xyzcolour_values[:, -1],
+            s=1,
+        )
+        legend = ax.legend(
+            *scatterplot.legend_elements(), loc="upper right", title="Channel"
+        )
         ax.add_artist(legend)
     ax.set_title(title)
-    ax.set_xlabel(x_label, {'fontsize':'14'})
-    ax.set_ylabel(y_label, {'fontsize':'14'})
+    ax.set_xlabel(x_label, {"fontsize": "14"})
+    ax.set_ylabel(y_label, {"fontsize": "14"})
     # options on scaling are here
     # https://matplotlib.org/devdocs/api/_as_gen/matplotlib.axes.Axes.set_aspect.html
-    ax.axis('scaled')
-    fig.savefig(filename, bbox_inches='tight')
+    ax.axis("scaled")
+    fig.savefig(filename, bbox_inches="tight")
 
 
 def find_thresholds(arr, zoom):
@@ -202,18 +214,17 @@ def find_thresholds(arr, zoom):
     data_range = arr_max - arr_min
     zoom_bin = data_range / zoom
 
-    if zoom%2 == 1:
-        min_threshold = arr_min + (zoom_bin * int(zoom/2))
-        max_threshold = arr_max - (zoom_bin * int(zoom/2))
+    if zoom % 2 == 1:
+        min_threshold = arr_min + (zoom_bin * int(zoom / 2))
+        max_threshold = arr_max - (zoom_bin * int(zoom / 2))
     else:
-        min_threshold = arr_min + (zoom_bin * (int(zoom/2)-0.5))
-        max_threshold = arr_max - (zoom_bin * (int(zoom/2)-0.5))
+        min_threshold = arr_min + (zoom_bin * (int(zoom / 2) - 0.5))
+        max_threshold = arr_max - (zoom_bin * (int(zoom / 2) - 0.5))
 
     arr = np.ma.array(arr)
-    arr_masked = \
-        np.ma.masked_where(\
-                (np.logical_xor((min_threshold < arr), (arr < max_threshold))), \
-                arr, np.nan)
+    arr_masked = np.ma.masked_where(
+        (np.logical_xor((min_threshold < arr), (arr < max_threshold))), arr, np.nan
+    )
 
     return arr_masked
 
@@ -235,25 +246,42 @@ def plot_histograms(d_values, dims, filter_distance, info, binsize=1):
 
     """
 
+    plot_histogram(
+        np.absolute(d_values[:, 3]), "xy", filter_distance, info, binsize=binsize
+    )
+    # print("xy d_values[:, 3][0]: ", d_values[:, 3][0])
 
-    plot_histogram(np.absolute(d_values[:, 3]), "xy", filter_distance, info, binsize=binsize)
-    #print("xy d_values[:, 3][0]: ", d_values[:, 3][0])
+    plot_histogram(
+        np.absolute(d_values[:, 3]),
+        "xy",
+        filter_distance,
+        info,
+        standardise="2d",
+        binsize=binsize,
+    )
 
-    plot_histogram(np.absolute(d_values[:, 3]),
-        "xy", filter_distance, info, standardise='2d', binsize=binsize
-        )
-
-    plot_histogram(np.absolute(d_values[:, 0]), "x", filter_distance, info, binsize=binsize)
-    #print("x d_values[:, 0][0]: ", d_values[:, 0][0])
-    plot_histogram(np.absolute(d_values[:, 1]), "y", filter_distance, info, binsize=binsize)
-
+    plot_histogram(
+        np.absolute(d_values[:, 0]), "x", filter_distance, info, binsize=binsize
+    )
+    # print("x d_values[:, 0][0]: ", d_values[:, 0][0])
+    plot_histogram(
+        np.absolute(d_values[:, 1]), "y", filter_distance, info, binsize=binsize
+    )
 
     if dims == 3:
-        plot_histogram(np.absolute(d_values[:, 4]), "xz", filter_distance, info, binsize=binsize)
-        plot_histogram(np.absolute(d_values[:, 5]), "yz", filter_distance, info, binsize=binsize)
-        plot_histogram(np.absolute(d_values[:, 6]), "xyz", filter_distance, info, binsize=binsize)
+        plot_histogram(
+            np.absolute(d_values[:, 4]), "xz", filter_distance, info, binsize=binsize
+        )
+        plot_histogram(
+            np.absolute(d_values[:, 5]), "yz", filter_distance, info, binsize=binsize
+        )
+        plot_histogram(
+            np.absolute(d_values[:, 6]), "xyz", filter_distance, info, binsize=binsize
+        )
 
-        plot_histogram(np.absolute(d_values[:, 2]), "z", filter_distance, info, binsize=binsize)
+        plot_histogram(
+            np.absolute(d_values[:, 2]), "z", filter_distance, info, binsize=binsize
+        )
 
 
 def plot_new_histogram(data_values):
@@ -268,10 +296,10 @@ def plot_new_histogram(data_values):
 
     # Unbinned axial relative positions
 
-    fitlength = 100.
+    fitlength = 100.0
 
     # In this case my relative positions
-    #ax_points = relpos.axial[(relpos.axial < fitlength) & (relpos.transverse < 10)]
+    # ax_points = relpos.axial[(relpos.axial < fitlength) & (relpos.transverse < 10)]
     ax_points = data_values[(data_values[:0] < fitlength) & (data_values[:, 6] < 10)]
 
     # processing resulted in X distances (relpos.axial) and YZ distances (relpos.tranverse).
@@ -281,17 +309,19 @@ def plot_new_histogram(data_values):
     ax_points = ax_points[::2]
 
     # Plot histogram
-    axes = plt.hist(ax_points, bins=np.arange(fitlength + 1), color='xkcd:lightblue')[0]
+    axes = plt.hist(ax_points, bins=np.arange(fitlength + 1), color="xkcd:lightblue")[0]
 
     # Smooth and plot histogram
     # 4.4 here is np.sqrt(2) * localisation precision estimate
     line_smooth = gaussian_filter1d(axes, 4.4)
 
     # (which the user could input)
-    plt.plot(np.arange(fitlength) + 0.5, line_smooth, color='xkcd:red')
+    plt.plot(np.arange(fitlength) + 0.5, line_smooth, color="xkcd:red")
 
 
-def plot_histogram(data_values, data_description, filterdist, info, binsize=1, standardise=None):
+def plot_histogram(
+    data_values, data_description, filterdist, info, binsize=1, standardise=None
+):
     """Creates a histogram and saves it into the .png file.
 
     Args:
@@ -320,7 +350,7 @@ def plot_histogram(data_values, data_description, filterdist, info, binsize=1, s
 
     if data_max < 5:
         start = 0.0
-        end = math.ceil(data_max*10)/10
+        end = math.ceil(data_max * 10) / 10
         # edges = math.ceil(data_max*10) + 1
         # bins = np.linspace(start, end, edges)
         # Include end as final edge if end is integer * binsize
@@ -342,46 +372,48 @@ def plot_histogram(data_values, data_description, filterdist, info, binsize=1, s
             bins = np.arange(start, end, binsize)
 
     # Set up axes object for plotting
-    fig_hist = plt.figure(num=None,
-                          figsize=(10, 8),
-                          dpi=100,
-                          facecolor='w',
-                          edgecolor='k')
+    fig_hist = plt.figure(
+        num=None, figsize=(10, 8), dpi=100, facecolor="w", edgecolor="k"
+    )
     axes = fig_hist.add_subplot(111)
 
     # Set up filename
-    fig_name_base = r'histogram_'+data_description.replace(" ", "_")+r'_separation_in_nm'
+    fig_name_base = (
+        r"histogram_" + data_description.replace(" ", "_") + r"_separation_in_nm"
+    )
     # Include potential standardisation of histogram
     if standardise is not None:
-        fig_name_base = fig_name_base+ '_' +standardise+ '_standardised'
-    fig_name = fig_name_base + '.png'
-    filename = info['results_dir']+r'/'+fig_name
-    if info['short_names'] is True:
-        filename = info['short_results_dir']+r'/'+fig_name
+        fig_name_base = fig_name_base + "_" + standardise + "_standardised"
+    fig_name = fig_name_base + ".png"
+    filename = info["results_dir"] + r"/" + fig_name
+    if info["short_names"] is True:
+        filename = info["short_results_dir"] + r"/" + fig_name
 
     # Title and axis labels
-    title = r"Distance histogram of "+data_description.upper()+r" separations"
+    title = r"Distance histogram of " + data_description.upper() + r" separations"
     if standardise is not None:
-        title = title + ', ' + standardise + ' standardised'
+        title = title + ", " + standardise + " standardised"
 
     plt.title(title)
 
-    plt.xlabel(data_description.upper()+r' separation (nm)')
-    plt.ylabel('Counts')
-    if standardise == '2d':
-        plt.ylabel('Counts / distance (nm)')
-    if standardise == '3d':
-        plt.ylabel('Counts / distance ^ 2 (nm ^ 2)')
+    plt.xlabel(data_description.upper() + r" separation (nm)")
+    plt.ylabel("Counts")
+    if standardise == "2d":
+        plt.ylabel("Counts / distance (nm)")
+    if standardise == "3d":
+        plt.ylabel("Counts / distance ^ 2 (nm ^ 2)")
 
     # Get histogram count values and bin positions
     bin_heights, bin_edges = np.histogram(data_values[data_values < filterdist], bins)
-    bin_centres = (bin_edges[0:len(bin_edges) - 1] + bin_edges[1:len(bin_edges)]) / 2
+    bin_centres = (
+        bin_edges[0 : len(bin_edges) - 1] + bin_edges[1 : len(bin_edges)]
+    ) / 2
 
     # Standardise bin counts if desired
-    if standardise == '2d':
-        bin_heights = bin_heights / bin_centres[0:len(bin_centres)]
-    if standardise == '3d':
-        bin_heights = bin_heights / bin_centres[0:len(bin_centres)] ** 2
+    if standardise == "2d":
+        bin_heights = bin_heights / bin_centres[0 : len(bin_centres)]
+    if standardise == "3d":
+        bin_heights = bin_heights / bin_centres[0 : len(bin_centres)] ** 2
 
     # PREVIOUS VERSION
     # axes.hist(data_values, bins, color='darkblue', edgecolor='k', linewidth=1,\
@@ -389,33 +421,36 @@ def plot_histogram(data_values, data_description, filterdist, info, binsize=1, s
 
     # Plot data and save figure
     width = binsize
-    axes.bar(bin_centres,
-             bin_heights,
-             align='center',
-             width=width,
-             alpha=0.5,
-             color='lightgrey')
+    axes.bar(
+        bin_centres,
+        bin_heights,
+        align="center",
+        width=width,
+        alpha=0.5,
+        color="lightgrey",
+    )
 
-    fig_hist.savefig(filename, bbox_inches='tight')
-    #fig_hist.show()
+    fig_hist.savefig(filename, bbox_inches="tight")
+    # fig_hist.show()
 
     # Save histogram data
-    histo_name_base = r'histogram_'+data_description.replace(" ", "_")
+    histo_name_base = r"histogram_" + data_description.replace(" ", "_")
     # Add standardisation info if relevant
     if standardise is not None:
-        histo_name_base = histo_name_base + '_' + standardise + '_standardised'
-    histo_name = histo_name_base + r'.csv'
-    filename1 = info['results_dir']+r'/'+histo_name
-    if info['short_names'] is True:
-        filename1 = info['short_results_dir']+r'/'+histo_name
+        histo_name_base = histo_name_base + "_" + standardise + "_standardised"
+    histo_name = histo_name_base + r".csv"
+    filename1 = info["results_dir"] + r"/" + histo_name
+    if info["short_names"] is True:
+        filename1 = info["short_results_dir"] + r"/" + histo_name
 
-    data_values = pd.concat([pd.DataFrame(bin_heights),
-                             pd.DataFrame(bin_edges)], axis=1)
+    data_values = pd.concat(
+        [pd.DataFrame(bin_heights), pd.DataFrame(bin_edges)], axis=1
+    )
 
     head = "normalised probability density,bin edges"
 
     try:
-        np.savetxt(filename1, data_values, delimiter=',', header=head, comments='')
+        np.savetxt(filename1, data_values, delimiter=",", header=head, comments="")
     except (EOFError, IOError, OSError):
         print("Unexpected error:", sys.exc_info()[0])
         sys.exit("Could not create and open the output data file.")
@@ -423,9 +458,7 @@ def plot_histogram(data_values, data_description, filterdist, info, binsize=1, s
     return bin_heights
 
 
-def estimate_rpd_churchman_1d(input_distances,
-                              calculation_points,
-                              combined_precision):
+def estimate_rpd_churchman_1d(input_distances, calculation_points, combined_precision):
     """Estimates a smooth 1D RPD (relative position distribution) from a set
     of distances, using Churchman's distribution for distances between
     localisations in two clusters as a smoothing kernel.
@@ -451,9 +484,7 @@ def estimate_rpd_churchman_1d(input_distances,
     return estimated_rpd
 
 
-def estimate_rpd_churchman_2d(input_distances,
-                              calculation_points,
-                              combined_precision):
+def estimate_rpd_churchman_2d(input_distances, calculation_points, combined_precision):
     """Estimates a smooth distance distribuion from a 2D RPD
     (relative position distribution) from a set of distances, using
     Churchman's distribution for distances between localisations in
@@ -507,22 +538,22 @@ def create_histogram_3d(rel_pos_xyz, filterdist, smoothing=None):
     """
     # Set Gaussian smoothing kernel, if any
     if smoothing is None:
-        print('Would you like to apply 3D smoothing to the histogram (y/n)?')
-        smoothing_choice = input('').lower()
-        print('')
-        if smoothing_choice.startswith('y'):
-            print('Please provide the SD (in nm)')
-            smoothing = float(input(' for the Gaussian smoothing kernel: '))
+        print("Would you like to apply 3D smoothing to the histogram (y/n)?")
+        smoothing_choice = input("").lower()
+        print("")
+        if smoothing_choice.startswith("y"):
+            print("Please provide the SD (in nm)")
+            smoothing = float(input(" for the Gaussian smoothing kernel: "))
         else:
-            print('Ok, no smoothing.')
+            print("Ok, no smoothing.")
 
     # Make 3D histogram
     bin_edge_vector = np.array(range(-filterdist, filterdist + 2)) - 0.5
-    histogram = np.histogramdd(rel_pos_xyz, bins=(bin_edge_vector,
-                                                  bin_edge_vector,
-                                                  bin_edge_vector
-                                                  )
-                               )[0] # No need for returned variable [1] (edges)
+    histogram = np.histogramdd(
+        rel_pos_xyz, bins=(bin_edge_vector, bin_edge_vector, bin_edge_vector)
+    )[
+        0
+    ]  # No need for returned variable [1] (edges)
 
     # Apply smoothing, if any
     if smoothing is not None:
@@ -555,19 +586,21 @@ def save_tiff_histogram_3d(rel_pos_xyz, filterdist, smoothing=None):
     Saves:
         temp.tif in the working directory, containing the 3D histogram.
     """
-    histogram = create_histogram_3d(rel_pos_xyz,
-                                    filterdist,
-                                    smoothing)[0] # Output [1] not needed
+    histogram = create_histogram_3d(rel_pos_xyz, filterdist, smoothing)[
+        0
+    ]  # Output [1] not needed
     histogram = histogram.astype(np.float32)
     # Re-order as ZYX.
     histogram = np.transpose(histogram, (2, 1, 0))
     # Save
-    with TiffWriter('temp.tif', byteorder='<') as tif:
+    with TiffWriter("temp.tif", byteorder="<") as tif:
         tif.save(histogram)
 
 
-def plot_histogram_with_curves(bin_values, xy_histogram, symmetries, x_values, curve_values, info):
-    ''' Plots a histogram of seprations with curves that show how well various models
+def plot_histogram_with_curves(
+    bin_values, xy_histogram, symmetries, x_values, curve_values, info
+):
+    """Plots a histogram of seprations with curves that show how well various models
     fit this histogram.
     Args:
         bin_values: An array of the histogram bin boundaries.
@@ -580,46 +613,39 @@ def plot_histogram_with_curves(bin_values, xy_histogram, symmetries, x_values, c
 
     Returns:
         nothing
-    '''
+    """
 
-    fig_histogram = plt.figure(num=None,
-                               figsize=(10, 8),
-                               dpi=100,
-                               facecolor='w',
-                               edgecolor='k')
+    fig_histogram = plt.figure(
+        num=None, figsize=(10, 8), dpi=100, facecolor="w", edgecolor="k"
+    )
 
     axes = fig_histogram.add_subplot(111)
     center = (bin_values[:-1] + bin_values[1:]) / 2
     width = 1.0
-    axes.bar(center,
-             xy_histogram,
-             align='center',
-             width=width,
-             alpha=0.5,
-             color='lightgrey')
+    axes.bar(
+        center, xy_histogram, align="center", width=width, alpha=0.5, color="lightgrey"
+    )
 
     for i, symm in enumerate(symmetries):
-        line_label = str(symm)+"-fold symmetry"
-        axes.plot(x_values,
-                  curve_values[i],
-                  label=line_label)
+        line_label = str(symm) + "-fold symmetry"
+        axes.plot(x_values, curve_values[i], label=line_label)
 
-    plt.title('5-fold to 11-fold fits',
-              fontsize=14,
-              color='black')
-    plt.xlabel('XY separation (nm)', fontsize=14, color='black')
-    plt.ylabel('Counts (scaled)', fontsize=14, color='black')
+    plt.title("5-fold to 11-fold fits", fontsize=14, color="black")
+    plt.xlabel("XY separation (nm)", fontsize=14, color="black")
+    plt.ylabel("Counts (scaled)", fontsize=14, color="black")
 
     plt.legend()
-    filename = info['results_dir']+r'/'+r'Histogram_with_Fitted_Curves.png'
-    if info['short_names'] is True:
-        filename = info['short_results_dir']+r'/'+r'Histogram_with_Fitted_Curves.png'
-    fig_histogram.savefig(filename, bbox_inches='tight')
-    #fig_histogram.show()
+    filename = info["results_dir"] + r"/" + r"Histogram_with_Fitted_Curves.png"
+    if info["short_names"] is True:
+        filename = (
+            info["short_results_dir"] + r"/" + r"Histogram_with_Fitted_Curves.png"
+        )
+    fig_histogram.savefig(filename, bbox_inches="tight")
+    # fig_histogram.show()
 
 
 def plot_rot_2d_geometry(sym, diameter, info):
-    ''' Plots the rotational geometry used in a model.
+    """Plots the rotational geometry used in a model.
     Args:
         sym: Integer that represents the rotational symetry of the model.
         diamter: Integer that represents the diamter of the model
@@ -628,50 +654,48 @@ def plot_rot_2d_geometry(sym, diameter, info):
     Returns:
         nothing
 
-    '''
+    """
 
-    #small_font = 6
-    #medium_font = 8
-    #plt.rc('axes', titlesize=medium_font)     # fontsize of the axes title
-    #plt.rc('axes', labelsize=medium_font)    # fontsize of the x and y labels
-    #plt.rc('xtick', labelsize=small_font)    # fontsize of the tick labels
-    #plt.rc('ytick', labelsize=small_font)
-    #plt.rc('legend', fontsize=small_font)    # legend fontsize
-    #plt.rc('figure', titlesize=medium_font)  # fontsize of the figure title
+    # small_font = 6
+    # medium_font = 8
+    # plt.rc('axes', titlesize=medium_font)     # fontsize of the axes title
+    # plt.rc('axes', labelsize=medium_font)    # fontsize of the x and y labels
+    # plt.rc('xtick', labelsize=small_font)    # fontsize of the tick labels
+    # plt.rc('ytick', labelsize=small_font)
+    # plt.rc('legend', fontsize=small_font)    # legend fontsize
+    # plt.rc('figure', titlesize=medium_font)  # fontsize of the figure title
 
-    fig = plt.figure(num=None,
-                     figsize=(1.5, 1.5),
-                     dpi=200,
-                     facecolor='w',
-                     edgecolor='k')
+    fig = plt.figure(
+        num=None, figsize=(1.5, 1.5), dpi=200, facecolor="w", edgecolor="k"
+    )
 
-    title = "Plot of geometry with\n"+str(sym)+"-fold rotational symmetry"
+    title = "Plot of geometry with\n" + str(sym) + "-fold rotational symmetry"
 
-    fig_name = "GeometryPlotRotationqalSymmetry"+str(sym)+r"Fold.png"
+    fig_name = "GeometryPlotRotationqalSymmetry" + str(sym) + r"Fold.png"
 
-    filename = info['results_dir']+r'/'+fig_name
-    if info['short_names'] is True:
-        filename = info['short_results_dir']+r'/'+fig_name
+    filename = info["results_dir"] + r"/" + fig_name
+    if info["short_names"] is True:
+        filename = info["short_results_dir"] + r"/" + fig_name
 
     verts = models.generate_polygon_points(sym, diameter)
 
     x_values = verts[:, 0]
     y_values = verts[:, 1]
 
-    area = np.pi*20
+    area = np.pi * 20
 
-    plt.scatter(x_values, y_values, s=area, c='blue')
+    plt.scatter(x_values, y_values, s=area, c="blue")
     for point in range(0, sym, 1):
-        if point < sym-1:
-            x_point = (x_values[point], x_values[point+1])
-            y_point = (y_values[point], y_values[point+1])
-        if point == sym-1:
+        if point < sym - 1:
+            x_point = (x_values[point], x_values[point + 1])
+            y_point = (y_values[point], y_values[point + 1])
+        if point == sym - 1:
             x_point = (x_values[point], x_values[0])
             y_point = (y_values[point], y_values[0])
-        plt.plot(x_point, y_point, 'k-')
+        plt.plot(x_point, y_point, "k-")
     plt.title(title)
-    plt.xlabel('x (nm)')
-    plt.ylabel('y (nm)')
+    plt.xlabel("x (nm)")
+    plt.ylabel("y (nm)")
 
-    fig.savefig(filename, bbox_inches='tight')
-    #fig.show()
+    fig.savefig(filename, bbox_inches="tight")
+    # fig.show()

@@ -91,13 +91,13 @@ def get_1d_relpos_no_filter(xyz):
         Numpy (N) array of Euclidean distances between vertices.
     """
     relpos = xyz - xyz[0]
-    for i, loc in enumerate(xyz[1:len(xyz)]):
+    for i, loc in enumerate(xyz[1 : len(xyz)]):
         relpos = np.append(relpos, xyz - loc, axis=0)
 
     # Remove [0., 0.] relative positions (self-referencing)
-    relpos = relpos[np.any(relpos != 0., axis=1)]
+    relpos = relpos[np.any(relpos != 0.0, axis=1)]
 
-    return(relpos)
+    return relpos
 
 
 def tri_prism_rpd(r, a, b, locamp, locprec, structamp, spread):
@@ -109,19 +109,20 @@ def tri_prism_rpd(r, a, b, locamp, locprec, structamp, spread):
     relpos = get_1d_relpos_no_filter(verts)
     dists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2 + relpos[:, 2] ** 2)
     # Initialise rpd array
-    rpd = r * 0.
+    rpd = r * 0.0
     # Fill with pair correlations between 3D Gaussian spreads at vertices
     for d in dists:
         rpd = rpd + structamp * model.pairwise_correlation_3d(r, d, spread)
     # Include single molecule localisation precision
     # This is approximated to isotropic
-    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0., np.sqrt(2) * locprec)
+    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0.0, np.sqrt(2) * locprec)
 
     return rpd
 
 
-def tri_prism_on_grid_rpd(r, a, b, locamp, locprec, structamp, spread,
-                          gridspace, gridamp, gridspread):
+def tri_prism_on_grid_rpd(
+    r, a, b, locamp, locprec, structamp, spread, gridspace, gridamp, gridspread
+):
     """r are distances over which the model needs to be evaluated,
     e.g. 0.5, 1.5, 2.5, 3.5, ... nm
     a: triangular side length
@@ -142,27 +143,37 @@ def tri_prism_on_grid_rpd(r, a, b, locamp, locprec, structamp, spread,
     relpos = get_1d_relpos_no_filter(verts)
     dists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2 + relpos[:, 2] ** 2)
     # Initialise rpd array
-    rpd = r * 0.
+    rpd = r * 0.0
     # Fill with pair correlations between 3D Gaussian spreads at vertices
     for d in dists:
         rpd = rpd + structamp * model.pairwise_correlation_3d(r, d, spread)
     # Include single molecule localisation precision
     # This is approximated to isotropic
-    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0., np.sqrt(2) * locprec)
+    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0.0, np.sqrt(2) * locprec)
 
     # Include neighbouring complexes on square grid:
     rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace, gridspread)
-    rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace * np.sqrt(2),
-                                                        gridspread)
+    rpd = rpd + gridamp * model.pairwise_correlation_2d(
+        r, gridspace * np.sqrt(2), gridspread
+    )
 
     return rpd
 
 
-def tri_prism_on_grid_substructure_rpd(r, a, b,
-                                       locamp, locprec,
-                                       structamp, spread,
-                                       substructamp, substructspread,
-                                       gridspace, gridamp, gridspread):
+def tri_prism_on_grid_substructure_rpd(
+    r,
+    a,
+    b,
+    locamp,
+    locprec,
+    structamp,
+    spread,
+    substructamp,
+    substructspread,
+    gridspace,
+    gridamp,
+    gridspread,
+):
     """r are distances over which the model needs to be evaluated,
     e.g. 0.5, 1.5, 2.5, 3.5, ... nm
     a: triangular side length
@@ -187,31 +198,42 @@ def tri_prism_on_grid_substructure_rpd(r, a, b,
     relpos = get_1d_relpos_no_filter(verts)
     dists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2 + relpos[:, 2] ** 2)
     # Initialise rpd array
-    rpd = r * 0.
+    rpd = r * 0.0
     # Fill with pair correlations between 3D Gaussian spreads at vertices
     for d in dists:
         rpd = rpd + structamp * model.pairwise_correlation_3d(r, d, spread)
     # Include single molecule localisation precision
     # This is approximated to isotropic
-    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0., np.sqrt(2) * locprec)
+    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0.0, np.sqrt(2) * locprec)
     # Include substructure spread
-    rpd = rpd + substructamp * model.pairwise_correlation_3d(r, 0.,
-                                                             np.sqrt(2) * substructspread)
+    rpd = rpd + substructamp * model.pairwise_correlation_3d(
+        r, 0.0, np.sqrt(2) * substructspread
+    )
 
     # Include neighbouring complexes on square grid:
     rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace, gridspread)
-    rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace * np.sqrt(2),
-                                                        gridspread)
+    rpd = rpd + gridamp * model.pairwise_correlation_2d(
+        r, gridspace * np.sqrt(2), gridspread
+    )
 
     return rpd
 
 
-def tri_prism_on_grid_2disobg_substructure_rpd(r, a, b,
-                                               locamp, locprec,
-                                               structamp, spread,
-                                               substructamp, substructspread,
-                                               gridspace, gridamp, gridspread,
-                                               bgslope):
+def tri_prism_on_grid_2disobg_substructure_rpd(
+    r,
+    a,
+    b,
+    locamp,
+    locprec,
+    structamp,
+    spread,
+    substructamp,
+    substructspread,
+    gridspace,
+    gridamp,
+    gridspread,
+    bgslope,
+):
     """r are distances over which the model needs to be evaluated,
     e.g. 0.5, 1.5, 2.5, 3.5, ... nm
     a: triangular side length
@@ -238,29 +260,30 @@ def tri_prism_on_grid_2disobg_substructure_rpd(r, a, b,
     relpos = get_1d_relpos_no_filter(verts)
     dists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2 + relpos[:, 2] ** 2)
     # Initialise rpd array
-    rpd = r * 0.
+    rpd = r * 0.0
     # Fill with pair correlations between 3D Gaussian spreads at vertices
     for d in dists:
         rpd = rpd + structamp * model.pairwise_correlation_3d(r, d, spread)
     # Include single molecule localisation precision
     # This is approximated to isotropic
-    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0., np.sqrt(2) * locprec)
+    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0.0, np.sqrt(2) * locprec)
     # Include substructure spread
-    rpd = rpd + substructamp * model.pairwise_correlation_3d(r, 0.,
-                                                             np.sqrt(2) * substructspread)
+    rpd = rpd + substructamp * model.pairwise_correlation_3d(
+        r, 0.0, np.sqrt(2) * substructspread
+    )
 
     # Include neighbouring complexes on square grid:
     rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace, gridspread)
-    rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace * np.sqrt(2),
-                                                        gridspread)
+    rpd = rpd + gridamp * model.pairwise_correlation_2d(
+        r, gridspace * np.sqrt(2), gridspread
+    )
     # Include background
     rpd = rpd + r * bgslope
 
     return rpd
 
 
-def tri_prism_on_grid_2disobg_substructure_rpd_vectorargs(
-        input_vector):
+def tri_prism_on_grid_2disobg_substructure_rpd_vectorargs(input_vector):
     """Function to calculate the values given by
     tri_prism_on_grid_2disobg_substructure_rpd, but using a
     vector input for the parameters, so that the numdifftools package can be
@@ -280,29 +303,44 @@ def tri_prism_on_grid_2disobg_substructure_rpd_vectorargs(
             The relative position density given by the model at the input
             distances (called separation_values_1d).
     """
-    (separation_values_1d,
-     a, b,
-     locamp, locprec,
-     structamp, spread,
-     substructamp, substructspread,
-     gridspace, gridamp, gridspread,
-     bgslope) = input_vector
+    (
+        separation_values_1d,
+        a,
+        b,
+        locamp,
+        locprec,
+        structamp,
+        spread,
+        substructamp,
+        substructspread,
+        gridspace,
+        gridamp,
+        gridspread,
+        bgslope,
+    ) = input_vector
 
     rpd = tri_prism_on_grid_2disobg_substructure_rpd(
-            separation_values_1d,
-            a, b,
-            locamp, locprec,
-            structamp, spread,
-            substructamp, substructspread,
-            gridspace, gridamp, gridspread,
-            bgslope
-            )
+        separation_values_1d,
+        a,
+        b,
+        locamp,
+        locprec,
+        structamp,
+        spread,
+        substructamp,
+        substructspread,
+        gridspace,
+        gridamp,
+        gridspread,
+        bgslope,
+    )
 
     return rpd
 
 
-def tri_prism_on_grid_1_length(r, a, locamp, locprec, structamp, spread,
-                                   gridspace, gridamp, gridspread):
+def tri_prism_on_grid_1_length(
+    r, a, locamp, locprec, structamp, spread, gridspace, gridamp, gridspread
+):
     """r are distances over which the model needs to be evaluated,
     e.g. 0.5, 1.5, 2.5, 3.5, ... nm
     a: triangular side length
@@ -323,28 +361,26 @@ def tri_prism_on_grid_1_length(r, a, locamp, locprec, structamp, spread,
     relpos = get_1d_relpos_no_filter(verts)
     dists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2 + relpos[:, 2] ** 2)
     # Initialise rpd array
-    rpd = r * 0.
+    rpd = r * 0.0
     # Fill with pair correlations between 3D Gaussian spreads at vertices
     for d in dists:
         rpd = rpd + structamp * model.pairwise_correlation_3d(r, d, spread)
     # Include single molecule localisation precision
     # This is approximated to isotropic
-    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0., np.sqrt(2) * locprec)
+    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0.0, np.sqrt(2) * locprec)
 
     # Include neighbouring complexes on square grid:
     rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace, gridspread)
-    rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace * np.sqrt(2),
-                                                        gridspread)
+    rpd = rpd + gridamp * model.pairwise_correlation_2d(
+        r, gridspace * np.sqrt(2), gridspread
+    )
 
     return rpd
 
 
-def tri_prism_on_grid_1_length_2disobg(r,
-                                       a,
-                                       locamp, locprec,
-                                       structamp, spread,
-                                       gridspace, gridamp, gridspread,
-                                       bgslope):
+def tri_prism_on_grid_1_length_2disobg(
+    r, a, locamp, locprec, structamp, spread, gridspace, gridamp, gridspread, bgslope
+):
     """r are distances over which the model needs to be evaluated,
     e.g. 0.5, 1.5, 2.5, 3.5, ... nm
     a: triangular side length
@@ -367,18 +403,19 @@ def tri_prism_on_grid_1_length_2disobg(r,
     relpos = get_1d_relpos_no_filter(verts)
     dists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2 + relpos[:, 2] ** 2)
     # Initialise rpd array
-    rpd = r * 0.
+    rpd = r * 0.0
     # Fill with pair correlations between 3D Gaussian spreads at vertices
     for d in dists:
         rpd = rpd + structamp * model.pairwise_correlation_3d(r, d, spread)
     # Include single molecule localisation precision
     # This is approximated to isotropic
-    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0., np.sqrt(2) * locprec)
+    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0.0, np.sqrt(2) * locprec)
 
     # Include neighbouring complexes on square grid:
     rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace, gridspread)
-    rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace * np.sqrt(2),
-                                                        gridspread)
+    rpd = rpd + gridamp * model.pairwise_correlation_2d(
+        r, gridspace * np.sqrt(2), gridspread
+    )
 
     # Include background
     rpd = rpd + r * bgslope
@@ -386,10 +423,19 @@ def tri_prism_on_grid_1_length_2disobg(r,
     return rpd
 
 
-def tri_prism_on_grid_1_length_substructure_rpd(r, a, locamp, locprec,
-                                                structamp, spread,
-                                                substructamp, substructspread,
-                                                gridspace, gridamp, gridspread):
+def tri_prism_on_grid_1_length_substructure_rpd(
+    r,
+    a,
+    locamp,
+    locprec,
+    structamp,
+    spread,
+    substructamp,
+    substructspread,
+    gridspace,
+    gridamp,
+    gridspread,
+):
     """r are distances over which the model needs to be evaluated,
     e.g. 0.5, 1.5, 2.5, 3.5, ... nm
     a: triangular side length
@@ -414,31 +460,40 @@ def tri_prism_on_grid_1_length_substructure_rpd(r, a, locamp, locprec,
     relpos = get_1d_relpos_no_filter(verts)
     dists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2 + relpos[:, 2] ** 2)
     # Initialise rpd array
-    rpd = r * 0.
+    rpd = r * 0.0
     # Fill with pair correlations between 3D Gaussian spreads at vertices
     for d in dists:
         rpd = rpd + structamp * model.pairwise_correlation_3d(r, d, spread)
     # Include single molecule localisation precision
     # This is approximated to isotropic
-    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0., np.sqrt(2) * locprec)
+    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0.0, np.sqrt(2) * locprec)
     # Include substructure spread
-    rpd = rpd + substructamp * model.pairwise_correlation_3d(r, 0.,
-                                                             np.sqrt(2) * substructspread)
+    rpd = rpd + substructamp * model.pairwise_correlation_3d(
+        r, 0.0, np.sqrt(2) * substructspread
+    )
     # Include neighbouring complexes on square grid:
     rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace, gridspread)
-    rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace * np.sqrt(2),
-                                                        gridspread)
+    rpd = rpd + gridamp * model.pairwise_correlation_2d(
+        r, gridspace * np.sqrt(2), gridspread
+    )
 
     return rpd
 
 
-def tri_prism_on_grid_1_length_2disobg_substruct_rpd(r,
-                                                     a,
-                                                     locamp, locprec,
-                                                     structamp, spread,
-                                                     substructamp, substructspread,
-                                                     gridspace, gridamp, gridspread,
-                                                     bgslope):
+def tri_prism_on_grid_1_length_2disobg_substruct_rpd(
+    r,
+    a,
+    locamp,
+    locprec,
+    structamp,
+    spread,
+    substructamp,
+    substructspread,
+    gridspace,
+    gridamp,
+    gridspread,
+    bgslope,
+):
     """r are distances over which the model needs to be evaluated,
     e.g. 0.5, 1.5, 2.5, 3.5, ... nm
     a: side length
@@ -464,21 +519,23 @@ def tri_prism_on_grid_1_length_2disobg_substruct_rpd(r,
     relpos = get_1d_relpos_no_filter(verts)
     dists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2 + relpos[:, 2] ** 2)
     # Initialise rpd array
-    rpd = r * 0.
+    rpd = r * 0.0
     # Fill with pair correlations between 3D Gaussian spreads at vertices
     for d in dists:
         rpd = rpd + structamp * model.pairwise_correlation_3d(r, d, spread)
     # Include single molecule localisation precision
     # This is approximated to isotropic
-    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0., np.sqrt(2) * locprec)
+    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0.0, np.sqrt(2) * locprec)
     # Include substructure spread
-    rpd = rpd + substructamp * model.pairwise_correlation_3d(r, 0.,
-                                                             np.sqrt(2) * substructspread)
+    rpd = rpd + substructamp * model.pairwise_correlation_3d(
+        r, 0.0, np.sqrt(2) * substructspread
+    )
 
     # Include neighbouring complexes on square grid:
     rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace, gridspread)
-    rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace * np.sqrt(2),
-                                                        gridspread)
+    rpd = rpd + gridamp * model.pairwise_correlation_2d(
+        r, gridspace * np.sqrt(2), gridspread
+    )
 
     # Include background
     rpd = rpd + r * bgslope
@@ -506,34 +563,53 @@ def tri_prism_on_grid_1_length_2disobg_substruct_rpd_vectorargs(input_vector):
             The relative position density given by the model at the input
             distances (called separation_values_1d).
     """
-    (separation_values_1d,
-     a,
-     locamp, locprec,
-     structamp, spread,
-     substructamp, substructspread,
-     gridspace, gridamp, gridspread,
-     bgslope) = input_vector
+    (
+        separation_values_1d,
+        a,
+        locamp,
+        locprec,
+        structamp,
+        spread,
+        substructamp,
+        substructspread,
+        gridspace,
+        gridamp,
+        gridspread,
+        bgslope,
+    ) = input_vector
 
     rpd = tri_prism_on_grid_1_length_2disobg_substruct_rpd(
-            separation_values_1d,
-            a,
-            locamp, locprec,
-            structamp, spread,
-            substructamp, substructspread,
-            gridspace, gridamp, gridspread,
-            bgslope
-            )
+        separation_values_1d,
+        a,
+        locamp,
+        locprec,
+        structamp,
+        spread,
+        substructamp,
+        substructspread,
+        gridspace,
+        gridamp,
+        gridspread,
+        bgslope,
+    )
 
     return rpd
 
 
-def tri_prism_on_grid_1_length_3disobg_substruct_rpd(r,
-                                                     a,
-                                                     locamp, locprec,
-                                                     structamp, spread,
-                                                     substructamp, substructspread,
-                                                     gridspace, gridamp, gridspread,
-                                                     bgscale):
+def tri_prism_on_grid_1_length_3disobg_substruct_rpd(
+    r,
+    a,
+    locamp,
+    locprec,
+    structamp,
+    spread,
+    substructamp,
+    substructspread,
+    gridspace,
+    gridamp,
+    gridspread,
+    bgscale,
+):
     """r are distances over which the model needs to be evaluated,
     e.g. 0.5, 1.5, 2.5, 3.5, ... nm
     a: side length
@@ -558,21 +634,23 @@ def tri_prism_on_grid_1_length_3disobg_substruct_rpd(r,
     relpos = get_1d_relpos_no_filter(verts)
     dists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2 + relpos[:, 2] ** 2)
     # Initialise rpd array
-    rpd = r * 0.
+    rpd = r * 0.0
     # Fill with pair correlations between 3D Gaussian spreads at vertices
     for d in dists:
         rpd = rpd + structamp * model.pairwise_correlation_3d(r, d, spread)
     # Include single molecule localisation precision
     # This is approximated to isotropic
-    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0., np.sqrt(2) * locprec)
+    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0.0, np.sqrt(2) * locprec)
     # Include substructure spread
-    rpd = rpd + substructamp * model.pairwise_correlation_3d(r, 0.,
-                                                             np.sqrt(2) * substructspread)
+    rpd = rpd + substructamp * model.pairwise_correlation_3d(
+        r, 0.0, np.sqrt(2) * substructspread
+    )
 
     # Include neighbouring complexes on square grid:
     rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace, gridspread)
-    rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace * np.sqrt(2),
-                                                        gridspread)
+    rpd = rpd + gridamp * model.pairwise_correlation_2d(
+        r, gridspace * np.sqrt(2), gridspread
+    )
 
     # Include background
     rpd = rpd + r * r * bgscale
@@ -580,12 +658,9 @@ def tri_prism_on_grid_1_length_3disobg_substruct_rpd(r,
     return rpd
 
 
-def tri_prism_1_length_3disobg_substruct_rpd(r,
-                                             a,
-                                             locamp, locprec,
-                                             structamp, spread,
-                                             substructamp, substructspread,
-                                             bgscale):
+def tri_prism_1_length_3disobg_substruct_rpd(
+    r, a, locamp, locprec, structamp, spread, substructamp, substructspread, bgscale
+):
     """r are distances over which the model needs to be evaluated,
     e.g. 0.5, 1.5, 2.5, 3.5, ... nm
     a: side length
@@ -606,16 +681,17 @@ def tri_prism_1_length_3disobg_substruct_rpd(r,
     relpos = get_1d_relpos_no_filter(verts)
     dists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2 + relpos[:, 2] ** 2)
     # Initialise rpd array
-    rpd = r * 0.
+    rpd = r * 0.0
     # Fill with pair correlations between 3D Gaussian spreads at vertices
     for d in dists:
         rpd = rpd + structamp * model.pairwise_correlation_3d(r, d, spread)
     # Include single molecule localisation precision
     # This is approximated to isotropic
-    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0., np.sqrt(2) * locprec)
+    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0.0, np.sqrt(2) * locprec)
     # Include substructure spread
-    rpd = rpd + substructamp * model.pairwise_correlation_3d(r, 0.,
-                                                             np.sqrt(2) * substructspread)
+    rpd = rpd + substructamp * model.pairwise_correlation_3d(
+        r, 0.0, np.sqrt(2) * substructspread
+    )
 
     # Include background
     rpd = rpd + r * r * bgscale
@@ -623,8 +699,9 @@ def tri_prism_1_length_3disobg_substruct_rpd(r,
     return rpd
 
 
-def tri_prism_on_grid_1_length_1_prec_rpd(r, a, locamp, locprec, structamp,
-                                          gridspace, gridamp, gridspread):
+def tri_prism_on_grid_1_length_1_prec_rpd(
+    r, a, locamp, locprec, structamp, gridspace, gridamp, gridspread
+):
     """r are distances over which the model needs to be evaluated,
     e.g. 0.5, 1.5, 2.5, 3.5, ... nm
     a: triangular side length
@@ -645,24 +722,28 @@ def tri_prism_on_grid_1_length_1_prec_rpd(r, a, locamp, locprec, structamp,
     relpos = get_1d_relpos_no_filter(verts)
     dists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2 + relpos[:, 2] ** 2)
     # Initialise rpd array
-    rpd = r * 0.
+    rpd = r * 0.0
     # Fill with pair correlations between 3D Gaussian spreads at vertices
     for d in dists:
-        rpd = rpd + structamp * model.pairwise_correlation_3d(r, d, np.sqrt(2) * locprec)
+        rpd = rpd + structamp * model.pairwise_correlation_3d(
+            r, d, np.sqrt(2) * locprec
+        )
     # Include single molecule localisation precision
     # This is approximated to isotropic
-    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0., np.sqrt(2) * locprec)
+    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0.0, np.sqrt(2) * locprec)
 
     # Include neighbouring complexes on square grid:
     rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace, gridspread)
-    rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace * np.sqrt(2),
-                                                        gridspread)
+    rpd = rpd + gridamp * model.pairwise_correlation_2d(
+        r, gridspace * np.sqrt(2), gridspread
+    )
 
     return rpd
 
 
-def tri_pyramid_on_grid_rpd(r, a, b, locamp, locprec, structamp, spread,
-                            gridspace, gridamp, gridspread):
+def tri_pyramid_on_grid_rpd(
+    r, a, b, locamp, locprec, structamp, spread, gridspace, gridamp, gridspread
+):
     """r are distances over which the model needs to be evaluated,
     e.g. 0.5, 1.5, 2.5, 3.5, ... nm
     a: triangular side length
@@ -683,29 +764,38 @@ def tri_pyramid_on_grid_rpd(r, a, b, locamp, locprec, structamp, spread,
     relpos = get_1d_relpos_no_filter(verts)
     dists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2 + relpos[:, 2] ** 2)
     # Initialise rpd array
-    rpd = r * 0.
+    rpd = r * 0.0
     # Fill with pair correlations between 3D Gaussian spreads at vertices
     for d in dists:
         rpd = rpd + structamp * model.pairwise_correlation_3d(r, d, spread)
     # Include single molecule localisation precision
     # This is approximated to isotropic
-    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0., np.sqrt(2) * locprec)
+    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0.0, np.sqrt(2) * locprec)
 
     # Include neighbouring complexes on square grid:
     rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace, gridspread)
-    rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace * np.sqrt(2),
-                                                        gridspread)
+    rpd = rpd + gridamp * model.pairwise_correlation_2d(
+        r, gridspace * np.sqrt(2), gridspread
+    )
 
     return rpd
 
 
-def tri_pyramid_on_grid_2disobg_substructure_rpd(r,
-                                                 a, b,
-                                                 locamp, locprec,
-                                                 structamp, spread,
-                                                 substructamp, substructspread,
-                                                 gridspace, gridamp, gridspread,
-                                                 bgslope):
+def tri_pyramid_on_grid_2disobg_substructure_rpd(
+    r,
+    a,
+    b,
+    locamp,
+    locprec,
+    structamp,
+    spread,
+    substructamp,
+    substructspread,
+    gridspace,
+    gridamp,
+    gridspread,
+    bgslope,
+):
     """r are distances over which the model needs to be evaluated,
     e.g. 0.5, 1.5, 2.5, 3.5, ... nm
     a: triangular side length
@@ -732,22 +822,24 @@ def tri_pyramid_on_grid_2disobg_substructure_rpd(r,
     relpos = get_1d_relpos_no_filter(verts)
     dists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2 + relpos[:, 2] ** 2)
     # Initialise rpd array
-    rpd = r * 0.
+    rpd = r * 0.0
     # Fill with pair correlations between 3D Gaussian spreads at vertices
     for d in dists:
         rpd = rpd + structamp * model.pairwise_correlation_3d(r, d, spread)
     # Include single molecule localisation precision
     # This is approximated to isotropic
-    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0., np.sqrt(2) * locprec)
+    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0.0, np.sqrt(2) * locprec)
 
     # Include substructure spread
-    rpd = rpd + substructamp * model.pairwise_correlation_3d(r, 0.,
-                                                             np.sqrt(2) * substructspread)
+    rpd = rpd + substructamp * model.pairwise_correlation_3d(
+        r, 0.0, np.sqrt(2) * substructspread
+    )
 
     # Include neighbouring complexes on square grid:
     rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace, gridspread)
-    rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace * np.sqrt(2),
-                                                        gridspread)
+    rpd = rpd + gridamp * model.pairwise_correlation_2d(
+        r, gridspace * np.sqrt(2), gridspread
+    )
 
     # Include background
     rpd = rpd + r * bgslope
@@ -755,8 +847,9 @@ def tri_pyramid_on_grid_2disobg_substructure_rpd(r,
     return rpd
 
 
-def cuboid_on_grid_rpd(r, a, b, c, locamp, locprec, structamp, spread,
-                       gridspace, gridamp, gridspread):
+def cuboid_on_grid_rpd(
+    r, a, b, c, locamp, locprec, structamp, spread, gridspace, gridamp, gridspread
+):
     """r are distances over which the model needs to be evaluated,
     e.g. 0.5, 1.5, 2.5, 3.5, ... nm
     a, b, c: cuboid side lengths
@@ -776,28 +869,38 @@ def cuboid_on_grid_rpd(r, a, b, c, locamp, locprec, structamp, spread,
     relpos = get_1d_relpos_no_filter(verts)
     dists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2 + relpos[:, 2] ** 2)
     # Initialise rpd array
-    rpd = r * 0.
+    rpd = r * 0.0
     # Fill with pair correlations between 3D Gaussian spreads at vertices
     for d in dists:
         rpd = rpd + structamp * model.pairwise_correlation_3d(r, d, spread)
     # Include single molecule localisation precision
     # This is approximated to isotropic
-    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0., np.sqrt(2) * locprec)
+    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0.0, np.sqrt(2) * locprec)
 
     # Include neighbouring complexes on square grid:
     rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace, gridspread)
-    rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace * np.sqrt(2),
-                                                        gridspread)
+    rpd = rpd + gridamp * model.pairwise_correlation_2d(
+        r, gridspace * np.sqrt(2), gridspread
+    )
 
     return rpd
 
 
-def cuboid_on_grid_substructure_rpd(r,
-                                    a, b, c,
-                                    locamp, locprec,
-                                    structamp, spread,
-                                    substructamp, substructspread,
-                                    gridspace, gridamp, gridspread):
+def cuboid_on_grid_substructure_rpd(
+    r,
+    a,
+    b,
+    c,
+    locamp,
+    locprec,
+    structamp,
+    spread,
+    substructamp,
+    substructspread,
+    gridspace,
+    gridamp,
+    gridspread,
+):
     """r are distances over which the model needs to be evaluated,
     e.g. 0.5, 1.5, 2.5, 3.5, ... nm
     a, b, c: cuboid side lengths
@@ -821,32 +924,43 @@ def cuboid_on_grid_substructure_rpd(r,
     relpos = get_1d_relpos_no_filter(verts)
     dists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2 + relpos[:, 2] ** 2)
     # Initialise rpd array
-    rpd = r * 0.
+    rpd = r * 0.0
     # Fill with pair correlations between 3D Gaussian spreads at vertices
     for d in dists:
         rpd = rpd + structamp * model.pairwise_correlation_3d(r, d, spread)
     # Include single molecule localisation precision
     # This is approximated to isotropic
-    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0., np.sqrt(2) * locprec)
+    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0.0, np.sqrt(2) * locprec)
     # Include substructure spread
-    rpd = rpd + substructamp * model.pairwise_correlation_3d(r, 0.,
-                                                             np.sqrt(2) * substructspread)
+    rpd = rpd + substructamp * model.pairwise_correlation_3d(
+        r, 0.0, np.sqrt(2) * substructspread
+    )
 
     # Include neighbouring complexes on square grid:
     rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace, gridspread)
-    rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace * np.sqrt(2),
-                                                        gridspread)
+    rpd = rpd + gridamp * model.pairwise_correlation_2d(
+        r, gridspace * np.sqrt(2), gridspread
+    )
 
     return rpd
 
 
-def cuboid_on_grid_2disobg_substructure_rpd(r,
-                                            a, b, c,
-                                            locamp, locprec,
-                                            structamp, spread,
-                                            substructamp, substructspread,
-                                            gridspace, gridamp, gridspread,
-                                            bgslope):
+def cuboid_on_grid_2disobg_substructure_rpd(
+    r,
+    a,
+    b,
+    c,
+    locamp,
+    locprec,
+    structamp,
+    spread,
+    substructamp,
+    substructspread,
+    gridspace,
+    gridamp,
+    gridspread,
+    bgslope,
+):
     """r are distances over which the model needs to be evaluated,
     e.g. 0.5, 1.5, 2.5, 3.5, ... nm
     a, b, c: cuboid side lengths
@@ -872,29 +986,32 @@ def cuboid_on_grid_2disobg_substructure_rpd(r,
     relpos = get_1d_relpos_no_filter(verts)
     dists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2 + relpos[:, 2] ** 2)
     # Initialise rpd array
-    rpd = r * 0.
+    rpd = r * 0.0
     # Fill with pair correlations between 3D Gaussian spreads at vertices
     for d in dists:
         rpd = rpd + structamp * model.pairwise_correlation_3d(r, d, spread)
     # Include single molecule localisation precision
     # This is approximated to isotropic
-    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0., np.sqrt(2) * locprec)
+    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0.0, np.sqrt(2) * locprec)
     # Include substructure spread
-    rpd = rpd + substructamp * model.pairwise_correlation_3d(r, 0.,
-                                                             np.sqrt(2) * substructspread)
+    rpd = rpd + substructamp * model.pairwise_correlation_3d(
+        r, 0.0, np.sqrt(2) * substructspread
+    )
 
     # Include neighbouring complexes on square grid:
     rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace, gridspread)
-    rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace * np.sqrt(2),
-                                                        gridspread)
+    rpd = rpd + gridamp * model.pairwise_correlation_2d(
+        r, gridspace * np.sqrt(2), gridspread
+    )
     # Include background
     rpd = rpd + r * bgslope
 
     return rpd
 
 
-def cuboid_on_grid_square_base_rpd(r, a, b, locamp, locprec, structamp, spread,
-                                   gridspace, gridamp, gridspread):
+def cuboid_on_grid_square_base_rpd(
+    r, a, b, locamp, locprec, structamp, spread, gridspace, gridamp, gridspread
+):
     """r are distances over which the model needs to be evaluated,
     e.g. 0.5, 1.5, 2.5, 3.5, ... nm
     a, b, c: cuboid side lengths
@@ -914,24 +1031,26 @@ def cuboid_on_grid_square_base_rpd(r, a, b, locamp, locprec, structamp, spread,
     relpos = get_1d_relpos_no_filter(verts)
     dists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2 + relpos[:, 2] ** 2)
     # Initialise rpd array
-    rpd = r * 0.
+    rpd = r * 0.0
     # Fill with pair correlations between 3D Gaussian spreads at vertices
     for d in dists:
         rpd = rpd + structamp * model.pairwise_correlation_3d(r, d, spread)
     # Include single molecule localisation precision
     # This is approximated to isotropic
-    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0., np.sqrt(2) * locprec)
+    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0.0, np.sqrt(2) * locprec)
 
     # Include neighbouring complexes on square grid:
     rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace, gridspread)
-    rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace * np.sqrt(2),
-                                                        gridspread)
+    rpd = rpd + gridamp * model.pairwise_correlation_2d(
+        r, gridspace * np.sqrt(2), gridspread
+    )
 
     return rpd
 
 
-def cube_on_grid_rpd(r, a, locamp, locprec, structamp, spread,
-                     gridspace, gridamp, gridspread):
+def cube_on_grid_rpd(
+    r, a, locamp, locprec, structamp, spread, gridspace, gridamp, gridspread
+):
     """r are distances over which the model needs to be evaluated,
     e.g. 0.5, 1.5, 2.5, 3.5, ... nm
     a, b, c: cuboid side lengths
@@ -955,25 +1074,36 @@ def cube_on_grid_rpd(r, a, locamp, locprec, structamp, spread,
     relpos = get_1d_relpos_no_filter(verts)
     dists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2 + relpos[:, 2] ** 2)
     # Initialise rpd array
-    rpd = r * 0.
+    rpd = r * 0.0
     # Fill with pair correlations between 3D Gaussian spreads at vertices
     for d in dists:
         rpd = rpd + structamp * model.pairwise_correlation_3d(r, d, spread)
     # Include single molecule localisation precision
     # This is approximated to isotropic
-    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0., np.sqrt(2) * locprec)
+    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0.0, np.sqrt(2) * locprec)
 
     # Include neighbouring complexes on square grid:
     rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace, gridspread)
-    rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace * np.sqrt(2),
-                                                        gridspread)
+    rpd = rpd + gridamp * model.pairwise_correlation_2d(
+        r, gridspace * np.sqrt(2), gridspread
+    )
 
     return rpd
 
 
-def cube_on_grid_substructure_rpd(r, a, locamp, locprec, structamp, spread,
-                                  substructamp, substructspread,
-                                  gridspace, gridamp, gridspread):
+def cube_on_grid_substructure_rpd(
+    r,
+    a,
+    locamp,
+    locprec,
+    structamp,
+    spread,
+    substructamp,
+    substructspread,
+    gridspace,
+    gridamp,
+    gridspread,
+):
     """r are distances over which the model needs to be evaluated,
     e.g. 0.5, 1.5, 2.5, 3.5, ... nm
     a, b, c: cuboid side lengths
@@ -997,28 +1127,40 @@ def cube_on_grid_substructure_rpd(r, a, locamp, locprec, structamp, spread,
     relpos = get_1d_relpos_no_filter(verts)
     dists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2 + relpos[:, 2] ** 2)
     # Initialise rpd array
-    rpd = r * 0.
+    rpd = r * 0.0
     # Fill with pair correlations between 3D Gaussian spreads at vertices
     for d in dists:
         rpd = rpd + structamp * model.pairwise_correlation_3d(r, d, spread)
     # Include single molecule localisation precision
     # This is approximated to isotropic
-    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0., np.sqrt(2) * locprec)
+    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0.0, np.sqrt(2) * locprec)
     # Include substructure spread                                                    np.sqrt(2) * substructspread)
-    rpd = rpd + substructamp * model.pairwise_correlation_3d(r, 0.,
-                                                             np.sqrt(2) * substructspread)
+    rpd = rpd + substructamp * model.pairwise_correlation_3d(
+        r, 0.0, np.sqrt(2) * substructspread
+    )
     # Include neighbouring complexes on square grid:
     rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace, gridspread)
-    rpd = rpd + gridamp \
-            * model.pairwise_correlation_2d(r, gridspace * np.sqrt(2), gridspread)
+    rpd = rpd + gridamp * model.pairwise_correlation_2d(
+        r, gridspace * np.sqrt(2), gridspread
+    )
 
     return rpd
 
 
-def cube_on_grid_2disobg_substructure_rpd(r, a, locamp, locprec, structamp, spread,
-                                          substructamp, substructspread,
-                                          gridspace, gridamp, gridspread,
-                                          bgslope):
+def cube_on_grid_2disobg_substructure_rpd(
+    r,
+    a,
+    locamp,
+    locprec,
+    structamp,
+    spread,
+    substructamp,
+    substructspread,
+    gridspace,
+    gridamp,
+    gridspread,
+    bgslope,
+):
     """r are distances over which the model needs to be evaluated,
     e.g. 0.5, 1.5, 2.5, 3.5, ... nm
     a, b, c: cuboid side lengths
@@ -1044,21 +1186,23 @@ def cube_on_grid_2disobg_substructure_rpd(r, a, locamp, locprec, structamp, spre
     relpos = get_1d_relpos_no_filter(verts)
     dists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2 + relpos[:, 2] ** 2)
     # Initialise rpd array
-    rpd = r * 0.
+    rpd = r * 0.0
     # Fill with pair correlations between 3D Gaussian spreads at vertices
     for d in dists:
         rpd = rpd + structamp * model.pairwise_correlation_3d(r, d, spread)
     # Include single molecule localisation precision
     # This is approximated to isotropic
-    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0., np.sqrt(2) * locprec)
+    rpd = rpd + locamp * model.pairwise_correlation_3d(r, 0.0, np.sqrt(2) * locprec)
     # Include substructure spread
-    rpd = rpd + substructamp \
-            * model.pairwise_correlation_3d(r, 0., np.sqrt(2) * substructspread)
+    rpd = rpd + substructamp * model.pairwise_correlation_3d(
+        r, 0.0, np.sqrt(2) * substructspread
+    )
 
     # Include neighbouring complexes on square grid:
     rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace, gridspread)
-    rpd = rpd + gridamp * model.pairwise_correlation_2d(r, gridspace * np.sqrt(2),
-                                                        gridspread)
+    rpd = rpd + gridamp * model.pairwise_correlation_2d(
+        r, gridspace * np.sqrt(2), gridspread
+    )
     # Include background
     rpd = rpd + r * bgslope
 

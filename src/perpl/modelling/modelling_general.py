@@ -42,9 +42,9 @@ from scipy.optimize import curve_fit, least_squares
 
 class PERPLModel:
     """Generic model to be fit
-    
+
     Attributes:
-        
+
         initial_params: Initial guesses for parametesr
         param_bounds: Bounds on parameters
         pairwise correlation: Pairwise correlation function for the data
@@ -53,22 +53,22 @@ class PERPLModel:
     """
 
     def __init__(
-            self,
-            dimension=1, # 1 or 2
-            background=None, # none, flat, linear
-            n_peaks=0, # 0, 1, ...
-            peak_type="variable", # variable or fixed
-            repeat_distance="one", # one, multiple_fixed or multiple_ratio
-            repeat_distance_ratio=[], # floats representing ratio of repeat distances
-            repeats=False,
-            offset=False,
-            normalise=False,
-            params_initial = None,
-            params_lower = None,
-            params_upper = None,
-        ):  
+        self,
+        dimension=1,  # 1 or 2
+        background=None,  # none, flat, linear
+        n_peaks=0,  # 0, 1, ...
+        peak_type="variable",  # variable or fixed
+        repeat_distance="one",  # one, multiple_fixed or multiple_ratio
+        repeat_distance_ratio=[],  # floats representing ratio of repeat distances
+        repeats=False,
+        offset=False,
+        normalise=False,
+        params_initial=None,
+        params_lower=None,
+        params_upper=None,
+    ):
         """Initialise
-        
+
         Args:
             dimension: Dimension of the fit
             background: None, "flat" or "linear" background
@@ -78,9 +78,9 @@ class PERPLModel:
                 one: One repeat distance
                 multiple_fixed : As many repeats as peaks at user defined
                     distances
-                multiple_: As many repeats as peaks, at distances calculated 
+                multiple_: As many repeats as peaks, at distances calculated
                     by scaling up one repeat distance by different ratios
-            repeat_distance_ratio: 
+            repeat_distance_ratio:
             repeats: TRUE or FALSE to have repeated localisations
             offset: TRUE or FALSE to include offset
             normalise: TRUE or FALSE to normalise
@@ -88,8 +88,8 @@ class PERPLModel:
             params_lower: Dictionary of lower bounds on params
             params_upper: Dictionary of upper bounds on params
         """
-        
-        if dimension not in [1,2,3]:
+
+        if dimension not in [1, 2, 3]:
             raise ValueError("Dimension should be 1,2 or 3")
         if background not in [None, "flat", "linear"]:
             raise ValueError("Background should be None, flat or linear")
@@ -98,7 +98,9 @@ class PERPLModel:
         if peak_type not in ["variable", "fixed_ratio"]:
             raise ValueError("Peak type should be variable or fixed_ratio")
         if repeat_distance not in ["one", "multiple_fixed", "multiple_ratio"]:
-            raise ValueError("Repeat distance should be one, multiple_fixed or multiple_ratio")
+            raise ValueError(
+                "Repeat distance should be one, multiple_fixed or multiple_ratio"
+            )
         if repeat_distance == "multiple_ratio":
             if len(repeat_distance_ratio) != n_peaks:
                 raise ValueError("Should be one repeat distance ratio per peak")
@@ -110,7 +112,7 @@ class PERPLModel:
             raise ValueError("Offset should be True or False")
         if not type(normalise) == bool:
             raise ValueError("Normalise should be True or False")
-        
+
         # number of params
         n_params = 0
         self.initial_params = {}
@@ -151,20 +153,30 @@ class PERPLModel:
                 n_params += 1
             elif peak_type == "variable":
                 for i in range(n_peaks):
-                    self.initial_params[f"amp_peak_{i+1}"] = params_initial[f"amp_peak_{i+1}"]
-                    self.params_lower[f"amp_peak_{i+1}"] = params_lower[f"amp_peak_{i+1}"]
-                    self.params_upper[f"amp_peak_{i+1}"] =  params_upper[f"amp_peak_{i+1}"]
+                    self.initial_params[f"amp_peak_{i+1}"] = params_initial[
+                        f"amp_peak_{i+1}"
+                    ]
+                    self.params_lower[f"amp_peak_{i+1}"] = params_lower[
+                        f"amp_peak_{i+1}"
+                    ]
+                    self.params_upper[f"amp_peak_{i+1}"] = params_upper[
+                        f"amp_peak_{i+1}"
+                    ]
                 n_params += n_peaks
 
             # repeat distances
             self.repeat_distance_type = repeat_distance
             self.repeat_distances_ratio = repeat_distance_ratio
 
-            self.initial_params["repeat_distance_1"] = params_initial["repeat_distance_1"]
+            self.initial_params["repeat_distance_1"] = params_initial[
+                "repeat_distance_1"
+            ]
             self.params_lower["repeat_distance_1"] = params_lower["repeat_distance_1"]
             self.params_upper["repeat_distance_1"] = params_upper["repeat_distance_1"]
 
-            self.initial_params["repeat_broadening"] = params_initial["repeat_broadening"]
+            self.initial_params["repeat_broadening"] = params_initial[
+                "repeat_broadening"
+            ]
             self.params_lower["repeat_broadening"] = params_lower["repeat_broadening"]
             self.params_upper["repeat_broadening"] = params_upper["repeat_broadening"]
 
@@ -174,10 +186,16 @@ class PERPLModel:
                 for i in range(n_peaks):
                     if i == 0:
                         continue
-                    self.initial_params[f"repeat_distance_{i+1}"] = params_initial[f"repeat_distance_{i+1}"]
-                    self.params_lower[f"repeat_distance_{i+1}"] = params_lower[f"repeat_distance_{i+1}"]
-                    self.params_upper[f"repeat_distance_{i+1}"] =  params_upper[f"repeat_distance_{i+1}"]
-                
+                    self.initial_params[f"repeat_distance_{i+1}"] = params_initial[
+                        f"repeat_distance_{i+1}"
+                    ]
+                    self.params_lower[f"repeat_distance_{i+1}"] = params_lower[
+                        f"repeat_distance_{i+1}"
+                    ]
+                    self.params_upper[f"repeat_distance_{i+1}"] = params_upper[
+                        f"repeat_distance_{i+1}"
+                    ]
+
                 n_params += n_peaks - 1
 
         # repeats
@@ -195,25 +213,29 @@ class PERPLModel:
         # normalise
         if normalise:
             raise NotImplementedError("Not implemented normalise yet")
-    
+
         # offset
         if offset:
             raise NotImplementedError("Offset not implemented yet")
-        
-        self.param_bounds = (np.array(list(self.params_lower.values())), np.array(list(self.params_upper.values())))
+
+        self.param_bounds = (
+            np.array(list(self.params_lower.values())),
+            np.array(list(self.params_upper.values())),
+        )
         self.n_params = n_params
         self.param_names = list(self.initial_params.keys())
 
-
-    def model_rpd(self, 
-                  x_values,
-                  repeat_distances=[],
-                  repeat_broadening=0.0,
-                  loc_prec_sd=0.0,
-                  loc_prec_amp=None,
-                  bg_slope=0.0,
-                  bg_offset=0.0,
-                  amps=[]):
+    def model_rpd(
+        self,
+        x_values,
+        repeat_distances=[],
+        repeat_broadening=0.0,
+        loc_prec_sd=0.0,
+        loc_prec_amp=None,
+        bg_slope=0.0,
+        bg_offset=0.0,
+        amps=[],
+    ):
 
         # background
         rpd = bg_offset + bg_slope * x_values
@@ -221,7 +243,7 @@ class PERPLModel:
         # peaks
         for peak_idx in range(self.n_peaks):
             if self.peak_type == "fixed_ratio":
-                amp = amps[0] * (1 - peak_idx/self.n_peaks)
+                amp = amps[0] * (1 - peak_idx / self.n_peaks)
             elif self.peak_type == "variable":
                 amp = amps[peak_idx]
 
@@ -232,7 +254,9 @@ class PERPLModel:
                 repeat_distance = repeat_distances[peak_idx]
 
             elif self.repeat_distance_type == "multiple_ratio":
-                repeat_distance = repeat_distances[0] * self.repeat_distances_ratio[peak_idx]
+                repeat_distance = (
+                    repeat_distances[0] * self.repeat_distances_ratio[peak_idx]
+                )
 
             rpd += amp * self.pairwise_correlation(
                 x_values,
@@ -243,18 +267,14 @@ class PERPLModel:
         # repeats
         if loc_prec_amp is not None:
             rpd += loc_prec_amp * self.pairwise_correlation(
-                x_values,
-                0.,
-                np.sqrt(2) * (loc_prec_sd)
+                x_values, 0.0, np.sqrt(2) * (loc_prec_sd)
             )
-
 
         # normalise
 
         # offset
 
         return rpd
-
 
     def model_rpd_wrapper(self, x, params):
 
@@ -281,22 +301,17 @@ class PERPLModel:
 
         return self.model_rpd(x, **kwargs, amps=amps, repeat_distances=repeat_distances)
 
-
     def model_rpd_wrapper_vector(self, vector_input):
 
         return self.model_rpd_wrapper(vector_input[0], vector_input[1:])
 
-
     def error_fn(self, params, x, y):
 
         output = self.model_rpd_wrapper(x, params)
-    
+
         return output - y
 
-
-    def fit_to_experiment(self,
-                          x,
-                          y):
+    def fit_to_experiment(self, x, y):
         """Use scipy.optimize.curve_fit to do non-linear least-squares fitting
         of model relative position distribution to an experimental distribution,
         e.g. histogram or kernel density estimation.
@@ -304,7 +319,7 @@ class PERPLModel:
         Args:
              x:
                 Distance values at which the experimental distribution of
-                distances and the model are evaluated i.e. calculation 
+                distances and the model are evaluated i.e. calculation
                 points
             y:
                 Experimental pairwise distance distribution."""
@@ -317,9 +332,9 @@ class PERPLModel:
                 bounds=self.param_bounds,
                 args=(x, y),
                 # not sure whether to include this or not...
-                x_scale=(self.param_bounds[0] + self.param_bounds[1])/2,
-                )
-            
+                x_scale=(self.param_bounds[0] + self.param_bounds[1]) / 2,
+            )
+
             # Param optimal and covariance
             popt = res.x
 
@@ -327,7 +342,7 @@ class PERPLModel:
             _, s, VT = svd(res.jac, full_matrices=False)
             threshold = np.finfo(float).eps * max(res.jac.shape) * s[0]
             s = s[s > threshold]
-            VT = VT[:s.size]
+            VT = VT[: s.size]
             pcov = np.dot(VT.T / s**2, VT)
 
             ysize = len(res.fun)
@@ -347,14 +362,14 @@ class PERPLModel:
         except RuntimeError:
             print("Model didn't fit well so exceeded runtime...")
             return None, None, None, 1e10, 1e10, 1e10
-    
+
         # plt.plot(x, model(x, *popt))
         perr = np.sqrt(np.diag(pcov))
-        #params = np.column_stack((popt, perr))
-        #print(params)
+        # params = np.column_stack((popt, perr))
+        # print(params)
         k = float(self.n_params + 1)  # No. free parameters,
-                                # including var. of residuals
-                                # for least squares fit.
+        # including var. of residuals
+        # for least squares fit.
 
         ssr = np.sum((self.model_rpd_wrapper(x, popt) - y) ** 2)
         aic = len(x) * np.log(ssr / len(x)) + 2 * k
@@ -363,9 +378,9 @@ class PERPLModel:
         else:
             aiccorr = aic + 2 * k * (k + 1) / (len(x) - k - 1)
 
-        print('SSR =', ssr)
-        print('AIC =', aic)
-        print('AICcorr =', aiccorr)
+        print("SSR =", ssr)
+        print("AIC =", aic)
+        print("AICcorr =", aiccorr)
 
         # assign values
         self.params_optimised = popt
@@ -375,10 +390,7 @@ class PERPLModel:
         self.aic = aic
         self.aic_corrected = aiccorr
 
-
-    def calculate_stdev(
-            self,
-            x):
+    def calculate_stdev(self, x):
         """Use automatic differentiation to acquire derivatives, and multiply
         with covariance matrix to acquire variance, then sd of a model relative
         position distribution. When numdifftools.Gradient runs, output to screen
@@ -409,7 +421,7 @@ class PERPLModel:
         stdev = np.zeros(len(x))
 
         for i, x_value in enumerate(x):
-            
+
             # Pass arguments as required for differentiation
             vector_input = np.concatenate(([x_value], self.params_optimised))
             grads = nd.Gradient(self.model_rpd_wrapper_vector)(vector_input)
@@ -448,10 +460,10 @@ class ModelWithFitSettings:
         Use np.inf with an appropriate sign to disable bounds on all or some
         parameters.
     """
-    def __init__(self, model_rpd,
-                 initial_params=None,
-                 param_bounds=None,
-                 vector_input_model=None):
+
+    def __init__(
+        self, model_rpd, initial_params=None, param_bounds=None, vector_input_model=None
+    ):
         self.model_rpd = model_rpd
         self.initial_params = initial_params
         self.param_bounds = param_bounds
@@ -476,19 +488,29 @@ def pairwise_correlation_3d(r, rmean, sigma):
     if rmean == 0:
         # Using approximation of sinh from
         # http://mathworld.wolfram.com/SeriesExpansion.html
-        p = np.sqrt(2 / np.pi) \
-            * (r ** 2 / sigma ** 3) \
-            * (np.exp(-(rmean ** 2 + r ** 2)
-               / (2 * sigma ** 2))
-               )
+        p = (
+            np.sqrt(2 / np.pi)
+            * (r**2 / sigma**3)
+            * (np.exp(-(rmean**2 + r**2) / (2 * sigma**2)))
+        )
     # if rmean < (sigma * 5.):
-    elif (np.max(r) * rmean / sigma ** 2) < 700.:
-        p = np.sqrt(2 / np.pi) * (r / (sigma * rmean)) \
-                * (np.exp(-(rmean ** 2 + r ** 2) / (2 * sigma ** 2)) \
-                * np.sinh(r * rmean / sigma ** 2))
+    elif (np.max(r) * rmean / sigma**2) < 700.0:
+        p = (
+            np.sqrt(2 / np.pi)
+            * (r / (sigma * rmean))
+            * (
+                np.exp(-(rmean**2 + r**2) / (2 * sigma**2))
+                * np.sinh(r * rmean / sigma**2)
+            )
+        )
     else:  # Approximate overly large sinh()
-        p = 1. / 2. * np.sqrt(2 / np.pi) * (r / (sigma * rmean)) \
-            * np.exp(-((r - rmean) ** 2) / (2 * sigma ** 2))
+        p = (
+            1.0
+            / 2.0
+            * np.sqrt(2 / np.pi)
+            * (r / (sigma * rmean))
+            * np.exp(-((r - rmean) ** 2) / (2 * sigma**2))
+        )
     return p
 
 
@@ -515,29 +537,37 @@ def pairwise_correlation_2d(r, rmean, sigma):
     """
     # If r is a single value, rather than an array:
     if np.isscalar(r):
-        p = 0 # Might help to diagnose if there are problems
-        if (rmean * r / sigma ** 2) < 700:   
-            p = (r / sigma ** 2) * (np.exp(-(rmean ** 2 + r ** 2) \
-                / (2 * sigma ** 2)) * i0(r * rmean / sigma ** 2))
+        p = 0  # Might help to diagnose if there are problems
+        if (rmean * r / sigma**2) < 700:
+            p = (r / sigma**2) * (
+                np.exp(-(rmean**2 + r**2) / (2 * sigma**2)) * i0(r * rmean / sigma**2)
+            )
         else:  # Approximate overly large i0()
-            p = 1 / (np.sqrt(2 * np.pi) * sigma) * np.sqrt(r / rmean) \
-                * np.exp(-((r - rmean) ** 2) / (2 * sigma ** 2))
+            p = (
+                1
+                / (np.sqrt(2 * np.pi) * sigma)
+                * np.sqrt(r / rmean)
+                * np.exp(-((r - rmean) ** 2) / (2 * sigma**2))
+            )
 
-    # If z is an array of distances at which to evaluate the function:    
+    # If z is an array of distances at which to evaluate the function:
     else:
-        if (np.max(r) * rmean / sigma ** 2) < 700.:
-            p = (r / sigma ** 2
-                    * (np.exp(-(rmean ** 2 + r ** 2)
-                                / (2 * sigma ** 2)
-                                )
-                        * i0(r * rmean / sigma ** 2)
-                        )
-                    )
+        if (np.max(r) * rmean / sigma**2) < 700.0:
+            p = (
+                r
+                / sigma**2
+                * (
+                    np.exp(-(rmean**2 + r**2) / (2 * sigma**2))
+                    * i0(r * rmean / sigma**2)
+                )
+            )
         else:  # Approximate for overly large i0()
-            p = (1 / (np.sqrt(2 * np.pi) * sigma)
-                    * np.sqrt(r / rmean)
-                    * np.exp(-((r - rmean) ** 2) / (2 * sigma ** 2))
-                    )
+            p = (
+                1
+                / (np.sqrt(2 * np.pi) * sigma)
+                * np.sqrt(r / rmean)
+                * np.exp(-((r - rmean) ** 2) / (2 * sigma**2))
+            )
     return p
 
 
@@ -564,29 +594,52 @@ def pair_corr_2d_standardised(r, rmean, sigma):
     """
     # If r is a single value, rather than an array:
     if np.isscalar(r):
-        p = 0 # Might help to diagnose if there are problems
-        if (rmean * r / sigma ** 2) < 700:   
-            p = 1 / r * (r / sigma ** 2) * (np.exp(-(rmean ** 2 + r ** 2) \
-                / (2 * sigma ** 2)) * i0(r * rmean / sigma ** 2))
+        p = 0  # Might help to diagnose if there are problems
+        if (rmean * r / sigma**2) < 700:
+            p = (
+                1
+                / r
+                * (r / sigma**2)
+                * (
+                    np.exp(-(rmean**2 + r**2) / (2 * sigma**2))
+                    * i0(r * rmean / sigma**2)
+                )
+            )
         else:  # Approximate overly large i0()
-            p = 1 / r / (np.sqrt(2 * np.pi) * sigma) * np.sqrt(r / rmean) \
-                * np.exp(-((r - rmean) ** 2) / (2 * sigma ** 2))
+            p = (
+                1
+                / r
+                / (np.sqrt(2 * np.pi) * sigma)
+                * np.sqrt(r / rmean)
+                * np.exp(-((r - rmean) ** 2) / (2 * sigma**2))
+            )
 
-    # If z is an array of distances at which to evaluate the function:    
+    # If z is an array of distances at which to evaluate the function:
     else:
-        if (np.max(r) * rmean / sigma ** 2) < 700.:
-            p = 1 / r * (r / sigma ** 2
-                    * (np.exp(-(rmean ** 2 + r ** 2)
-                                / (2 * sigma ** 2)
-                                )
-                        * i0(r * rmean / sigma ** 2)
-                        )
+        if (np.max(r) * rmean / sigma**2) < 700.0:
+            p = (
+                1
+                / r
+                * (
+                    r
+                    / sigma**2
+                    * (
+                        np.exp(-(rmean**2 + r**2) / (2 * sigma**2))
+                        * i0(r * rmean / sigma**2)
                     )
+                )
+            )
         else:  # Approximate for overly large i0()
-            p = 1 / r * (1 / (np.sqrt(2 * np.pi) * sigma)
+            p = (
+                1
+                / r
+                * (
+                    1
+                    / (np.sqrt(2 * np.pi) * sigma)
                     * np.sqrt(r / rmean)
-                    * np.exp(-((r - rmean) ** 2) / (2 * sigma ** 2))
-                    )
+                    * np.exp(-((r - rmean) ** 2) / (2 * sigma**2))
+                )
+            )
     return p
 
 
@@ -603,42 +656,56 @@ def pairwise_correlation_1d(z, zmean, sigma):
 
     # If z is a single value, rather than an array:
     if np.isscalar(z):
-        p = 0 # Might help to diagnose if there are problems
-        if (zmean * z / sigma ** 2) < 500:
-            p = (np.sqrt(2 / np.pi) * 1. / sigma
-                 * (np.exp(-(zmean ** 2 + z ** 2)
-                 / (2 * sigma ** 2)) * np.cosh(zmean * z / sigma ** 2))
+        p = 0  # Might help to diagnose if there are problems
+        if (zmean * z / sigma**2) < 500:
+            p = (
+                np.sqrt(2 / np.pi)
+                * 1.0
+                / sigma
+                * (
+                    np.exp(-(zmean**2 + z**2) / (2 * sigma**2))
+                    * np.cosh(zmean * z / sigma**2)
+                )
             )
         else:
-            p = ((1. / 2.) * np.sqrt(2 / np.pi) * 1. / sigma
-                 * (np.exp(-((z - zmean) ** 2) / (2 * sigma ** 2)))
+            p = (
+                (1.0 / 2.0)
+                * np.sqrt(2 / np.pi)
+                * 1.0
+                / sigma
+                * (np.exp(-((z - zmean) ** 2) / (2 * sigma**2)))
             )
 
     # If z is an array of distances at which to evaluate the function:
     else:
-        p = z * 0.
+        p = z * 0.0
         for i, test_z in enumerate(z):
-            if (zmean * test_z / sigma ** 2) < 500:
-                p[i] = (np.sqrt(2 / np.pi) * 1. / sigma
-                        * np.exp(-(zmean ** 2 + test_z ** 2)
-                                 / (2 * sigma ** 2)
-                                )
-                        * np.cosh(zmean * test_z / sigma ** 2)
+            if (zmean * test_z / sigma**2) < 500:
+                p[i] = (
+                    np.sqrt(2 / np.pi)
+                    * 1.0
+                    / sigma
+                    * np.exp(-(zmean**2 + test_z**2) / (2 * sigma**2))
+                    * np.cosh(zmean * test_z / sigma**2)
                 )
             else:
-                p[i] = ((1. / 2.) * np.sqrt(2 / np.pi) * 1. / sigma
-                        * (np.exp(-((test_z - zmean) ** 2) / (2 * sigma ** 2)))
+                p[i] = (
+                    (1.0 / 2.0)
+                    * np.sqrt(2 / np.pi)
+                    * 1.0
+                    / sigma
+                    * (np.exp(-((test_z - zmean) ** 2) / (2 * sigma**2)))
                 )
 
-    #if zmean < (sigma * 10.):
+    # if zmean < (sigma * 10.):
     #    p = np.sqrt(2 / np.pi) * 1 / sigma * (np.exp(-(zmean ** 2 + z ** 2) \
     #                / (2 * sigma ** 2)) * np.cosh(zmean * z / sigma ** 2))
-    #else:  # Approximate overly large np.cosh()
+    # else:  # Approximate overly large np.cosh()
     #    """ Old version - mistakenly kept z/zmean factor from 2D case
     #    in multiplier. Obviously, this is 1 at z=zmean. """
-        # p = 1. / 2. * np.sqrt(2 / np.pi) * 1 / sigma * np.sqrt(z / zmean) * (
-        #        np.exp(-((z - zmean) ** 2) / (2 * sigma ** 2))
-        #        )
+    # p = 1. / 2. * np.sqrt(2 / np.pi) * 1 / sigma * np.sqrt(z / zmean) * (
+    #        np.exp(-((z - zmean) ** 2) / (2 * sigma ** 2))
+    #        )
     #    """ New version - removed z/zmean in multiplier. """
     #    p = (1. / 2.) * np.sqrt(2 / np.pi) * 1 / sigma \
     #        * (np.exp(-((z - zmean) ** 2) / (2 * sigma ** 2)))
@@ -650,8 +717,12 @@ def gauss1d(x_values, xmean, sigma):
     with true separation rmean, when zmean >> sigma.
     Sigma = sum in quadrature of sigma for each fluorophore.
     """
-    p = np.sqrt(2 / np.pi) * 1 / sigma \
-        * (np.exp(-((x_values - xmean) ** 2) / (2 * sigma ** 2)))
+    p = (
+        np.sqrt(2 / np.pi)
+        * 1
+        / sigma
+        * (np.exp(-((x_values - xmean) ** 2) / (2 * sigma**2)))
+    )
     return p
 
 
@@ -701,7 +772,7 @@ def rotate_3d_vectors(vectors, axis, angle):
     rotated_vectors : numpy array, shape (n, 3)
         Input vectors rotated according to the input parameters.
     """
-    # Normalise rotation axis vector, in case it is not normalised 
+    # Normalise rotation axis vector, in case it is not normalised
     length = np.linalg.norm(axis)
     axis = axis / length
 
@@ -716,7 +787,7 @@ def rotate_3d_vectors(vectors, axis, angle):
     return rotated_vectors
 
 
-def make_x_histogram_nm(dists, fitlength=400., axes=None):
+def make_x_histogram_nm(dists, fitlength=400.0, axes=None):
     """Generate a histogram of distances in one direction (e.g. X) between
     localisations, with 1-nm bins. Bin values averaged so that the mean = 1
     (this helps with using scipy.optimise.curve_fit).
@@ -731,15 +802,18 @@ def make_x_histogram_nm(dists, fitlength=400., axes=None):
     if axes is None:
         plt.figure()
         axes = plt.subplot(111)
-    distancehist = plt.hist(dists,
-                            weights=np.repeat(float(fitlength) / len(dists),
-                                              len(dists)),
-                            bins=np.arange(float(fitlength) + 1),
-                            color='lightblue')[0]
+    distancehist = plt.hist(
+        dists,
+        weights=np.repeat(float(fitlength) / len(dists), len(dists)),
+        bins=np.arange(float(fitlength) + 1),
+        color="lightblue",
+    )[0]
     return distancehist, fitlength
 
 
-def make_xy_histogram_nm(relpos, fitlength=400., axes=None, fig_toggle=True):  # plot_toggle):
+def make_xy_histogram_nm(
+    relpos, fitlength=400.0, axes=None, fig_toggle=True
+):  # plot_toggle):
     """Generate a histogram of Euclidean distance in XY between localisations,
     with 1-nm bins. Bin values averaged so that the mean = 1
     (this helps with using scipy.optimise.curve_fit).
@@ -758,25 +832,24 @@ def make_xy_histogram_nm(relpos, fitlength=400., axes=None, fig_toggle=True):  #
         if axes is None:
             plt.figure()
             axes = plt.subplot(111)
-        xyhist = plt.hist(xydists,
-                          weights=np.repeat(float(fitlength) / len(xydists),
-                                            len(xydists)),
-                          bins=np.arange(float(fitlength) + 1),
-                          color='lightblue',
-                          alpha=0.5)[0]
+        xyhist = plt.hist(
+            xydists,
+            weights=np.repeat(float(fitlength) / len(xydists), len(xydists)),
+            bins=np.arange(float(fitlength) + 1),
+            color="lightblue",
+            alpha=0.5,
+        )[0]
         return xyhist, fitlength
     if fig_toggle is False:
         xyhist = np.histogram(
-                    xydists,
-                    weights=np.repeat(float(fitlength) / len(xydists),
-                                      len(xydists)
-                                      ),
-                    bins=np.arange(float(fitlength) + 1)
-                    )[0]
+            xydists,
+            weights=np.repeat(float(fitlength) / len(xydists), len(xydists)),
+            bins=np.arange(float(fitlength) + 1),
+        )[0]
         return xyhist, fitlength
 
 
-def make_xyz_histogram_nm(relpos, fitlength=400., axes=None):
+def make_xyz_histogram_nm(relpos, fitlength=400.0, axes=None):
     """Generate a histogram of 3D Euclidean distances between localisations,
     with 1-nm bins. Bin values averaged so that the mean = 1
     (this helps with using scipy.optimise.curve_fit).
@@ -789,19 +862,17 @@ def make_xyz_histogram_nm(relpos, fitlength=400., axes=None):
         xyzhist:     Histogram bin values with mean = 1.
         fitlength:  Maximum distance included in the histogram.
     """
-    xyzdists = np.sqrt(relpos[:, 0] ** 2
-                       + relpos[:, 1] ** 2
-                       + relpos[:, 2] ** 2)
+    xyzdists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2 + relpos[:, 2] ** 2)
     if axes is None:
         plt.figure()
         axes = plt.subplot(111)
-    xyzhist = plt.hist(xyzdists,
-                       weights=np.repeat(float(fitlength) / len(xyzdists),
-                                         len(xyzdists)
-                                         ),
-                       bins=np.arange(float(fitlength) + 1),
-                       color='lightblue',
-                       alpha=0.5)[0]
+    xyzhist = plt.hist(
+        xyzdists,
+        weights=np.repeat(float(fitlength) / len(xyzdists), len(xyzdists)),
+        bins=np.arange(float(fitlength) + 1),
+        color="lightblue",
+        alpha=0.5,
+    )[0]
     return xyzhist, fitlength
 
 
@@ -827,7 +898,7 @@ def kde_1nm(distances, locprec, fitlength):
     smoothing = np.sqrt(2) * locprec
     kernel_scalar = smoothing / np.std(distances)
     kernel = stats.gaussian_kde(distances, bw_method=kernel_scalar)
-    x = np.arange(np.round(smoothing * 3), fitlength + 1, 1.)
+    x = np.arange(np.round(smoothing * 3), fitlength + 1, 1.0)
 
     # Multiply to match histogram, as KDE gets normalised as a pdf.
     kde = kernel(x) * len(distances)
@@ -835,11 +906,9 @@ def kde_1nm(distances, locprec, fitlength):
     return x, kde
 
 
-def fit_model_to_experiment(expt,
-                            model,
-                            param_guesses,
-                            param_bounds,
-                            fitlength=400., **kwargs):
+def fit_model_to_experiment(
+    expt, model, param_guesses, param_bounds, fitlength=400.0, **kwargs
+):
     """Use scipy.optimize.curve_fit to do non-linear least-squares fitting
     of model relative position distribution to an experimental distribution,
     e.g. histogram or kernel density estimation.
@@ -867,14 +936,14 @@ def fit_model_to_experiment(expt,
             Error (1 SD) on parameters.
     """
     # Find estimates and covariances of model parameters
-    (params_optimised,
-     params_covar) = curve_fit(model,
-                               np.arange(fitlength) + 0.5,
-                               expt,
-                               p0=param_guesses,
-                               bounds=param_bounds,
-                               **kwargs
-                               )
+    (params_optimised, params_covar) = curve_fit(
+        model,
+        np.arange(fitlength) + 0.5,
+        expt,
+        p0=param_guesses,
+        bounds=param_bounds,
+        **kwargs,
+    )
 
     # Calculate uncertainty (1 SD)
     params_1sd_err = np.sqrt(np.diag(params_covar))
@@ -886,10 +955,7 @@ def fit_model_to_experiment(expt,
     return params_optimised, params_covar, params_1sd_err
 
 
-def stdev_of_model(x_values,
-                   params_optimised,
-                   params_covar,
-                   vector_input_model):
+def stdev_of_model(x_values, params_optimised, params_covar, vector_input_model):
     """Use automatic differentiation to acquire derivatives, and multiply
     with covariance matrix to acquire variance, then sd of a model relative
     position distribution. When numdifftools.Gradient runs, output to screen
@@ -915,8 +981,8 @@ def stdev_of_model(x_values,
             evaluated at each x_value.
 
     """
-    #print('Starting calculation of uncertainty on the model estimates.')
-    #start_time = time.time()
+    # print('Starting calculation of uncertainty on the model estimates.')
+    # start_time = time.time()
 
     # We will calculate 1 sd at each x-value
     stdev = np.zeros(len(x_values))
@@ -932,7 +998,7 @@ def stdev_of_model(x_values,
         jacobian = grads[1:]
         variance = np.dot(jacobian, np.dot(params_covar, jacobian))
         stdev[i] = np.sqrt(variance)
-    
+
         # Update
         # if (i + 1) % 20 == 0:
         #     time_elapsed = time.time() - start_time
