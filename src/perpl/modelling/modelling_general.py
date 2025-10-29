@@ -59,7 +59,7 @@ class PERPLModel:
         n_peaks=0,  # 0, 1, ...
         peak_type="variable",  # variable or fixed
         repeat_distance="one",  # one, multiple_fixed or multiple_ratio
-        repeat_distance_ratio=[],  # floats representing ratio of repeat distances
+        repeat_distance_ratio=None,  # floats representing ratio of repeat distances
         repeats=False,
         offset=False,
         normalise=False,
@@ -78,9 +78,9 @@ class PERPLModel:
                 one: One repeat distance
                 multiple_fixed : As many repeats as peaks at user defined
                     distances
-                multiple_: As many repeats as peaks, at distances calculated
+                multiple_ratio: As many repeats as peaks, at distances calculated
                     by scaling up one repeat distance by different ratios
-            repeat_distance_ratio:
+            repeat_distance_ratio: Ratio of repeat distances
             repeats: TRUE or FALSE to have repeated localisations
             offset: TRUE or FALSE to include offset
             normalise: TRUE or FALSE to normalise
@@ -433,6 +433,143 @@ class PERPLModel:
             stdev[i] = np.sqrt(variance)
 
         return stdev
+
+
+    def plot_distance_hist_and_fit(
+        self,
+        distances,
+        bin_edges,
+        bin_centres,
+        fitlength,
+        plot_95ci=True,
+        color="xkcd:red",
+    ):
+        """Plot the distance histogram and overlay the fit. And save the plots
+        
+        Args:
+            distances: Distances being plotted as histogram
+            bin_edges: Edges of histogram bins
+            bin_centres: Centres of histogram bins
+            fitlength: Distance up to which to fit
+            plot_95ci: Whether to plot the 95% CI
+            color: Colour of the fit line
+            """
+        
+        fig = plt.figure()
+        axes = plt.subplot(111)
+
+        raise ValueError("should below have [0]")
+        axes.hist(distances, bins=bin_edges, color="grey", alpha=0.5)[0]
+
+        axes.plot(
+            bin_centres,
+            self.model_rpd_wrapper(bin_centres, *self.params_optimised),
+            color=color,
+            lw=0.75,
+        )
+        axes.set_xlim([0, fitlength])
+        axes.set_ylim(bottom=0)
+        axes.set_ylabel("Counts")
+        axes.set_xlabel("Distance between localisations")
+
+        # Get 1 SD uncertainty on model result from uncertainty on parameters
+        # and plot 95% CI.
+        if plot_95ci is True:
+
+            stdev = self.calculate_stdev(
+                bin_centres,
+            )
+
+            axes.fill_between(
+                bin_centres,
+                self.model_rpd_wrapper(bin_centres, *self.params_optimised) - stdev * 1.96,
+                self.model_rpd_wrapper(bin_centres, *self.params_optimised) + stdev * 1.96,
+                facecolor=color,
+                alpha=0.25,
+            )
+
+        return fig
+
+
+    def plot_model_components(
+        self,
+        fitlength,
+        repeat_distance,
+        repeat_broadening,
+        repeat_amplitude,
+        loc_precision,
+        loc_precision_amplitude,
+        bg_slope,
+        bg_offset,
+    ):
+        """Plot the components of this Z-disk model.
+        Args
+        ----
+        fitlength (integer):
+            Cell-axial distance upto to which the model is plotted.
+        repeat_distance (float):
+            Axial repeat distance through the Z-disk.
+        repeat_broadening (float):
+            Broadening on the cell-axial repeat term.
+        repeat_amplitude (float):
+            Amplitude of the first peak of the 4. Amplitudes decrease
+            with ratios 4:3:2:1.
+        loc_precision (float):
+            Broadening on the peak representing repeated localisations
+            of the same molecule.
+        loc_precision_amplitude (float):
+            Amplitude of the peak representing repeated localisations
+            of the same molecule.
+        bg_slope (float):
+            Slope of the background term (isotropic within the thickness
+            of the Z-disk)
+        bg_offset (float):
+            Value of the background term at distance = 0.
+        """
+        distance_values = np.arange(0, fitlength + 1, 1)
+
+        plt.figure()
+        axes = plt.subplot(111)
+        axes.set_xlim([0, fitlength])
+        axes.set_xlabel(r"$\Delta$X (nm) ($\Delta$YZ < 10 nm)")
+        axes.set_ylim([0, 82])
+        axes.set_ylabel("Counts")
+        axes.set_title("Model: 5-layer Z-disk (4 peaks, fixed ratios)")
+
+        # Plot background term
+        axes.plot(distance_values, bg_offset + bg_slope * distance_values)
+
+        # Plot linear repeat term
+        repeat_component = np.zeros(len(distance_values))
+        for i in range(4):
+            repeat_component = repeat_component + (
+                1.0 - i / 4.0
+            ) * repeat_amplitude * pairwise_correlation_1d(
+                distance_values, (i + 1) * repeat_distance, repeat_broadening
+            )
+        axes.plot(distance_values, repeat_component)
+
+        # Plot term for localisations of the same molecule
+        axes.plot(
+            loc_precision_amplitude
+            * pairwise_correlation_1d(distance_values, 0.0, np.sqrt(2) * loc_precision)
+        )
+
+        # Plot full model
+        axes.plot(
+            distance_values,
+            linmods.linrepplusreps4fixedpeakratio(
+                distance_values,
+                repeat_distance,
+                repeat_broadening,
+                repeat_amplitude,
+                loc_precision,
+                loc_precision_amplitude,
+                bg_slope,
+                bg_offset,
+            ),
+            color="xkcd:red",
+        )
 
 
 class ModelWithFitSettings:
