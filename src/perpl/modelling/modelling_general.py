@@ -54,12 +54,12 @@ class PERPLModel:
 
     def __init__(
         self,
-        dimension=1,  # 1 or 2
-        background=None,  # none, flat, linear
-        n_peaks=0,  # 0, 1, ...
-        peak_type="variable",  # variable or fixed
-        repeat_distance="one",  # one, multiple_fixed or multiple_ratio
-        repeat_distance_ratio=None,  # floats representing ratio of repeat distances
+        dimension=1,
+        background=None,
+        n_peaks=0,
+        peak_type="variable",
+        repeat_distance="one",  
+        repeat_distance_ratio=None,
         repeats=False,
         offset=False,
         normalise=False,
@@ -70,10 +70,10 @@ class PERPLModel:
         """Initialise
 
         Args:
-            dimension: Dimension of the fit
+            dimension: Dimension of the fit (1, 2 or 3)
             background: None, "flat" or "linear" background
             n_peaks: Number of peaks (0, 1, 2, ...)
-            peak_type: "variable" or "fixed" peaks
+            peak_type: "variable" or "fixed_ratio" peaks
             repeat_distance: How to model the repeat distance.
                 one: One repeat distance
                 multiple_fixed : As many repeats as peaks at user defined
@@ -237,10 +237,17 @@ class PERPLModel:
         amps=[],
     ):
 
+        rpd = 0. * x_values
+
         # background
-        rpd = bg_offset + bg_slope * x_values
+        background = bg_offset + bg_slope * x_values
+        rpd += background
 
         # peaks
+        if self.n_peaks == 0:
+            repeat_terms = None
+        else:
+            repeat_terms = []
         for peak_idx in range(self.n_peaks):
             if self.peak_type == "fixed_ratio":
                 amp = amps[0] * (1 - peak_idx / self.n_peaks)
@@ -258,23 +265,28 @@ class PERPLModel:
                     repeat_distances[0] * self.repeat_distances_ratio[peak_idx]
                 )
 
-            rpd += amp * self.pairwise_correlation(
+            repeat_term = amp * self.pairwise_correlation(
                 x_values,
                 repeat_distance,
                 repeat_broadening,
             )
+            rpd += repeat_term
+            repeat_terms.append(repeat_term)
 
         # repeats
         if loc_prec_amp is not None:
-            rpd += loc_prec_amp * self.pairwise_correlation(
+            rep_locs = loc_prec_amp * self.pairwise_correlation(
                 x_values, 0.0, np.sqrt(2) * (loc_prec_sd)
             )
+            rpd += rep_locs
+        else:
+            rep_locs = None
 
         # normalise
 
         # offset
 
-        return rpd
+        return rpd, background, repeat_terms, rep_locs
 
     def model_rpd_wrapper(self, x, params):
 
@@ -303,11 +315,11 @@ class PERPLModel:
 
     def model_rpd_wrapper_vector(self, vector_input):
 
-        return self.model_rpd_wrapper(vector_input[0], vector_input[1:])
+        return self.model_rpd_wrapper(vector_input[0], vector_input[1:])[0]
 
     def error_fn(self, params, x, y):
 
-        output = self.model_rpd_wrapper(x, params)
+        output = self.model_rpd_wrapper(x, params)[0]
 
         return output - y
 
@@ -354,11 +366,6 @@ class PERPLModel:
             else:
                 raise ValueError("Covariance calculation failed")
 
-            print("Param names : ", self.param_names)
-            print("Optimal params: ", popt)
-            print("Param covar: ", pcov)
-            print("Param err: ", np.sqrt(np.diag(pcov)))
-
         except RuntimeError:
             print("Model didn't fit well so exceeded runtime...")
             return None, None, None, 1e10, 1e10, 1e10
@@ -371,16 +378,12 @@ class PERPLModel:
         # including var. of residuals
         # for least squares fit.
 
-        ssr = np.sum((self.model_rpd_wrapper(x, popt) - y) ** 2)
+        ssr = np.sum((self.model_rpd_wrapper(x, popt)[0] - y) ** 2)
         aic = len(x) * np.log(ssr / len(x)) + 2 * k
         if len(x) - k - 1 == 0:
             aiccorr = 1e6
         else:
             aiccorr = aic + 2 * k * (k + 1) / (len(x) - k - 1)
-
-        print("SSR =", ssr)
-        print("AIC =", aic)
-        print("AICcorr =", aiccorr)
 
         # assign values
         self.params_optimised = popt
@@ -458,12 +461,11 @@ class PERPLModel:
         fig = plt.figure()
         axes = plt.subplot(111)
 
-        raise ValueError("should below have [0]")
-        axes.hist(distances, bins=bin_edges, color="grey", alpha=0.5)[0]
+        axes.hist(distances, bins=bin_edges, color="grey", alpha=0.5)
 
         axes.plot(
             bin_centres,
-            self.model_rpd_wrapper(bin_centres, *self.params_optimised),
+            self.model_rpd_wrapper(bin_centres, self.params_optimised)[0],
             color=color,
             lw=0.75,
         )
@@ -482,11 +484,66 @@ class PERPLModel:
 
             axes.fill_between(
                 bin_centres,
-                self.model_rpd_wrapper(bin_centres, *self.params_optimised) - stdev * 1.96,
-                self.model_rpd_wrapper(bin_centres, *self.params_optimised) + stdev * 1.96,
+                self.model_rpd_wrapper(bin_centres, self.params_optimised)[0] - stdev * 1.96,
+                self.model_rpd_wrapper(bin_centres, self.params_optimised)[0] + stdev * 1.96,
                 facecolor=color,
                 alpha=0.25,
             )
+
+        return fig
+    
+    
+    def plot_distance_kde_and_fit(
+        self,
+        calc_points,
+        rpd,
+        fitlength,
+        plot_95ci=True,
+    ):
+        """Plot the KDE of the RPD and overlay the fit. And save the plots
+        
+        Args:
+            calc_points: Points where RPD was calculated
+            rpd: Value of RPD at each calculation point
+            fitlength: Distance up to which to fit
+            plot_95ci: Whether to plot the 95% CI
+            """
+        
+        calc_points = calc_points[calc_points <= fitlength]
+        
+        fig = plt.figure()
+        axes = plt.subplot(111)
+
+        axes.scatter(calc_points, rpd, s=5, marker='x', color="C0", label="Experimental data")
+        axes.plot(
+            calc_points,
+            self.model_rpd_wrapper(calc_points, self.params_optimised)[0],
+            color="C1",
+            lw=0.75,
+            label="Model",
+        )
+        axes.set_xlim([0, fitlength])
+        axes.set_ylim(bottom=0)
+        axes.set_ylabel("Counts")
+        axes.set_xlabel("Distance between localisations")
+
+        # Get 1 SD uncertainty on model result from uncertainty on parameters
+        # and plot 95% CI.
+        if plot_95ci is True:
+
+            stdev = self.calculate_stdev(
+                calc_points,
+            )
+
+            axes.fill_between(
+                calc_points,
+                self.model_rpd_wrapper(calc_points, self.params_optimised)[0] - stdev * 1.96,
+                self.model_rpd_wrapper(calc_points, self.params_optimised)[0] + stdev * 1.96,
+                facecolor="C2",
+                alpha=0.25,
+            )
+
+        axes.legend()
 
         return fig
 
@@ -494,82 +551,42 @@ class PERPLModel:
     def plot_model_components(
         self,
         fitlength,
-        repeat_distance,
-        repeat_broadening,
-        repeat_amplitude,
-        loc_precision,
-        loc_precision_amplitude,
-        bg_slope,
-        bg_offset,
     ):
         """Plot the components of this Z-disk model.
-        Args
-        ----
-        fitlength (integer):
-            Cell-axial distance upto to which the model is plotted.
-        repeat_distance (float):
-            Axial repeat distance through the Z-disk.
-        repeat_broadening (float):
-            Broadening on the cell-axial repeat term.
-        repeat_amplitude (float):
-            Amplitude of the first peak of the 4. Amplitudes decrease
-            with ratios 4:3:2:1.
-        loc_precision (float):
-            Broadening on the peak representing repeated localisations
-            of the same molecule.
-        loc_precision_amplitude (float):
-            Amplitude of the peak representing repeated localisations
-            of the same molecule.
-        bg_slope (float):
-            Slope of the background term (isotropic within the thickness
-            of the Z-disk)
-        bg_offset (float):
-            Value of the background term at distance = 0.
+        Args:
+            fitlength (integer): Distance up to to which the model is plotted.
         """
-        distance_values = np.arange(0, fitlength + 1, 1)
 
-        plt.figure()
+        x = np.arange(0, fitlength + 1, 1)
+
+        fig = plt.figure()
         axes = plt.subplot(111)
-        axes.set_xlim([0, fitlength])
-        axes.set_xlabel(r"$\Delta$X (nm) ($\Delta$YZ < 10 nm)")
-        axes.set_ylim([0, 82])
-        axes.set_ylabel("Counts")
-        axes.set_title("Model: 5-layer Z-disk (4 peaks, fixed ratios)")
+        
+        rpd, background, repeat_terms, rep_locs = self.model_rpd_wrapper(x, self.params_optimised)
 
         # Plot background term
-        axes.plot(distance_values, bg_offset + bg_slope * distance_values)
+        if not (background == np.zeros(fitlength+1)).all():
+            axes.plot(x, background, label="Background", color="C0")
 
-        # Plot linear repeat term
-        repeat_component = np.zeros(len(distance_values))
-        for i in range(4):
-            repeat_component = repeat_component + (
-                1.0 - i / 4.0
-            ) * repeat_amplitude * pairwise_correlation_1d(
-                distance_values, (i + 1) * repeat_distance, repeat_broadening
-            )
-        axes.plot(distance_values, repeat_component)
+        # Plot repeat term
+        if repeat_terms is not None:
+            for i, repeat_term in enumerate(repeat_terms):
+                axes.plot(x, repeat_term, label=f"Repeat {i+1}", color=f"C{i+4}")
 
         # Plot term for localisations of the same molecule
-        axes.plot(
-            loc_precision_amplitude
-            * pairwise_correlation_1d(distance_values, 0.0, np.sqrt(2) * loc_precision)
-        )
+        if rep_locs is not None:
+            axes.plot(x, rep_locs, label="Repeated localisations", color="C2")
 
         # Plot full model
-        axes.plot(
-            distance_values,
-            linmods.linrepplusreps4fixedpeakratio(
-                distance_values,
-                repeat_distance,
-                repeat_broadening,
-                repeat_amplitude,
-                loc_precision,
-                loc_precision_amplitude,
-                bg_slope,
-                bg_offset,
-            ),
-            color="xkcd:red",
-        )
+        axes.plot(x, rpd, label="Full model", color="C3")
+
+        axes.set_xlim([0, fitlength])
+        axes.set_ylim(0,None)
+        axes.set_ylabel("Counts")
+        axes.set_xlabel("Distance between localisations")
+        axes.legend()
+
+        return fig
 
 
 class ModelWithFitSettings:
@@ -609,7 +626,7 @@ class ModelWithFitSettings:
 
 def pairwise_correlation_3d(r, rmean, sigma):
     """
-    Apparent density of separations(r) for two repeatedly localised fluorophores in 2D
+    Apparent density of separations(r) for two repeatedly localised fluorophores in 3D
     with true separation rmean.
     sigma = sum in quadrature of sigma for each fluorophore,
     so sigma ** 2 = 2 * loc.prec ** 2. for repeated locs of the same molecule.
