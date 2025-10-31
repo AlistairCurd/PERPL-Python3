@@ -491,7 +491,6 @@ class PERPLModel:
             hist_counts = hist_counts / bin_centres**(self.dimension-1)
 
         axes.stairs(hist_counts, bin_edges, color="grey", alpha=0.5, fill=True)
-        #axes.hist(distances, bins=bin_edges, color="grey", alpha=0.5)
 
         axes.plot(
             bin_centres,
