@@ -66,8 +66,8 @@ class PERPLModel:
         background=None,
         n_peaks=0,
         peak_type="variable",
-        repeat_distance="one",  
-        repeat_distance_ratio=None,
+        characteristic_distance="one",  
+        characteristic_distance_ratio=None,
         repeats=False,
         offset=False,
         normalise=False,
@@ -82,13 +82,15 @@ class PERPLModel:
             background: None, "flat" or "linear" background
             n_peaks: Number of peaks (0, 1, 2, ...)
             peak_type: "variable" or "fixed_ratio" peaks
-            repeat_distance: How to model the repeat distance.
-                one: One repeat distance
-                multiple_fixed : As many repeats as peaks at user defined
-                    distances
-                multiple_ratio: As many repeats as peaks, at distances calculated
-                    by scaling up one repeat distance by different ratios
-            repeat_distance_ratio: Ratio of repeat distances
+            characteristic_distance: How to model the characteristic distance.
+                one: One characteristic distance, that is repeated at each 
+                    peak.
+                multiple_fixed : As many characteristic distances as peaks at 
+                    user defined distances
+                multiple_ratio: As many characteristic distances as peaks, at 
+                    distances calculated by scaling up one characteristic distance 
+                    by different ratios
+            characteristic_distance_ratio: Ratio of characteristic distances
             repeats: TRUE or FALSE to have repeated localisations
             offset: TRUE or FALSE to include offset
             normalise: TRUE or FALSE to normalise
@@ -105,14 +107,14 @@ class PERPLModel:
             raise ValueError("n peaks should be an integer")
         if peak_type not in ["variable", "fixed_ratio"]:
             raise ValueError("Peak type should be variable or fixed_ratio")
-        if repeat_distance not in ["one", "multiple_fixed", "multiple_ratio"]:
+        if characteristic_distance not in ["one", "multiple_fixed", "multiple_ratio"]:
             raise ValueError(
-                "Repeat distance should be one, multiple_fixed or multiple_ratio"
+                "Characteristic distance should be one, multiple_fixed or multiple_ratio"
             )
-        if repeat_distance == "multiple_ratio":
-            if len(repeat_distance_ratio) != n_peaks:
-                raise ValueError("Should be one repeat distance ratio per peak")
-            if repeat_distance_ratio[0] != 1.0:
+        if characteristic_distance == "multiple_ratio":
+            if len(characteristic_distance_ratio) != n_peaks:
+                raise ValueError("Should be one characteristic distance ratio per peak")
+            if characteristic_distance_ratio[0] != 1.0:
                 raise ValueError("First peak should have ratio 1.0")
         if not type(repeats) == bool:
             raise ValueError("Repeats should be True or False")
@@ -172,36 +174,36 @@ class PERPLModel:
                     ]
                 n_params += n_peaks
 
-            # repeat distances
-            self.repeat_distance_type = repeat_distance
-            self.repeat_distances_ratio = repeat_distance_ratio
+            # characteristic distances
+            self.characteristic_distance_type = characteristic_distance
+            self.characteristic_distances_ratio = characteristic_distance_ratio
 
-            self.initial_params["repeat_distance_1"] = params_initial[
-                "repeat_distance_1"
+            self.initial_params["characteristic_distance_1"] = params_initial[
+                "characteristic_distance_1"
             ]
-            self.params_lower["repeat_distance_1"] = params_lower["repeat_distance_1"]
-            self.params_upper["repeat_distance_1"] = params_upper["repeat_distance_1"]
+            self.params_lower["characteristic_distance_1"] = params_lower["characteristic_distance_1"]
+            self.params_upper["characteristic_distance_1"] = params_upper["characteristic_distance_1"]
 
-            self.initial_params["repeat_broadening"] = params_initial[
-                "repeat_broadening"
+            self.initial_params["characteristic_distance_broadening"] = params_initial[
+                "characteristic_distance_broadening"
             ]
-            self.params_lower["repeat_broadening"] = params_lower["repeat_broadening"]
-            self.params_upper["repeat_broadening"] = params_upper["repeat_broadening"]
+            self.params_lower["characteristic_distance_broadening"] = params_lower["characteristic_distance_broadening"]
+            self.params_upper["characteristic_distance_broadening"] = params_upper["characteristic_distance_broadening"]
 
             n_params += 2
 
-            if repeat_distance == "multiple_fixed":
+            if characteristic_distance == "multiple_fixed":
                 for i in range(n_peaks):
                     if i == 0:
                         continue
-                    self.initial_params[f"repeat_distance_{i+1}"] = params_initial[
-                        f"repeat_distance_{i+1}"
+                    self.initial_params[f"characteristic_distance_{i+1}"] = params_initial[
+                        f"characteristic_distance_{i+1}"
                     ]
-                    self.params_lower[f"repeat_distance_{i+1}"] = params_lower[
-                        f"repeat_distance_{i+1}"
+                    self.params_lower[f"characteristic_distance_{i+1}"] = params_lower[
+                        f"characteristic_distance_{i+1}"
                     ]
-                    self.params_upper[f"repeat_distance_{i+1}"] = params_upper[
-                        f"repeat_distance_{i+1}"
+                    self.params_upper[f"characteristic_distance_{i+1}"] = params_upper[
+                        f"characteristic_distance_{i+1}"
                     ]
 
                 n_params += n_peaks - 1
@@ -236,8 +238,8 @@ class PERPLModel:
     def model_rpd(
         self,
         x_values,
-        repeat_distances=[],
-        repeat_broadening=0.0,
+        characteristic_distances=[],
+        characteristic_distance_broadening=0.0,
         loc_prec_sd=0.0,
         loc_prec_amp=None,
         bg_slope=0.0,
@@ -253,33 +255,33 @@ class PERPLModel:
 
         # peaks
         if self.n_peaks == 0:
-            repeat_terms = None
+            characteristic_distance_terms = None
         else:
-            repeat_terms = []
+            characteristic_distance_terms = []
         for peak_idx in range(self.n_peaks):
             if self.peak_type == "fixed_ratio":
                 amp = amps[0] * (1 - peak_idx / self.n_peaks)
             elif self.peak_type == "variable":
                 amp = amps[peak_idx]
 
-            if self.repeat_distance_type == "one":
-                repeat_distance = repeat_distances[0] * (peak_idx + 1)
+            if self.characteristic_distance_type == "one":
+                characteristic_distance = characteristic_distances[0] * (peak_idx + 1)
 
-            elif self.repeat_distance_type == "multiple_fixed":
-                repeat_distance = repeat_distances[peak_idx]
+            elif self.characteristic_distance_type == "multiple_fixed":
+                characteristic_distance = characteristic_distances[peak_idx]
 
-            elif self.repeat_distance_type == "multiple_ratio":
-                repeat_distance = (
-                    repeat_distances[0] * self.repeat_distances_ratio[peak_idx]
+            elif self.characteristic_distance_type == "multiple_ratio":
+                characteristic_distance = (
+                    characteristic_distances[0] * self.characteristic_distances_ratio[peak_idx]
                 )
 
-            repeat_term = amp * self.pairwise_correlation(
+            characteristic_distance_term = amp * self.pairwise_correlation(
                 x_values,
-                repeat_distance,
-                repeat_broadening,
+                characteristic_distance,
+                characteristic_distance_broadening,
             )
-            rpd += repeat_term
-            repeat_terms.append(repeat_term)
+            rpd += characteristic_distance_term
+            characteristic_distance_terms.append(characteristic_distance_term)
 
         # repeats
         if loc_prec_amp is not None:
@@ -296,7 +298,7 @@ class PERPLModel:
 
         # offset
 
-        return rpd, background, repeat_terms, rep_locs
+        return rpd, background, characteristic_distance_terms, rep_locs
 
     def model_rpd_wrapper(self, x, params):
 
@@ -312,16 +314,16 @@ class PERPLModel:
                 amps.append(kwargs[f"amp_peak_{i+1}"])
                 kwargs.pop(f"amp_peak_{i+1}")
 
-        repeat_distances = [kwargs["repeat_distance_1"]]
-        kwargs.pop("repeat_distance_1")
-        if self.repeat_distance_type == "multiple_fixed":
+        characteristic_distances = [kwargs["characteristic_distance_1"]]
+        kwargs.pop("characteristic_distance_1")
+        if self.characteristic_distance_type == "multiple_fixed":
             for i in range(self.n_peaks):
                 if i == 0:
                     continue
-                repeat_distances.append(kwargs[f"repeat_distance_{i+1}"])
-                kwargs.pop(f"repeat_distance_{i+1}")
+                characteristic_distances.append(kwargs[f"characteristic_distance_{i+1}"])
+                kwargs.pop(f"characteristic_distance_{i+1}")
 
-        return self.model_rpd(x, **kwargs, amps=amps, repeat_distances=repeat_distances)
+        return self.model_rpd(x, **kwargs, amps=amps, characteristic_distances=characteristic_distances)
 
     def model_rpd_wrapper_vector(self, vector_input):
 
@@ -574,18 +576,18 @@ class PERPLModel:
         fig = plt.figure()
         axes = plt.subplot(111)
         
-        rpd, background, repeat_terms, rep_locs = self.model_rpd_wrapper(x, self.params_optimised)
+        rpd, background, characteristic_distance_terms, rep_locs = self.model_rpd_wrapper(x, self.params_optimised)
 
         # Plot background term
         if not (background == np.zeros(fitlength+1)).all():
             axes.plot(x, background, label="Background", color="C0")
 
-        # Plot repeat term
-        if repeat_terms is not None:
-            for i, repeat_term in enumerate(repeat_terms):
-                axes.plot(x, repeat_term, label=f"Repeat {i+1}", color=f"C{i+4}")
+        # Plot characteristic distance term
+        if characteristic_distance_terms is not None:
+            for i, characteristic_distance_term in enumerate(characteristic_distance_terms):
+                axes.plot(x, characteristic_distance_term, label=f"Characteristic distance {i+1}", color=f"C{i+4}")
 
-        # Plot term for localisations of the same molecule
+        # Plot repeat term for localisations of the same molecule
         if rep_locs is not None:
             axes.plot(x, rep_locs, label="Repeated localisations", color="C2")
 
