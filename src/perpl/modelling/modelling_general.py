@@ -33,6 +33,14 @@ specific language governing permissions and limitations under the License.
 import numpy as np
 import numdifftools as nd
 import matplotlib.pyplot as plt
+from matplotlib import font_manager
+for f in font_manager.findSystemFonts(fontpaths=None, fontext='ttf'):
+    # to install arial on linux had to run these commands...
+    # sudo apt install ttf-mscorefonts-installer
+    # sudo fc-cache -f
+    # rm -rf ~/.cache/matplotlib
+    if "Arial" in f:
+        plt.rcParams['font.family'] = ['Arial']
 from scipy.linalg import svd
 from scipy.spatial.transform import Rotation
 from scipy.special import i0
@@ -283,6 +291,8 @@ class PERPLModel:
             rep_locs = None
 
         # normalise
+        #if normalise:
+        #    rpd /= x_values
 
         # offset
 
@@ -514,7 +524,7 @@ class PERPLModel:
         fig = plt.figure()
         axes = plt.subplot(111)
 
-        axes.scatter(calc_points, rpd, s=5, marker='x', color="C0", label="Experimental data")
+        axes.scatter(calc_points, rpd, s=10, marker='x', color="C0", label="Experimental data")
         axes.plot(
             calc_points,
             self.model_rpd_wrapper(calc_points, self.params_optimised)[0],
@@ -523,7 +533,9 @@ class PERPLModel:
             label="Model",
         )
         axes.set_xlim([0, fitlength])
-        axes.set_ylim(bottom=0)
+        bottom, top = axes.get_ylim()
+        if bottom < 0:
+            axes.set_ylim(bottom=0)
         axes.set_ylabel("Counts")
         axes.set_xlabel("Distance between localisations")
 
