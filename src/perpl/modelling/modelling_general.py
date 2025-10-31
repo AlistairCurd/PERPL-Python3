@@ -145,6 +145,7 @@ class PERPLModel:
             n_params += 2
 
         # dimension of data
+        self.dimension = dimension
         if dimension == 1:
             self.pairwise_correlation = pairwise_correlation_1d
         elif dimension == 2:
@@ -221,8 +222,7 @@ class PERPLModel:
             n_params += 2
 
         # normalise
-        if normalise:
-            raise NotImplementedError("Not implemented normalise yet")
+        self.normalise = normalise
 
         # offset
         if offset:
@@ -293,8 +293,16 @@ class PERPLModel:
             rep_locs = None
 
         # normalise
-        #if normalise:
-        #    rpd /= x_values
+        if self.normalise:
+            # if dimension = 1 --> divide by 1s
+            # if dimension = 2 --> divide by r (perimeter of circle)
+            # if dimension = 3 --> divide by r^2 (surface area of sphere)
+            rpd /= x_values**(self.dimension-1)
+            background /= x_values**(self.dimension-1)
+            if rep_locs is not None:
+                rep_locs /= x_values**(self.dimension-1)
+            if characteristic_distance_terms is not None:
+                characteristic_distance_terms = [i/(x_values**(self.dimension-1)) for i in characteristic_distance_terms]
 
         # offset
 
@@ -349,6 +357,10 @@ class PERPLModel:
                 Experimental pairwise distance distribution."""
 
         # Find estimates and covariances of model parameters
+        if self.normalise:
+            # can't put y /= x**(self.dimnension-1)
+            # as y may be integers so get error
+            y = y / x**(self.dimension-1)
         try:
             res = least_squares(
                 self.error_fn,
@@ -473,7 +485,13 @@ class PERPLModel:
         fig = plt.figure()
         axes = plt.subplot(111)
 
-        axes.hist(distances, bins=bin_edges, color="grey", alpha=0.5)
+        hist_counts, _ = np.histogram(distances, bins=bin_edges)
+        if self.normalise:
+            # /= gives different type error
+            hist_counts = hist_counts / bin_centres**(self.dimension-1)
+
+        axes.stairs(hist_counts, bin_edges, color="grey", alpha=0.5, fill=True)
+        #axes.hist(distances, bins=bin_edges, color="grey", alpha=0.5)
 
         axes.plot(
             bin_centres,
@@ -525,6 +543,9 @@ class PERPLModel:
         
         fig = plt.figure()
         axes = plt.subplot(111)
+
+        if self.normalise:
+            rpd /= calc_points**(self.dimension-1)
 
         axes.scatter(calc_points, rpd, s=10, marker='x', color="C0", label="Experimental data")
         axes.plot(
