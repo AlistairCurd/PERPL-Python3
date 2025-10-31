@@ -34,13 +34,14 @@ import numpy as np
 import numdifftools as nd
 import matplotlib.pyplot as plt
 from matplotlib import font_manager
-for f in font_manager.findSystemFonts(fontpaths=None, fontext='ttf'):
+
+for f in font_manager.findSystemFonts(fontpaths=None, fontext="ttf"):
     # to install arial on linux had to run these commands...
     # sudo apt install ttf-mscorefonts-installer
     # sudo fc-cache -f
     # rm -rf ~/.cache/matplotlib
     if "Arial" in f:
-        plt.rcParams['font.family'] = ['Arial']
+        plt.rcParams["font.family"] = ["Arial"]
 from scipy.linalg import svd
 from scipy.spatial.transform import Rotation
 from scipy.special import i0
@@ -66,7 +67,7 @@ class PERPLModel:
         background=None,
         n_peaks=0,
         peak_type="variable",
-        characteristic_distance="one",  
+        characteristic_distance="one",
         characteristic_distance_ratio=None,
         repeats=False,
         offset=False,
@@ -83,12 +84,12 @@ class PERPLModel:
             n_peaks: Number of peaks (0, 1, 2, ...)
             peak_type: "variable" or "fixed_ratio" peaks
             characteristic_distance: How to model the characteristic distance.
-                one: One characteristic distance, that is repeated at each 
+                one: One characteristic distance, that is repeated at each
                     peak.
-                multiple_fixed : As many characteristic distances as peaks at 
+                multiple_fixed : As many characteristic distances as peaks at
                     user defined distances
-                multiple_ratio: As many characteristic distances as peaks, at 
-                    distances calculated by scaling up one characteristic distance 
+                multiple_ratio: As many characteristic distances as peaks, at
+                    distances calculated by scaling up one characteristic distance
                     by different ratios
             characteristic_distance_ratio: Ratio of characteristic distances
             repeats: TRUE or FALSE to have repeated localisations
@@ -182,14 +183,22 @@ class PERPLModel:
             self.initial_params["characteristic_distance_1"] = params_initial[
                 "characteristic_distance_1"
             ]
-            self.params_lower["characteristic_distance_1"] = params_lower["characteristic_distance_1"]
-            self.params_upper["characteristic_distance_1"] = params_upper["characteristic_distance_1"]
+            self.params_lower["characteristic_distance_1"] = params_lower[
+                "characteristic_distance_1"
+            ]
+            self.params_upper["characteristic_distance_1"] = params_upper[
+                "characteristic_distance_1"
+            ]
 
             self.initial_params["characteristic_distance_broadening"] = params_initial[
                 "characteristic_distance_broadening"
             ]
-            self.params_lower["characteristic_distance_broadening"] = params_lower["characteristic_distance_broadening"]
-            self.params_upper["characteristic_distance_broadening"] = params_upper["characteristic_distance_broadening"]
+            self.params_lower["characteristic_distance_broadening"] = params_lower[
+                "characteristic_distance_broadening"
+            ]
+            self.params_upper["characteristic_distance_broadening"] = params_upper[
+                "characteristic_distance_broadening"
+            ]
 
             n_params += 2
 
@@ -197,9 +206,9 @@ class PERPLModel:
                 for i in range(n_peaks):
                     if i == 0:
                         continue
-                    self.initial_params[f"characteristic_distance_{i+1}"] = params_initial[
-                        f"characteristic_distance_{i+1}"
-                    ]
+                    self.initial_params[f"characteristic_distance_{i+1}"] = (
+                        params_initial[f"characteristic_distance_{i+1}"]
+                    )
                     self.params_lower[f"characteristic_distance_{i+1}"] = params_lower[
                         f"characteristic_distance_{i+1}"
                     ]
@@ -247,7 +256,7 @@ class PERPLModel:
         amps=[],
     ):
 
-        rpd = 0. * x_values
+        rpd = 0.0 * x_values
 
         # background
         background = bg_offset + bg_slope * x_values
@@ -272,7 +281,8 @@ class PERPLModel:
 
             elif self.characteristic_distance_type == "multiple_ratio":
                 characteristic_distance = (
-                    characteristic_distances[0] * self.characteristic_distances_ratio[peak_idx]
+                    characteristic_distances[0]
+                    * self.characteristic_distances_ratio[peak_idx]
                 )
 
             characteristic_distance_term = amp * self.pairwise_correlation(
@@ -297,12 +307,15 @@ class PERPLModel:
             # if dimension = 1 --> divide by 1s
             # if dimension = 2 --> divide by r (perimeter of circle)
             # if dimension = 3 --> divide by r^2 (surface area of sphere)
-            rpd /= x_values**(self.dimension-1)
-            background /= x_values**(self.dimension-1)
+            rpd /= x_values ** (self.dimension - 1)
+            background /= x_values ** (self.dimension - 1)
             if rep_locs is not None:
-                rep_locs /= x_values**(self.dimension-1)
+                rep_locs /= x_values ** (self.dimension - 1)
             if characteristic_distance_terms is not None:
-                characteristic_distance_terms = [i/(x_values**(self.dimension-1)) for i in characteristic_distance_terms]
+                characteristic_distance_terms = [
+                    i / (x_values ** (self.dimension - 1))
+                    for i in characteristic_distance_terms
+                ]
 
         # offset
 
@@ -328,10 +341,14 @@ class PERPLModel:
             for i in range(self.n_peaks):
                 if i == 0:
                     continue
-                characteristic_distances.append(kwargs[f"characteristic_distance_{i+1}"])
+                characteristic_distances.append(
+                    kwargs[f"characteristic_distance_{i+1}"]
+                )
                 kwargs.pop(f"characteristic_distance_{i+1}")
 
-        return self.model_rpd(x, **kwargs, amps=amps, characteristic_distances=characteristic_distances)
+        return self.model_rpd(
+            x, **kwargs, amps=amps, characteristic_distances=characteristic_distances
+        )
 
     def model_rpd_wrapper_vector(self, vector_input):
 
@@ -360,7 +377,7 @@ class PERPLModel:
         if self.normalise:
             # can't put y /= x**(self.dimnension-1)
             # as y may be integers so get error
-            y = y / x**(self.dimension-1)
+            y = y / x ** (self.dimension - 1)
         try:
             res = least_squares(
                 self.error_fn,
@@ -461,7 +478,6 @@ class PERPLModel:
 
         return stdev
 
-
     def plot_distance_hist_and_fit(
         self,
         distances,
@@ -472,7 +488,7 @@ class PERPLModel:
         color="xkcd:red",
     ):
         """Plot the distance histogram and overlay the fit. And save the plots
-        
+
         Args:
             distances: Distances being plotted as histogram
             bin_edges: Edges of histogram bins
@@ -480,15 +496,15 @@ class PERPLModel:
             fitlength: Distance up to which to fit
             plot_95ci: Whether to plot the 95% CI
             color: Colour of the fit line
-            """
-        
+        """
+
         fig = plt.figure()
         axes = plt.subplot(111)
 
         hist_counts, _ = np.histogram(distances, bins=bin_edges)
         if self.normalise:
             # /= gives different type error
-            hist_counts = hist_counts / bin_centres**(self.dimension-1)
+            hist_counts = hist_counts / bin_centres ** (self.dimension - 1)
 
         axes.stairs(hist_counts, bin_edges, color="grey", alpha=0.5, fill=True)
 
@@ -513,15 +529,16 @@ class PERPLModel:
 
             axes.fill_between(
                 bin_centres,
-                self.model_rpd_wrapper(bin_centres, self.params_optimised)[0] - stdev * 1.96,
-                self.model_rpd_wrapper(bin_centres, self.params_optimised)[0] + stdev * 1.96,
+                self.model_rpd_wrapper(bin_centres, self.params_optimised)[0]
+                - stdev * 1.96,
+                self.model_rpd_wrapper(bin_centres, self.params_optimised)[0]
+                + stdev * 1.96,
                 facecolor=color,
                 alpha=0.25,
             )
 
         return fig
-    
-    
+
     def plot_distance_kde_and_fit(
         self,
         calc_points,
@@ -530,23 +547,25 @@ class PERPLModel:
         plot_95ci=True,
     ):
         """Plot the KDE of the RPD and overlay the fit. And save the plots
-        
+
         Args:
             calc_points: Points where RPD was calculated
             rpd: Value of RPD at each calculation point
             fitlength: Distance up to which to fit
             plot_95ci: Whether to plot the 95% CI
-            """
-        
+        """
+
         calc_points = calc_points[calc_points <= fitlength]
-        
+
         fig = plt.figure()
         axes = plt.subplot(111)
 
         if self.normalise:
-            rpd /= calc_points**(self.dimension-1)
+            rpd /= calc_points ** (self.dimension - 1)
 
-        axes.scatter(calc_points, rpd, s=10, marker='x', color="C0", label="Experimental data")
+        axes.scatter(
+            calc_points, rpd, s=10, marker="x", color="C0", label="Experimental data"
+        )
         axes.plot(
             calc_points,
             self.model_rpd_wrapper(calc_points, self.params_optimised)[0],
@@ -571,8 +590,10 @@ class PERPLModel:
 
             axes.fill_between(
                 calc_points,
-                self.model_rpd_wrapper(calc_points, self.params_optimised)[0] - stdev * 1.96,
-                self.model_rpd_wrapper(calc_points, self.params_optimised)[0] + stdev * 1.96,
+                self.model_rpd_wrapper(calc_points, self.params_optimised)[0]
+                - stdev * 1.96,
+                self.model_rpd_wrapper(calc_points, self.params_optimised)[0]
+                + stdev * 1.96,
                 facecolor="C2",
                 alpha=0.25,
             )
@@ -580,7 +601,6 @@ class PERPLModel:
         axes.legend()
 
         return fig
-
 
     def plot_model_components(
         self,
@@ -595,17 +615,26 @@ class PERPLModel:
 
         fig = plt.figure()
         axes = plt.subplot(111)
-        
-        rpd, background, characteristic_distance_terms, rep_locs = self.model_rpd_wrapper(x, self.params_optimised)
+
+        rpd, background, characteristic_distance_terms, rep_locs = (
+            self.model_rpd_wrapper(x, self.params_optimised)
+        )
 
         # Plot background term
-        if not (background == np.zeros(fitlength+1)).all():
+        if not (background == np.zeros(fitlength + 1)).all():
             axes.plot(x, background, label="Background", color="C0")
 
         # Plot characteristic distance term
         if characteristic_distance_terms is not None:
-            for i, characteristic_distance_term in enumerate(characteristic_distance_terms):
-                axes.plot(x, characteristic_distance_term, label=f"Characteristic distance {i+1}", color=f"C{i+4}")
+            for i, characteristic_distance_term in enumerate(
+                characteristic_distance_terms
+            ):
+                axes.plot(
+                    x,
+                    characteristic_distance_term,
+                    label=f"Characteristic distance {i+1}",
+                    color=f"C{i+4}",
+                )
 
         # Plot repeat term for localisations of the same molecule
         if rep_locs is not None:
@@ -615,7 +644,7 @@ class PERPLModel:
         axes.plot(x, rpd, label="Full model", color="C3")
 
         axes.set_xlim([0, fitlength])
-        axes.set_ylim(0,None)
+        axes.set_ylim(0, None)
         axes.set_ylabel("Counts")
         axes.set_xlabel("Distance between localisations")
         axes.legend()
