@@ -54,8 +54,6 @@ class PERPLModel:
 
     Attributes:
 
-        initial_params: Initial guesses for parametesr
-        param_bounds: Bounds on parameters
         pairwise correlation: Pairwise correlation function for the data
             based on dimension
         n_params: Number of parameters in the data
@@ -75,6 +73,7 @@ class PERPLModel:
         params_initial=None,
         params_lower=None,
         params_upper=None,
+        name=None,
     ):
         """Initialise
 
@@ -98,6 +97,7 @@ class PERPLModel:
             params_initial: Dictionary of initial param guesses
             params_lower: Dictionary of lower bounds on params
             params_upper: Dictionary of upper bounds on params
+            name: Name of the model
         """
 
         if dimension not in [1, 2, 3]:
@@ -129,6 +129,9 @@ class PERPLModel:
         self.initial_params = {}
         self.params_lower = {}
         self.params_upper = {}
+
+        # Model name
+        self.name = name
 
         # background
         if background == "flat":
@@ -405,11 +408,25 @@ class PERPLModel:
                 s_sq = cost / (ysize - self.n_params)
                 pcov = pcov * s_sq
             else:
-                raise ValueError("Covariance calculation failed")
+                print(f"Covariance calculation failed for model: {self.name}")
+                self.params_optimised = None
+                self.params_covar = None
+                self.params_err = None
+                self.sum_of_squares_error = 1e10
+                self.aic = 1e10
+                self.aic_corrected = 1e10
+                return
 
         except RuntimeError:
-            print("Model didn't fit well so exceeded runtime...")
-            return None, None, None, 1e10, 1e10, 1e10
+            print(f"Exceeded runtime to fit for model: {self.name}")
+             # assign values
+            self.params_optimised = None
+            self.params_covar = None
+            self.params_err = None
+            self.sum_of_squares_error = 1e10
+            self.aic = 1e10
+            self.aic_corrected = 1e10
+            return
 
         # plt.plot(x, model(x, *popt))
         perr = np.sqrt(np.diag(pcov))
@@ -498,6 +515,9 @@ class PERPLModel:
             color: Colour of the fit line
         """
 
+        if self.params_optimised is None:
+            return None
+
         fig = plt.figure()
         axes = plt.subplot(111)
 
@@ -555,6 +575,9 @@ class PERPLModel:
             plot_95ci: Whether to plot the 95% CI
         """
 
+        if self.params_optimised is None:
+            return None
+
         calc_points = calc_points[calc_points <= fitlength]
 
         fig = plt.figure()
@@ -610,6 +633,9 @@ class PERPLModel:
         Args:
             fitlength (integer): Distance up to to which the model is plotted.
         """
+
+        if self.params_optimised is None:
+            return None
 
         x = np.arange(0, fitlength + 1, 1)
 
