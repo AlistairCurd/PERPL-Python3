@@ -448,6 +448,13 @@ class PERPLModel:
         else:
             aiccorr = aic + 2 * k * (k + 1) / (len(x) - k - 1)
 
+        # check bg 
+        bg = self.model_rpd_wrapper(x, popt)[1]
+        if (bg < 0).any():
+            self.bgbelowzero = True
+        else:
+            self.bgbelowzero = False
+
         # assign values
         self.params_optimised = popt
         self.params_covar = pcov
@@ -654,6 +661,9 @@ class PERPLModel:
         # Plot background term
         if not (background == np.zeros(fitlength + 1)).all():
             axes.plot(x, background, label="Background", color="C0")
+            if (background < 0).any():
+                axes.set_title("BG. goes below zero")
+                assert self.bgbelowzero
 
         # Plot characteristic distance term
         if characteristic_distance_terms is not None:
