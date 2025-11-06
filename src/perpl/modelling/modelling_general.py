@@ -113,8 +113,8 @@ class PERPLModel:
                 "Characteristic distance should be one, multiple_fixed or multiple_ratio"
             )
         if characteristic_distance == "multiple_ratio":
-            if len(characteristic_distance_ratio) != n_peaks:
-                raise ValueError("Should be one characteristic distance ratio per peak")
+            if len(characteristic_distance_ratio) < n_peaks:
+                raise ValueError("Should be a characteristic distance ratio for each peak")
             if characteristic_distance_ratio[0] != 1.0:
                 raise ValueError("First peak should have ratio 1.0")
         if not type(repeats) == bool:
@@ -329,25 +329,30 @@ class PERPLModel:
         # dict(zip(self.initial_params.keys(), params)
         kwargs = dict(zip(self.param_names, params))
 
-        amps = [kwargs["amp_peak_1"]]
-        kwargs.pop("amp_peak_1")
-        if self.peak_type == "variable":
-            for i in range(self.n_peaks):
-                if i == 0:
-                    continue
-                amps.append(kwargs[f"amp_peak_{i+1}"])
-                kwargs.pop(f"amp_peak_{i+1}")
+        if self.n_peaks != 0:
+            amps = [kwargs["amp_peak_1"]]
+            kwargs.pop("amp_peak_1")
+            if self.peak_type == "variable":
+                for i in range(self.n_peaks):
+                    if i == 0:
+                        continue
+                    amps.append(kwargs[f"amp_peak_{i+1}"])
+                    kwargs.pop(f"amp_peak_{i+1}")
 
-        characteristic_distances = [kwargs["characteristic_distance_1"]]
-        kwargs.pop("characteristic_distance_1")
-        if self.characteristic_distance_type == "multiple_fixed":
-            for i in range(self.n_peaks):
-                if i == 0:
-                    continue
-                characteristic_distances.append(
-                    kwargs[f"characteristic_distance_{i+1}"]
-                )
-                kwargs.pop(f"characteristic_distance_{i+1}")
+            characteristic_distances = [kwargs["characteristic_distance_1"]]
+            kwargs.pop("characteristic_distance_1")
+            if self.characteristic_distance_type == "multiple_fixed":
+                for i in range(self.n_peaks):
+                    if i == 0:
+                        continue
+                    characteristic_distances.append(
+                        kwargs[f"characteristic_distance_{i+1}"]
+                    )
+                    kwargs.pop(f"characteristic_distance_{i+1}")
+        
+        else:
+            amps = []
+            characteristic_distances = []
 
         return self.model_rpd(
             x, **kwargs, amps=amps, characteristic_distances=characteristic_distances
