@@ -420,6 +420,7 @@ class PERPLModel:
                 self.sum_of_squares_error = 1e10
                 self.aic = 1e10
                 self.aic_corrected = 1e10
+                self.bgbelowzero = None
                 return
 
         except RuntimeError:
@@ -431,6 +432,7 @@ class PERPLModel:
             self.sum_of_squares_error = 1e10
             self.aic = 1e10
             self.aic_corrected = 1e10
+            self.bgbelowzero = None
             return
 
         # plt.plot(x, model(x, *popt))
