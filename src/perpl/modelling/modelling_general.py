@@ -661,7 +661,7 @@ class PERPLModel:
         )
 
         # Plot background term
-        if not (background == np.zeros(fitlength + 1)).all():
+        if not ((background == np.zeros(fitlength + 1)).all()) and not (np.isnan(background[0]) and (background[1:] == np.zeros(fitlength)).all()):
             axes.plot(x, background, label="Background", color="C0")
             if (background < 0).any():
                 axes.set_title("BG. goes below zero")
