@@ -79,7 +79,7 @@ class PERPLModel:
 
         Args:
             dimension: Dimension of the fit (1, 2 or 3)
-            background: None, "flat" or "linear" background
+            background: None, "flat", "linear" or "linear_flat" background
             n_peaks: Number of peaks (0, 1, 2, ...)
             peak_type: "variable" or "fixed_ratio" peaks
             characteristic_distance: How to model the characteristic distance.
@@ -102,8 +102,8 @@ class PERPLModel:
 
         if dimension not in [1, 2, 3]:
             raise ValueError("Dimension should be 1,2 or 3")
-        if background not in [None, "flat", "linear"]:
-            raise ValueError("Background should be None, flat or linear")
+        if background not in [None, "flat", "linear", "linear_flat"]:
+            raise ValueError("Background should be None, flat, linear, linear_flat")
         if not type(n_peaks) == int:
             raise ValueError("n peaks should be an integer")
         if peak_type not in ["variable", "fixed_ratio"]:
@@ -134,12 +134,13 @@ class PERPLModel:
         self.name = name
 
         # background
+        self.background = background
         if background == "flat":
             self.initial_params["bg_offset"] = params_initial["bg_offset"]
             self.params_lower["bg_offset"] = params_lower["bg_offset"]
             self.params_upper["bg_offset"] = params_upper["bg_offset"]
             n_params += 1
-        elif background == "linear":
+        elif background == "linear" or background == "linear_flat":
             self.initial_params["bg_offset"] = params_initial["bg_offset"]
             self.params_lower["bg_offset"] = params_lower["bg_offset"]
             self.params_upper["bg_offset"] = params_upper["bg_offset"]
@@ -263,6 +264,13 @@ class PERPLModel:
 
         # background
         background = bg_offset + bg_slope * x_values
+        if self.background == "linear_flat":
+            if type(x_values) == np.float64:
+                if x_values >= - bg_offset/bg_slope:
+                    background = 0.
+            else:
+                background[x_values >= - bg_offset/bg_slope] = 0.
+            
         rpd += background
 
         # peaks
@@ -393,7 +401,7 @@ class PERPLModel:
                 bounds=self.param_bounds,
                 args=(x, y),
                 # not sure whether to include this or not...
-                x_scale=(self.param_bounds[0] + self.param_bounds[1]) / 2,
+                x_scale=abs((self.param_bounds[0] + self.param_bounds[1]) / 2),
             )
 
             # Param optimal and covariance
@@ -661,7 +669,7 @@ class PERPLModel:
         )
 
         # Plot background term
-        if not ((background == np.zeros(fitlength + 1)).all()) and not (np.isnan(background[0]) and (background[1:] == np.zeros(fitlength)).all()):
+        if not self.background is None:
             axes.plot(x, background, label="Background", color="C0")
             if (background < 0).any():
                 axes.set_title("BG. goes below zero")
