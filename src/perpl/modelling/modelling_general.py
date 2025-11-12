@@ -465,6 +465,18 @@ class PERPLModel:
         else:
             self.bgbelowzero = False
 
+        # check if params at edge of bound
+        if (np.round(popt,2) == self.param_bounds[0]).any() or (np.round(popt,2) == self.param_bounds[1]).any():
+            self.popt_at_bound = True
+        else:
+            self.popt_at_bound = False
+
+        # check large uncertainties
+        if (perr > abs(popt)).any():
+            self.large_uncertainty = True
+        else:
+            self.large_uncertainty = False
+
         # assign values
         self.params_optimised = popt
         self.params_covar = pcov
