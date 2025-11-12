@@ -114,7 +114,9 @@ class PERPLModel:
             )
         if characteristic_distance == "multiple_ratio":
             if len(characteristic_distance_ratio) < n_peaks:
-                raise ValueError("Should be a characteristic distance ratio for each peak")
+                raise ValueError(
+                    "Should be a characteristic distance ratio for each peak"
+                )
             if characteristic_distance_ratio[0] != 1.0:
                 raise ValueError("First peak should have ratio 1.0")
         if not type(repeats) == bool:
@@ -266,11 +268,11 @@ class PERPLModel:
         background = bg_offset + bg_slope * x_values
         if self.background == "linear_flat":
             if type(x_values) == np.float64:
-                if x_values >= - bg_offset/bg_slope:
-                    background = 0.
+                if x_values >= -bg_offset / bg_slope:
+                    background = 0.0
             else:
-                background[x_values >= - bg_offset/bg_slope] = 0.
-            
+                background[x_values >= -bg_offset / bg_slope] = 0.0
+
         rpd += background
 
         # peaks
@@ -357,7 +359,7 @@ class PERPLModel:
                         kwargs[f"characteristic_distance_{i+1}"]
                     )
                     kwargs.pop(f"characteristic_distance_{i+1}")
-        
+
         else:
             amps = []
             characteristic_distances = []
@@ -433,7 +435,7 @@ class PERPLModel:
 
         except RuntimeError:
             print(f"Exceeded runtime to fit for model: {self.name}")
-             # assign values
+            # assign values
             self.params_optimised = None
             self.params_covar = None
             self.params_err = None
@@ -458,7 +460,7 @@ class PERPLModel:
         else:
             aiccorr = aic + 2 * k * (k + 1) / (len(x) - k - 1)
 
-        # check bg 
+        # check bg
         bg = self.model_rpd_wrapper(x, popt)[1]
         if (bg < 0).any():
             self.bgbelowzero = True
@@ -466,7 +468,9 @@ class PERPLModel:
             self.bgbelowzero = False
 
         # check if params at edge of bound
-        if (np.round(popt,2) == self.param_bounds[0]).any() or (np.round(popt,2) == self.param_bounds[1]).any():
+        if (np.round(popt, 2) == self.param_bounds[0]).any() or (
+            np.round(popt, 2) == self.param_bounds[1]
+        ).any():
             self.popt_at_bound = True
         else:
             self.popt_at_bound = False
