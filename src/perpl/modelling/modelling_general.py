@@ -675,7 +675,10 @@ class PERPLModel:
         if self.params_optimised is None:
             return None
 
-        x = np.arange(0, fitlength + 1, 1)
+        if not self.normalise:
+            x = np.arange(0, fitlength + 1, 1)
+        else:
+            x = np.arange(1, fitlength + 1, 1)
 
         fig = plt.figure()
         axes = plt.subplot(111)
