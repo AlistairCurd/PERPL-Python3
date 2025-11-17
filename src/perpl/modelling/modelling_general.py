@@ -696,10 +696,14 @@ class PERPLModel:
             for i, characteristic_distance_term in enumerate(
                 characteristic_distance_terms
             ):
+                if self.characteristic_distance_type == "one":
+                    label = f"Repeat distance {i+1}"
+                else:
+                    label = f"Characteristic distance {i+1}"
                 axes.plot(
                     x,
                     characteristic_distance_term,
-                    label=f"Characteristic distance {i+1}",
+                    label=label,
                     color=f"C{i+4}",
                 )
 
