@@ -79,7 +79,7 @@ class PERPLModel:
 
         Args:
             dimension: Dimension of the fit (1, 2 or 3)
-            background: None, "flat", "linear" or "linear_flat" background
+            background: None, "flat", "linear", "linear_flat", "trans_bg_0", "trans_bg_1" or "trans_bg_2" background
             n_peaks: Number of peaks (0, 1, 2, ...)
             peak_type: "variable" or "fixed_ratio" peaks
             characteristic_distance: How to model the characteristic distance.
@@ -102,8 +102,8 @@ class PERPLModel:
 
         if dimension not in [1, 2, 3]:
             raise ValueError("Dimension should be 1,2 or 3")
-        if background not in [None, "flat", "linear", "linear_flat"]:
-            raise ValueError("Background should be None, flat, linear, linear_flat")
+        if background not in [None, "flat", "linear", "linear_flat", "trans_bg_0", "trans_bg_1", "trans_bg_2"]:
+            raise ValueError("Background should be None, flat, linear, linear_flat, trans_bg_0, trans_bg_1 or trans_bg_2")
         if not type(n_peaks) == int:
             raise ValueError("n peaks should be an integer")
         if peak_type not in ["variable", "fixed_ratio"]:
@@ -150,6 +150,30 @@ class PERPLModel:
             self.params_lower["bg_slope"] = params_lower["bg_slope"]
             self.params_upper["bg_slope"] = params_upper["bg_slope"]
             n_params += 2
+        elif background == "trans_bg_0":
+            self.initial_params["bg_slope"] = params_initial["bg_slope"]
+            self.params_lower["bg_slope"] = params_lower["bg_slope"]
+            self.params_upper["bg_slope"] = params_upper["bg_slope"]
+            n_params += 1
+        elif background == "trans_bg_1":
+            self.initial_params["bg_slope"] = params_initial["bg_slope"]
+            self.params_lower["bg_slope"] = params_lower["bg_slope"]
+            self.params_upper["bg_slope"] = params_upper["bg_slope"]
+            self.initial_params["trans_bg_quad_coeff"] = params_initial["trans_bg_quad_coeff"]
+            self.params_lower["trans_bg_quad_coeff"] = params_lower["trans_bg_quad_coeff"]
+            self.params_upper["trans_bg_quad_coeff"] = params_upper["trans_bg_quad_coeff"]
+            n_params += 2
+        elif background == "trans_bg_2":
+            self.initial_params["bg_slope"] = params_initial["bg_slope"]
+            self.params_lower["bg_slope"] = params_lower["bg_slope"]
+            self.params_upper["bg_slope"] = params_upper["bg_slope"]
+            self.initial_params["trans_bg_quad_coeff"] = params_initial["trans_bg_quad_coeff"]
+            self.params_lower["trans_bg_quad_coeff"] = params_lower["trans_bg_quad_coeff"]
+            self.params_upper["trans_bg_quad_coeff"] = params_upper["trans_bg_quad_coeff"]
+            self.initial_params["trans_bg_cubic_coeff"] = params_initial["trans_bg_cubic_coeff"]
+            self.params_lower["trans_bg_cubic_coeff"] = params_lower["trans_bg_cubic_coeff"]
+            self.params_upper["trans_bg_cubic_coeff"] = params_upper["trans_bg_cubic_coeff"]
+            n_params += 3
 
         # dimension of data
         self.dimension = dimension
@@ -259,19 +283,33 @@ class PERPLModel:
         loc_prec_amp=None,
         bg_slope=0.0,
         bg_offset=0.0,
+        trans_bg_quad_coeff=0.0,
+        trans_bg_cubic_coeff=0.0,
         amps=[],
     ):
 
         rpd = 0.0 * x_values
 
         # background
+        if self.background == "trans_bg_0" or self.background == "trans_bg_1" or self.background == "trans_bg_2":
+            assert bg_offset == 0.0
+
         background = bg_offset + bg_slope * x_values
+    
         if self.background == "linear_flat":
             if type(x_values) == np.float64:
                 if x_values >= -bg_offset / bg_slope:
                     background = 0.0
             else:
                 background[x_values >= -bg_offset / bg_slope] = 0.0
+
+        # could tidy this so just add it on - should be zero when not called anyway so should be fine 
+        # but kept separate for the moment for clarity
+        if self.background == "trans_bg_1":
+            background += trans_bg_quad_coeff * (x_values ** 2)
+
+        if self.background == "trans_bg_2":
+            background += trans_bg_quad_coeff * (x_values ** 2) + trans_bg_cubic_coeff * (x_values ** 3)
 
         rpd += background
 
