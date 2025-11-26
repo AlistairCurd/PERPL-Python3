@@ -737,7 +737,7 @@ class PERPLModel:
             axes.set_ylim(bottom=0)
         axes.set_ylabel("Counts")
         axes.set_xlabel("Distance between localisations")
-        axes.legend()
+        axes.legend(loc="upper right")
 
         return fig
 
@@ -799,7 +799,7 @@ class PERPLModel:
         axes.set_ylim(0, None)
         axes.set_ylabel("Counts")
         axes.set_xlabel("Distance between localisations")
-        axes.legend()
+        axes.legend(loc="upper right")
 
         return fig
 
