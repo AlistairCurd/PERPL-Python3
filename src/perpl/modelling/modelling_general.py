@@ -641,6 +641,7 @@ class PERPLModel:
         rpd,
         fitlength,
         plot_95ci=True,
+        plot_model_components=True,
     ):
         """Plot the KDE of the RPD and overlay the fit. And save the plots
 
@@ -649,6 +650,7 @@ class PERPLModel:
             rpd: Value of RPD at each calculation point
             fitlength: Distance up to which to fit
             plot_95ci: Whether to plot the 95% CI
+            plot_model_components: Whether to plot components of the model
         """
 
         if self.params_optimised is None:
@@ -665,19 +667,53 @@ class PERPLModel:
         axes.scatter(
             calc_points, rpd, s=10, marker="x", color="C0", label="Experimental data"
         )
+
+        # Plot model components
+        model_rpd, model_background, model_characteristic_distance_terms, model_rep_locs = (
+                self.model_rpd_wrapper(calc_points, self.params_optimised)
+        )
+
+        if plot_model_components:
+            
+            # Plot background term
+            if not self.background is None:
+                axes.plot(calc_points, model_background, label="Background", color="C1")
+                if (model_background < 0).any():
+                    axes.set_title("BG. goes below zero")
+                    assert self.bgbelowzero
+
+            # Plot characteristic distance term
+            if model_characteristic_distance_terms is not None:
+                for i, characteristic_distance_term in enumerate(
+                    model_characteristic_distance_terms
+                ):
+                    if self.characteristic_distance_type == "one":
+                        label = f"Repeat distance {i+1}"
+                    else:
+                        label = f"Characteristic distance {i+1}"
+                    axes.plot(
+                        calc_points,
+                        characteristic_distance_term,
+                        label=label,
+                        color=f"C{i+5}",
+                    )
+
+            # Plot repeat term for localisations of the same molecule
+            if model_rep_locs is not None:
+                axes.plot(
+                    calc_points, 
+                    model_rep_locs, 
+                    label="Repeated localisations", 
+                    color="C2"
+                )
+
+        # plot full model
         axes.plot(
             calc_points,
-            self.model_rpd_wrapper(calc_points, self.params_optimised)[0],
-            color="C1",
-            lw=0.75,
-            label="Model",
+            model_rpd,
+            color="C3",
+            label="Full model",
         )
-        axes.set_xlim([0, fitlength])
-        bottom, top = axes.get_ylim()
-        if bottom < 0:
-            axes.set_ylim(bottom=0)
-        axes.set_ylabel("Counts")
-        axes.set_xlabel("Distance between localisations")
 
         # Get 1 SD uncertainty on model result from uncertainty on parameters
         # and plot 95% CI.
@@ -689,14 +725,18 @@ class PERPLModel:
 
             axes.fill_between(
                 calc_points,
-                self.model_rpd_wrapper(calc_points, self.params_optimised)[0]
-                - stdev * 1.96,
-                self.model_rpd_wrapper(calc_points, self.params_optimised)[0]
-                + stdev * 1.96,
-                facecolor="C2",
+                model_rpd - stdev * 1.96,
+                model_rpd + stdev * 1.96,
+                facecolor="C4",
                 alpha=0.25,
             )
 
+        axes.set_xlim([0, fitlength])
+        bottom, top = axes.get_ylim()
+        if bottom < 0:
+            axes.set_ylim(bottom=0)
+        axes.set_ylabel("Counts")
+        axes.set_xlabel("Distance between localisations")
         axes.legend()
 
         return fig
