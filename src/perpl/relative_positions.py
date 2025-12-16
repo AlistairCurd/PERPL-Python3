@@ -31,7 +31,6 @@ CONDITIONS OF ANY KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
 """
 
-
 import os
 import sys
 import argparse
@@ -73,127 +72,143 @@ def get_inputs(info):
         Nothing
     """
 
-    #root = Tk()
+    # root = Tk()
     Tk().withdraw()
 
     # Find input file.
-    print('\n\nPlease select a localisations file. This should be a .csv '
-          '(or .txt with comma delimiters) or .npy, containing one '
-          'localisation per row.'
-          '\nThe first two or three columns, assumed to be X and Y '
-          '(and Z, if 3D is chosen later), will be used for analysis.\n')
+    print(
+        "\n\nPlease select a localisations file. This should be a .csv "
+        "(or .txt with comma delimiters) or .npy, containing one "
+        "localisation per row."
+        "\nThe first two or three columns, assumed to be X and Y "
+        "(and Z, if 3D is chosen later), will be used for analysis.\n"
+    )
 
     in_file = askopenfilename()
 
-    #root.destroy()
+    # root.destroy()
 
     print("The file you selected is: ", in_file, "\n")
 
-    info['in_file_and_path'] = in_file
+    info["in_file_and_path"] = in_file
 
     # Get spatial dimensionality.
-    print('How many spatial dimensions shall we use (2 or 3)?')
+    print("How many spatial dimensions shall we use (2 or 3)?")
 
     try:
-        data_dims = int(input('These should be the first 2 or 3 columns of '
-                              'your input file: '))
+        data_dims = int(
+            input("These should be the first 2 or 3 columns of " "your input file: ")
+        )
     except ValueError:
-        sys.exit('\nThe number of dimensions must be an integer.\n')
+        sys.exit("\nThe number of dimensions must be an integer.\n")
 
     if data_dims not in (2, 3):
-        sys.exit('\nThe number of dimensions must be 2 or 3.\n')
+        sys.exit("\nThe number of dimensions must be 2 or 3.\n")
 
-    print("\n"+str(data_dims)+" dimensions were selected.\n")
+    print("\n" + str(data_dims) + " dimensions were selected.\n")
 
-    info['dims'] = data_dims
+    info["dims"] = data_dims
 
     ### Include colour information if applicable.
-    print('Do localisations also have colour-channel information (yes/no)?')
+    print("Do localisations also have colour-channel information (yes/no)?")
     colour_answer = input(
-        'The colour channel information should be the last column of your '
-        'input file: ').lower()
+        "The colour channel information should be the last column of your "
+        "input file: "
+    ).lower()
     # Stop if not answered well enough.
-    if colour_answer.startswith('y') or colour_answer.startswith('n'):
+    if colour_answer.startswith("y") or colour_answer.startswith("n"):
         pass
     else:
-        sys.exit('\nYou must answer yes or no.\n')
+        sys.exit("\nYou must answer yes or no.\n")
 
     # Set colour channel info to 'None' or not None.
-    if colour_answer.startswith('n'):
-        info['colours_analysed'] = None
-    if colour_answer.startswith('y'):
-        info['colours_analysed'] = 'Some'
+    if colour_answer.startswith("n"):
+        info["colours_analysed"] = None
+    if colour_answer.startswith("y"):
+        info["colours_analysed"] = "Some"
 
     # print(info['colours_analysed']) # Debug
 
     # Set filter distance to use for relative position calculations.
-    print('\nWe will identify neighbouring localisations within a set distance '
-          '(filter distance). The smaller the distance the quicker the '
-          'calculation.')
+    print(
+        "\nWe will identify neighbouring localisations within a set distance "
+        "(filter distance). The smaller the distance the quicker the "
+        "calculation."
+    )
 
     try:
-        filterdist = int(input('What is the filter distance between '
-                               'localisations that you want to apply (nm)? '))
+        filterdist = int(
+            input(
+                "What is the filter distance between "
+                "localisations that you want to apply (nm)? "
+            )
+        )
     except ValueError:
-        print('This must be an integer.\n')
+        print("This must be an integer.\n")
         sys.exit("The filter distance must be an integer.\n")
 
-    print("\n"+str(filterdist)+" nm filter distance was selected.")
+    print("\n" + str(filterdist) + " nm filter distance was selected.")
 
-    info['filter_dist'] = filterdist
+    info["filter_dist"] = filterdist
 
     # Set the number of nearest neighbours to find and use, within the filter distance.
     try:
-        print('\nHow many nearest neighbours, within the filter distance, '
-              'do you want to calculate relative positions for?')
-        nns = int(input('\n(Type 0 to include all neighbours within the filter distance): '))
+        print(
+            "\nHow many nearest neighbours, within the filter distance, "
+            "do you want to calculate relative positions for?"
+        )
+        nns = int(
+            input("\n(Type 0 to include all neighbours within the filter distance): ")
+        )
 
     except ValueError:
-        print('This must be an integer.\n')
+        print("This must be an integer.\n")
         sys.exit("The filter distance must be an integer.\n")
 
     if nns == 0:
-        print('Using all neighbouring localisations.')
+        print("Using all neighbouring localisations.")
     else:
-        print(f'Using {nns} nearest neighbour(s).')
+        print(f"Using {nns} nearest neighbour(s).")
 
-    info['nns'] = nns
+    info["nns"] = nns
 
     # Set histogram bin values for distance histograms.
-    print('\nWhat bin size (integer) do you want for the distance histograms (nm)?')
-    print('...Choose 1 for model curve fitting functions...')
-    info['bin_size'] = int(input(
-        '...Choose a factor of the filter distance to histogram '
-        'all the way upto the filter distance: ')
+    print("\nWhat bin size (integer) do you want for the distance histograms (nm)?")
+    print("...Choose 1 for model curve fitting functions...")
+    info["bin_size"] = int(
+        input(
+            "...Choose a factor of the filter distance to histogram "
+            "all the way upto the filter distance: "
         )
+    )
 
-    print("\n"+str(info['bin_size'])+" nm bin size was selected.\n")
+    print("\n" + str(info["bin_size"]) + " nm bin size was selected.\n")
 
-    #print('Scatter plots of the raw data are plotted. A zoom scatter plot of '
+    # print('Scatter plots of the raw data are plotted. A zoom scatter plot of '
     #      'the centre is also plotted.')
-    #print('If you need a zoom but not of the centre please use an interactive '
+    # print('If you need a zoom but not of the centre please use an interactive '
     #      'visualization system.\n')
 
-    #try:
+    # try:
     #    zoom = int(input('What zoom magnification do you want (any non '
     #                     'integer answer sets the value to 10)? '))
-    #except ValueError:
+    # except ValueError:
     #    print('\nYou did not select a suitable value so this is set to 10.\n')
     #    zoom = 10
 
-    #if zoom < 1:
+    # if zoom < 1:
     #    zoom = 10
 
-    #info['zoom'] = zoom
+    # info['zoom'] = zoom
 
-    print('Do you want updates printed to the screen as the analysis progresses?')
+    print("Do you want updates printed to the screen as the analysis progresses?")
 
     silent = False
-    answer = input('yes/no \n').lower()
-    if answer.startswith('y'):
+    answer = input("yes/no \n").lower()
+    if answer.startswith("y"):
         silent = True
 
-    info['verbose'] = silent
+    info["verbose"] = silent
 
 
 def read_data_in(info):
@@ -219,63 +234,66 @@ def read_data_in(info):
                xyz_values (numpy array): A numpy array of the x, y (and z) localisations.
     """
 
-    in_file = info['in_file_and_path']
+    in_file = info["in_file_and_path"]
 
     if not os.path.exists(in_file):
         sys.exit("ERROR; The input file does not exist.")
 
-
-    if in_file[-4:] == '.npy':
+    if in_file[-4:] == ".npy":
         try:
             xyzcolour_values = np.load(in_file)
         except (EOFError, IOError, OSError) as exception:
             print("\n\nCould not read file: ", in_file)
             print("\n\n", type(exception))
-            sys.exit("Could not read the input file "+in_file+".\n")
-    elif in_file[-4:] == '.csv' or in_file[-4:] == '.txt':
+            sys.exit("Could not read the input file " + in_file + ".\n")
+    elif in_file[-4:] == ".csv" or in_file[-4:] == ".txt":
         try:
             skip = 0
-            with open(in_file, encoding='utf-8') as f:
+            with open(in_file, encoding="utf-8") as f:
                 line = f.readline()
-            for cell in line.split(','):
+            for cell in line.split(","):
                 try:
                     float(cell)
                 except ValueError:
-                    #print("Not a float")
+                    # print("Not a float")
                     skip = 1
-            xyzcolour_values = np.loadtxt(in_file,
-                                          delimiter=',',
-                                          skiprows=skip,
-                                          # Remove to allow colours at end
-                                          # of many columns
-                                          # usecols=range(info['dims'])
-                                          )
+            xyzcolour_values = np.loadtxt(
+                in_file,
+                delimiter=",",
+                skiprows=skip,
+                # Remove to allow colours at end
+                # of many columns
+                # usecols=range(info['dims'])
+            )
         except (EOFError, IOError, OSError) as exception:
             print("\n\nCould not read file: ", in_file)
             print("\n\n", type(exception))
-            sys.exit("Could not read the input file "+in_file+".\n")
+            sys.exit("Could not read the input file " + in_file + ".\n")
     else:
-        xyzcolour_values = 'Ouch'
-        print('Sorry, wrong format!\n')
-        sys.exit("The input file "+in_file+" has the wrong format.\n")
+        xyzcolour_values = "Ouch"
+        print("Sorry, wrong format!\n")
+        sys.exit("The input file " + in_file + " has the wrong format.\n")
 
-
-    info['values'] = xyzcolour_values.shape[0]
-    info['columns'] = xyzcolour_values.shape[1]
-    info['total_values'] = xyzcolour_values.shape[0]
-    info['total_columns'] = xyzcolour_values.shape[1]
+    info["values"] = xyzcolour_values.shape[0]
+    info["columns"] = xyzcolour_values.shape[1]
+    info["total_values"] = xyzcolour_values.shape[0]
+    info["total_columns"] = xyzcolour_values.shape[1]
     # Get the unique channel numbers in use
-    if info['colours_analysed'] is not None:
-        info['unique_colour_values'] = np.unique(xyzcolour_values[:,-1])
-        if len(info['unique_colour_values']) > 100:
+    if info["colours_analysed"] is not None:
+        info["unique_colour_values"] = np.unique(xyzcolour_values[:, -1])
+        if len(info["unique_colour_values"]) > 100:
             sys.exit(
-                '\nThere are ' +repr(len(info['unique_colour_values']))+
-                ' unique values (channel values) in the final column of you data.\n'
-                '\nExiting because these are unlikely to be the correct channel values.')
+                "\nThere are "
+                + repr(len(info["unique_colour_values"]))
+                + " unique values (channel values) in the final column of you data.\n"
+                "\nExiting because these are unlikely to be the correct channel values."
+            )
         # Print channel options if not specified in shell command arguments.
-        if info['start_channel'] is None:
-            print('\nThe colour channels present are: '
-                  +repr(info['unique_colour_values'].tolist()))
+        if info["start_channel"] is None:
+            print(
+                "\nThe colour channels present are: "
+                + repr(info["unique_colour_values"].tolist())
+            )
 
     return xyzcolour_values
 
@@ -298,64 +316,70 @@ def choose_channels(info):
             'None' if analysis is of a single specific channel.
     """
     # User input for the number of channels.
-    if len(info['unique_colour_values']) == 1:
-        start_channel = info['unique_colour_values'][0]
+    if len(info["unique_colour_values"]) == 1:
+        start_channel = info["unique_colour_values"][0]
         end_channel = None
-        print('Using the only colour channel: ' +repr(start_channel))
+        print("Using the only colour channel: " + repr(start_channel))
         return start_channel, end_channel
 
     # If > 1 channel - won't get this far if only 1.
     try:
-        print('\nHow many colour channels would you like to use in the analysis?')
-        colour_number = int(input('You can currently choose 1 or 2: ' ))
+        print("\nHow many colour channels would you like to use in the analysis?")
+        colour_number = int(input("You can currently choose 1 or 2: "))
     except ValueError:
-        sys.exit('\nThe number of colour channels to use must be an integer.\n')
+        sys.exit("\nThe number of colour channels to use must be an integer.\n")
     if colour_number == 0 or colour_number > 2:
-        sys.exit('\nSorry, only 1 or 2.\n')
+        sys.exit("\nSorry, only 1 or 2.\n")
     else:
-        print('\n'+str(colour_number)+' colour channels were selected.\n')
-        info['colours_analysed'] = colour_number
+        print("\n" + str(colour_number) + " colour channels were selected.\n")
+        info["colours_analysed"] = colour_number
 
     # Get the colour channel values.
-    if info['colours_analysed'] == 1:
-        start_channel = float(input('Which colour channel do you want to analyse? '))
+    if info["colours_analysed"] == 1:
+        start_channel = float(input("Which colour channel do you want to analyse? "))
         end_channel = None
 
-    if info['colours_analysed'] == 2:
-        start_channel = float(input('Which colour channel do you want to measure FROM? '))
-        end_channel = float(input('Which colour channel do you want to measure TO? '))
+    if info["colours_analysed"] == 2:
+        start_channel = float(
+            input("Which colour channel do you want to measure FROM? ")
+        )
+        end_channel = float(input("Which colour channel do you want to measure TO? "))
 
-    print('')
+    print("")
 
     # Check the input values match channel values in the data
     # For 'from' channel
     valid_colour = False
-    for colour in info['unique_colour_values']:
+    for colour in info["unique_colour_values"]:
         if start_channel == colour:
             valid_colour = True
     if valid_colour is False:
-        print(repr(start_channel)+ ' is not one of your colour channel values.')
-        retry = input('Do you want to select a different colour channel value (yes/no)?')
-        if retry.lower()[0] == 'y':
+        print(repr(start_channel) + " is not one of your colour channel values.")
+        retry = input(
+            "Do you want to select a different colour channel value (yes/no)?"
+        )
+        if retry.lower()[0] == "y":
             # info['start_channel'] == 'Incorrect input' # Debug option
             start_channel, end_channel = choose_channels(info)
         else:
-            sys.exit('Exiting.')
+            sys.exit("Exiting.")
 
     # For 'to' channel
     if end_channel is not None:
         valid_colour = False
-        for colour in info['unique_colour_values']:
+        for colour in info["unique_colour_values"]:
             if end_channel == colour:
                 valid_colour = True
         if valid_colour is False:
-            print(repr(end_channel)+ ' is not one of your colour channel values.')
-            retry = input('Do you want to select a different colour channel value (yes/no)?')
-            if retry.lower()[0] == 'y':
+            print(repr(end_channel) + " is not one of your colour channel values.")
+            retry = input(
+                "Do you want to select a different colour channel value (yes/no)?"
+            )
+            if retry.lower()[0] == "y":
                 # info['end_channel'] == 'Incorrect input' # Debug option
                 start_channel, end_channel = choose_channels(info)
             else:
-                sys.exit('Exiting.')
+                sys.exit("Exiting.")
 
     return start_channel, end_channel
 
@@ -391,8 +415,8 @@ def get_knns(xyz_values_start, filterdist, xyz_values_end=None, nns=0):
     """
     # Print error if specific number of nns not requested
     if nns == 0:
-        print('Need to request a number of near neighbours.')
-        print('Zero near neighbours requested.')
+        print("Need to request a number of near neighbours.")
+        print("Zero near neighbours requested.")
         sys.exit()
 
     # Set xyz_values_end and # nns to  for using single list of localisations
@@ -429,7 +453,7 @@ def get_knns(xyz_values_start, filterdist, xyz_values_end=None, nns=0):
     elif len(loc_pairs) == 1:
         loc_pairs = np.array(loc_pairs)  # Ensure consistent output
     else:
-        print('No neighbours found within filter distance.')
+        print("No neighbours found within filter distance.")
 
     return loc_pairs
 
@@ -437,9 +461,9 @@ def get_knns(xyz_values_start, filterdist, xyz_values_end=None, nns=0):
 def getdistances(xyz_values, filterdist, nns=0, verbose=False):
     """Calculates relative positions from positions in a scipy KDTree object,
     up to a maximum distance.
-    
+
     The relative positions do not contain duplicates (for calculating both ways) between a pair.
-    
+
     Args:
         xyz_values (numpy array):
             Array of localisations, one localisation (x, y(, z)) per row
@@ -451,7 +475,7 @@ def getdistances(xyz_values, filterdist, nns=0, verbose=False):
             If nns > 0: nns neighbours found.
         verbose (bool):
             Choose whether to print updates to screen.
-    
+
     Returns:
         loc_pairs (numpy array):
             Each row is a pair of localisations, within filterdist,
@@ -465,7 +489,7 @@ def getdistances(xyz_values, filterdist, nns=0, verbose=False):
 
     # Find relevant pairs of locs by index in array of locs
     if nns == 0:
-        loc_pairs = kdtree.query_pairs(r=filterdist, output_type='ndarray')
+        loc_pairs = kdtree.query_pairs(r=filterdist, output_type="ndarray")
 
     else:
         loc_pairs = get_knns(xyz_values, filterdist, nns=nns)
@@ -474,8 +498,8 @@ def getdistances(xyz_values, filterdist, nns=0, verbose=False):
     separation_values = kdtree.data[loc_pairs[:, 1]] - kdtree.data[loc_pairs[:, 0]]
 
     if verbose:
-        print(f'Found {len(separation_values)} vectors between all localisations')
-        print(f'in {int(time.time() - start_time):d} seconds.')
+        print(f"Found {len(separation_values)} vectors between all localisations")
+        print(f"in {int(time.time() - start_time):d} seconds.")
 
     # breakpoint()
 
@@ -483,7 +507,8 @@ def getdistances(xyz_values, filterdist, nns=0, verbose=False):
 
 
 def getdistances_two_colours(
-    xyz_values_start, filterdist, xyz_values_end, nns=0, verbose=False):
+    xyz_values_start, filterdist, xyz_values_end, nns=0, verbose=False
+):
     """Store all vectors (relative positions) between points within a chosen
     distance of each other in 3D from a list of points in one numpy array
     to another.
@@ -524,7 +549,8 @@ def getdistances_two_colours(
 
     if nns == 0:
         end_points_within_distance = kdtree_end.query_ball_point(
-            xyz_values_start, filterdist)
+            xyz_values_start, filterdist
+        )
         loc_pairs = []
 
         # relposns_list = []
@@ -542,21 +568,23 @@ def getdistances_two_colours(
         elif len(loc_pairs) == 1:
             loc_pairs = np.array(loc_pairs)  # Ensure consistent output
         else:
-            print('No neighbours found within filter distance.')
+            print("No neighbours found within filter distance.")
 
     else:
         loc_pairs = get_knns(xyz_values_start, filterdist, xyz_values_end, nns)
 
     # Get relative positions between pairs
     if len(loc_pairs) > 0:
-        separation_values = xyz_values_end[loc_pairs[:, 1]] - xyz_values_start[loc_pairs[:, 0]]
+        separation_values = (
+            xyz_values_end[loc_pairs[:, 1]] - xyz_values_start[loc_pairs[:, 0]]
+        )
     else:
         separation_values = np.array([])
 
     if verbose:
-        print(f'Found vectors between {len(xyz_values_start)} start ')
-        print(f'and {len(kdtree_end.data)} end localisations')
-        print(f'in {time.time() - start_time} seconds.')
+        print(f"Found vectors between {len(xyz_values_start)} start ")
+        print(f"and {len(kdtree_end.data)} end localisations")
+        print(f"in {time.time() - start_time} seconds.")
 
     return loc_pairs, separation_values
 
@@ -577,7 +605,7 @@ def get_vectors(d_values, dims):
             with rows sorted by distance (smallest to largest).
 
     """
-    #for i in range(0, 10):
+    # for i in range(0, 10):
     #    print(d_values[i])
     x_square_values = np.square(d_values[:, 0])
     y_square_values = np.square(d_values[:, 1])
@@ -591,7 +619,9 @@ def get_vectors(d_values, dims):
     if dims == 3:
         xz_distance_values = np.sqrt(x_square_values + z_square_values)
         yz_distance_values = np.sqrt(y_square_values + z_square_values)
-        xyz_distance_values = np.sqrt(x_square_values + y_square_values + z_square_values)
+        xyz_distance_values = np.sqrt(
+            x_square_values + y_square_values + z_square_values
+        )
 
     # Include these distances in the output table
     d_values = np.column_stack((d_values, xy_distance_values))
@@ -603,10 +633,10 @@ def get_vectors(d_values, dims):
 
     # Sorting distances in order
     if dims == 2:
-        d_values.view('f8,f8,f8,f8').sort(order=['f3'], axis=0)
+        d_values.view("f8,f8,f8,f8").sort(order=["f3"], axis=0)
 
     if dims == 3:
-        d_values.view('f8,f8,f8,f8,f8,f8,f8').sort(order=['f6'], axis=0)
+        d_values.view("f8,f8,f8,f8,f8,f8,f8").sort(order=["f6"], axis=0)
 
     return d_values
 
@@ -635,27 +665,39 @@ def save_relative_positions(d_values, filterdist, dims, info, nns=0):
            recorded in the log file.
     """
     if nns == 0:
-        out_file_name = info['results_dir']+r'//'+ info['in_file_no_extension'] + \
-            f'_PERPL-relpos_{filterdist:.1f}filter.csv'
+        out_file_name = (
+            info["results_dir"]
+            + r"//"
+            + info["in_file_no_extension"]
+            + f"_PERPL-relpos_{filterdist:.1f}filter.csv"
+        )
     else:
-        out_file_name = info['results_dir']+r'//'+ info['in_file_no_extension'] + \
-            f'_PERPL-relpos_{filterdist:.1f}filter_{nns}nn.csv'
+        out_file_name = (
+            info["results_dir"]
+            + r"//"
+            + info["in_file_no_extension"]
+            + f"_PERPL-relpos_{filterdist:.1f}filter_{nns}nn.csv"
+        )
 
-    if info['short_names']:
-        out_file_name = info['short_results_dir']+r'//'+ \
-            info['short_filename_without_extension'] + \
-            f'_PERPL-relpos_{filterdist:.1f}filter.csv'
+    if info["short_names"]:
+        out_file_name = (
+            info["short_results_dir"]
+            + r"//"
+            + info["short_filename_without_extension"]
+            + f"_PERPL-relpos_{filterdist:.1f}filter.csv"
+        )
 
     head = None
     if dims == 2:
         head = "xx_separation,yy_separation, ,xy_separation"
     elif dims == 3:
-        head = ("xx_separation,yy_separation,zz_separation,xy_separation,"
-                "xz_separation,yz_separation,xyz_separation")
-
+        head = (
+            "xx_separation,yy_separation,zz_separation,xy_separation,"
+            "xz_separation,yz_separation,xyz_separation"
+        )
 
     try:
-        np.savetxt(out_file_name, d_values, delimiter=',', header=head, comments='')
+        np.savetxt(out_file_name, d_values, delimiter=",", header=head, comments="")
     except (EOFError, IOError, OSError):
         print("Unexpected error:", sys.exc_info()[0])
         sys.exit("Could not create and open the output data file.")
@@ -686,98 +728,125 @@ def main(argv=None):
     """
 
     # Handle any input arguments (flags) and set up info dictionary.
-    prog = 'relative_positions'
-    prog_short_name = 'rp'
-    description = 'Calculating the relative positions of points as vectors.'
+    prog = "relative_positions"
+    prog_short_name = "rp"
+    description = "Calculating the relative positions of points as vectors."
 
-    info = {'prog':prog,
-            'prog_short_name':prog_short_name,
-            'description':description}
+    info = {
+        "prog": prog,
+        "prog_short_name": prog_short_name,
+        "description": description,
+    }
 
-    info['start'] = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-
+    info["start"] = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
     parser = argparse.ArgumentParser(prog, description)
 
-    parser.add_argument('-i', '--input_file',
-                        dest='input_file',
-                        type=argparse.FileType('r'),
-                        help='File of localisations which is a .csv (or .txt '
-                             'with comma delimiters) or .npy and containing N '
-                             'localisations in N rows.',
-                        metavar="FILE")
+    parser.add_argument(
+        "-i",
+        "--input_file",
+        dest="input_file",
+        type=argparse.FileType("r"),
+        help="File of localisations which is a .csv (or .txt "
+        "with comma delimiters) or .npy and containing N "
+        "localisations in N rows.",
+        metavar="FILE",
+    )
 
-    parser.add_argument('-d', '--dims',
-                        dest='dims',
-                        type=int,
-                        default=3,
-                        help="Dimensions of the data. It can be 2 or 3.")
+    parser.add_argument(
+        "-d",
+        "--dims",
+        dest="dims",
+        type=int,
+        default=3,
+        help="Dimensions of the data. It can be 2 or 3.",
+    )
 
-    parser.add_argument('-c', '--colours',
-                        dest='colours',
-                        type=int,
-                        default=None,
-                        help="Number of colour channels. It can be 1 or 2.")
+    parser.add_argument(
+        "-c",
+        "--colours",
+        dest="colours",
+        type=int,
+        default=None,
+        help="Number of colour channels. It can be 1 or 2.",
+    )
 
-    parser.add_argument('--from',
-                        dest='start_channel',
-                        type=int,
-                        default=None,
-                        help="Colour channel to measure FROM. "
-                            'Use to specify channel for 1-colour data, '
-                            'as well as localisations to measure FROM in 2-colour data.')
+    parser.add_argument(
+        "--from",
+        dest="start_channel",
+        type=int,
+        default=None,
+        help="Colour channel to measure FROM. "
+        "Use to specify channel for 1-colour data, "
+        "as well as localisations to measure FROM in 2-colour data.",
+    )
 
-    parser.add_argument('--to',
-                        dest='end_channel',
-                        type=int,
-                        default=None,
-                        help="Colour channel to measure TO. "
-                            'Use to specify channel for localisations to measure TO '
-                            'in 2-colour data.')
+    parser.add_argument(
+        "--to",
+        dest="end_channel",
+        type=int,
+        default=None,
+        help="Colour channel to measure TO. "
+        "Use to specify channel for localisations to measure TO "
+        "in 2-colour data.",
+    )
 
-    parser.add_argument('-f', '--filter_distance',
-                        dest='filter_dist',
-                        type=int,
-                        default=150,
-                        help="Filter distance.")
+    parser.add_argument(
+        "-f",
+        "--filter_distance",
+        dest="filter_dist",
+        type=int,
+        default=150,
+        help="Filter distance.",
+    )
 
-    parser.add_argument('--nns',
-                        dest='nns',
-                        type=int,
-                        default=0,
-                        help="Number of nearest neighbours to find within the filter distance, "
-                            "if desired. O (default) means no limit on the number of "
-                            "neighbours used within the filter distance.")
+    parser.add_argument(
+        "--nns",
+        dest="nns",
+        type=int,
+        default=0,
+        help="Number of nearest neighbours to find within the filter distance, "
+        "if desired. O (default) means no limit on the number of "
+        "neighbours used within the filter distance.",
+    )
 
-    parser.add_argument('-b', '--bin_size',
-                        dest='bin_size',
-                        type=int,
-                        default=1,
-                        help="Bin size in distance histograms (nm).")
+    parser.add_argument(
+        "-b",
+        "--bin_size",
+        dest="bin_size",
+        type=int,
+        default=1,
+        help="Bin size in distance histograms (nm).",
+    )
 
-    parser.add_argument('-z', '--zoom',
-                        dest='zoom',
-                        type=int,
-                        default=3,
-                        help='Magnification applied to the scatter plot of the '
-                             'principal view of the data.')
+    parser.add_argument(
+        "-z",
+        "--zoom",
+        dest="zoom",
+        type=int,
+        default=3,
+        help="Magnification applied to the scatter plot of the "
+        "principal view of the data.",
+    )
 
-    parser.add_argument('-s', '--short_names',
-                        help="Uses shortened names for the results files and "
-                        "directories. While this makes the results less easy to"
-                        " navigate it can be particularly useful on Windows"
-                        " systems that do not allow long names and paths. "
-                        "The input file name is used for the results filename"
-                        " and this shortened names has the first and last 5"
-                        " characters with -s- is the middle.",
-                        action="store_true")
+    parser.add_argument(
+        "-s",
+        "--short_names",
+        help="Uses shortened names for the results files and "
+        "directories. While this makes the results less easy to"
+        " navigate it can be particularly useful on Windows"
+        " systems that do not allow long names and paths. "
+        "The input file name is used for the results filename"
+        " and this shortened names has the first and last 5"
+        " characters with -s- is the middle.",
+        action="store_true",
+    )
 
-    parser.add_argument('-v', '--verbose',
-                        help="Increase output verbosity",
-                        action="store_true")
+    parser.add_argument(
+        "-v", "--verbose", help="Increase output verbosity", action="store_true"
+    )
 
     args = parser.parse_args()
-
 
     if args.verbose:
         print("Verbosity is turned on.\n")
@@ -785,58 +854,67 @@ def main(argv=None):
     if args.dims < 2 or args.dims > 3:
         sys.exit("ERROR; The data can only have 2 or 3 dimensions.")
 
-    info['dims'] = args.dims
-    info['bin_size'] = args.bin_size
-    info['colours_analysed'] = args.colours
-    info['start_channel'] = args.start_channel
-    info['end_channel'] = args.end_channel
-    info['filter_dist'] = args.filter_dist
-    info['nns'] = args.nns
+    info["dims"] = args.dims
+    info["bin_size"] = args.bin_size
+    info["colours_analysed"] = args.colours
+    info["start_channel"] = args.start_channel
+    info["end_channel"] = args.end_channel
+    info["filter_dist"] = args.filter_dist
+    info["nns"] = args.nns
 
-
-    info['zoom'] = args.zoom
-    info['verbose'] = args.verbose
-    info['short_names'] = args.short_names
+    info["zoom"] = args.zoom
+    info["verbose"] = args.verbose
+    info["short_names"] = args.short_names
 
     if args.input_file is None:
-        #print("Get the data from the command line as the program executes.")
+        # print("Get the data from the command line as the program executes.")
         get_inputs(info)
         # print('Colours: ' + repr(info['colours_analysed'])) # Debug
     else:
-        info['in_file_and_path'] = args.input_file.name
+        info["in_file_and_path"] = args.input_file.name
 
-    info['host'], info['ip_address'], info['operating_system'] = utils.find_hostname_and_ip()
+    info["host"], info["ip_address"], info["operating_system"] = (
+        utils.find_hostname_and_ip()
+    )
 
     # GET THE INPUT LOCALISATIONS with possible colour channels
     read_start = timeit.default_timer()
     xyzcolour_values = read_data_in(info)
     read_end = timeit.default_timer()
-    reading_time = (read_end-read_start)/60
+    reading_time = (read_end - read_start) / 60
 
-    if info['verbose']:
-        print('\nInput file:')
-        print(info['in_file_and_path'])
-        print("\nTime to read the input file was: "+str(round(reading_time, 3))+\
-              " minutes.\n")
-        print('This file contains '+str(info['values'])+' localisations with '
-              +str(info['columns'])+' columns per localisation.')
+    if info["verbose"]:
+        print("\nInput file:")
+        print(info["in_file_and_path"])
+        print(
+            "\nTime to read the input file was: "
+            + str(round(reading_time, 3))
+            + " minutes.\n"
+        )
+        print(
+            "This file contains "
+            + str(info["values"])
+            + " localisations with "
+            + str(info["columns"])
+            + " columns per localisation."
+        )
 
     # For colour channel information, choose channel(s) to analyse,
     # if not given as arguments in the shell command
-    if info['colours_analysed'] is not None and info['start_channel'] is None:
-        info['start_channel'], info['end_channel'] = choose_channels(info)
+    if info["colours_analysed"] is not None and info["start_channel"] is None:
+        info["start_channel"], info["end_channel"] = choose_channels(info)
 
     utils.primary_filename_and_path_setup(info)
 
-    if info['short_names'] is True:
+    if info["short_names"] is True:
         try:
-            os.makedirs(info['short_results_dir'])
+            os.makedirs(info["short_results_dir"])
         except OSError:
             print("Unexpected error:", sys.exc_info()[0])
             sys.exit("Could not create directory for the results.")
     else:
         try:
-            os.makedirs(info['results_dir'])
+            os.makedirs(info["results_dir"])
         except OSError:
             print("Unexpected error:", sys.exc_info()[0])
             sys.exit("Could not create directory for the results.")
@@ -844,31 +922,39 @@ def main(argv=None):
     # GET RELATIVE POSITIONS!
     d_values = []
     # For single channel
-    if info['colours_analysed'] is None:
-        xyz_values = xyzcolour_values[:, 0:info['dims']]
+    if info["colours_analysed"] is None:
+        xyz_values = xyzcolour_values[:, 0 : info["dims"]]
         d_values = getdistances(
-            xyz_values, info['filter_dist'], info['nns'], verbose=info['verbose'])[1]
+            xyz_values, info["filter_dist"], info["nns"], verbose=info["verbose"]
+        )[1]
 
-    if info['colours_analysed'] == 1:
-        xyz_values = \
-            xyzcolour_values[:, 0:info['dims']][xyzcolour_values[:, -1] == info['start_channel']]
+    if info["colours_analysed"] == 1:
+        xyz_values = xyzcolour_values[:, 0 : info["dims"]][
+            xyzcolour_values[:, -1] == info["start_channel"]
+        ]
         d_values = getdistances(
-            xyz_values, info['filter_dist'], info['nns'], verbose=info['verbose'])[1]
+            xyz_values, info["filter_dist"], info["nns"], verbose=info["verbose"]
+        )[1]
 
     # For two channels
-    if info['colours_analysed'] == 2:
-        xyz_values_start = \
-            xyzcolour_values[:, 0:info['dims']][xyzcolour_values[:, -1] == info['start_channel']]
-        xyz_values_end = \
-            xyzcolour_values[:, 0:info['dims']][xyzcolour_values[:, -1] == info['end_channel']]
+    if info["colours_analysed"] == 2:
+        xyz_values_start = xyzcolour_values[:, 0 : info["dims"]][
+            xyzcolour_values[:, -1] == info["start_channel"]
+        ]
+        xyz_values_end = xyzcolour_values[:, 0 : info["dims"]][
+            xyzcolour_values[:, -1] == info["end_channel"]
+        ]
         d_values = getdistances_two_colours(
-            xyz_values_start, info['filter_dist'], xyz_values_end,
-            info['nns'], verbose=info['verbose']
-            )[1]
+            xyz_values_start,
+            info["filter_dist"],
+            xyz_values_end,
+            info["nns"],
+            verbose=info["verbose"],
+        )[1]
 
     # Draw scatterplot and zoomed region
-    plotting.draw_2d_scatter_plots(xyzcolour_values, info['dims'], info, 0)
-    plotting.draw_2d_scatter_plots(xyzcolour_values, info['dims'], info, info['zoom'])
+    plotting.draw_2d_scatter_plots(xyzcolour_values, info["dims"], info, 0)
+    plotting.draw_2d_scatter_plots(xyzcolour_values, info["dims"], info, info["zoom"])
 
     # Get distances in 2D and 3D for relative positions.
     # Note, get_vectors() is an unhelpful name as it takes the vectors we already have
@@ -877,53 +963,58 @@ def main(argv=None):
         # CURRENTLY NEED TO ADD ZEROS COLUMN TO 2D KDTREE VERSION:
         if d_values.shape[1] == 2:
             d_values = np.column_stack((d_values, np.zeros(d_values.shape[0])))
-        d_values = get_vectors(d_values, info['dims'])
+        d_values = get_vectors(d_values, info["dims"])
     else:
         print("No data found so we are exiting.")
         sys.exit("No data found so we are exiting.")
 
     # Summarise
-    if info['verbose']:
+    if info["verbose"]:
         print(
-            '\n'
-            f'{len(d_values)} relative positions within the '
-            'filter distance in all dimensions for all localisations. '
-            ' Symmetric duplicates removed for single-channel analysis if ' \
-            '# nearest neighbours was unrestricted.')
+            "\n"
+            f"{len(d_values)} relative positions within the "
+            "filter distance in all dimensions for all localisations. "
+            " Symmetric duplicates removed for single-channel analysis if "
+            "# nearest neighbours was unrestricted."
+        )
 
     # Plot vector component results
     plotting.plot_histograms(
-        d_values, info['dims'], info['filter_dist'], info, binsize=info['bin_size']
-        )
+        d_values, info["dims"], info["filter_dist"], info, binsize=info["bin_size"]
+    )
 
     filter_end = timeit.default_timer()
-    filter_time = (filter_end-read_end)/60
+    filter_time = (filter_end - read_end) / 60
 
-    if info['verbose']:
-        print("\nTime to filter the data was: "+ str(round(filter_time, 3)) +\
-              " minutes.")
-
+    if info["verbose"]:
+        print(
+            "\nTime to filter the data was: " + str(round(filter_time, 3)) + " minutes."
+        )
 
     # Save relative positions and vector components.
     xyz_filename = save_relative_positions(
-        d_values, info['filter_dist'], info['dims'], info, info['nns'])
+        d_values, info["filter_dist"], info["dims"], info, info["nns"]
+    )
 
     save_data_end = timeit.default_timer()
-    filtering_time = (save_data_end-filter_end)/60
-    if info['verbose']:
-        print("\nTime to write the data was: "+str(round(filtering_time, 3))+" minutes.")
+    filtering_time = (save_data_end - filter_end) / 60
+    if info["verbose"]:
+        print(
+            "\nTime to write the data was: "
+            + str(round(filtering_time, 3))
+            + " minutes."
+        )
 
     # Create html report.
     reports.write_rel_pos_html_report(info)
 
     # Direct user to the location of the output.
-    if info['verbose']:
-        print('\nRelative positions are saved in the file:\n' + xyz_filename)
+    if info["verbose"]:
+        print("\nRelative positions are saved in the file:\n" + xyz_filename)
 
 
 if __name__ == "__main__":
-    #Tk().withdraw()
+    # Tk().withdraw()
     main()
-    #print('\nHit Enter to exit')
-    #input()
-    
+    # print('\nHit Enter to exit')
+    # input()
