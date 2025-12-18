@@ -1,0 +1,192 @@
+# filter used during calculation of relative positions
+relpos_filter: 150.0
+
+# axial & transverse direction
+axial_direction: yy
+transverse_direction: xz
+
+# limit between localisations to be included when modelling other direction
+# i.e. when modelling axial distances, localisations must be within the 
+# transverse limit
+transverse_limit: 200. 
+axial_limit: 200.
+
+# localisation precision to load in
+loc_precision_filter: [5.0, 6.0, 7.0]
+
+# number of locs per z disk 
+numberoflocalisations: [1,5,10]
+
+# sizes of bins for histogram analysis
+bin_sizes: [5]
+
+# --- axial model params -----
+# define all the possible values each parameter can take in a list
+axial:
+  fitlength: [105, 115, 125] # length of the fit
+  dimension: [1] # 1,2,3
+  background: [null, flat, linear, linear_flat] # null, flat, linear, linear_flat, trans_bg_0, trans_bg_1, trans_bg_2
+  n_peaks: [0, 1, 4, 5, 6] # number of peaks
+  # variable amplitude or at a fixed ratio 1, 1 - 1/n, 1 - 2/n
+  peak_type: [variable]  # variable, fixed
+  # how to model the characteristic distance, either one characteristic distance, 
+  # or multiple characteristic distances given by each peak, or multiple peaks 
+  # with ratio between them
+  charac_dist: [one] # one, multiple_fixed, multiple_ratio
+  # ratio between characteristic distances
+  charac_dist_ratio: [null] # null or list of ratios e.g. [1.0, 0.7, 0.4] for n_peaks: 3
+  # model repeated localisations
+  repeats: [True, False] # True, False
+  # include offset
+  offset: [False] # True, False
+  # normalise the fit
+  normalise: [False] # True, False
+
+  # initial guesses at parameters
+  params_initial:
+    # amplitude of peak 1
+    amp_peak_1: 10
+    amp_peak_2: 10
+    amp_peak_3: 10
+    amp_peak_4: 10
+    amp_peak_5: 10
+    amp_peak_6: 10
+    # amplitude of peak 2
+    # amp_peak_2: 5
+    # etc...
+    # first characteristic distance
+
+    characteristic_distance_1: 20
+    # second characteristic distance
+    # characteristic_distance_2: 5
+    # etc.
+    # sigma for characteristic distance
+    characteristic_distance_broadening: 5
+    # standard deviation of localisation precision
+    loc_prec_sd: 5
+    # amplitude of peak due to repeated localisations
+    loc_prec_amp: 10
+    # background slope
+    bg_slope: -0.1
+    # background offset
+    bg_offset: 0
+
+  # lower bounds for parameters
+  params_lower:
+    amp_peak_1: 0
+    amp_peak_2: 0
+    amp_peak_3: 0
+    amp_peak_4: 0
+    amp_peak_5: 0
+    amp_peak_6: 0
+    # amp_peak_2: 0
+    # etc...
+    characteristic_distance_1: 5
+    # characteristic_distance_2: 5
+    # etc.
+    characteristic_distance_broadening: 0
+    loc_prec_sd: 0
+    loc_prec_amp: 0
+    bg_slope: -10
+    bg_offset: 0
+
+  # upper bounds for parameters
+  params_upper:
+    amp_peak_1: 100
+    amp_peak_2: 100
+    amp_peak_3: 100
+    amp_peak_4: 100
+    amp_peak_5: 100
+    amp_peak_6: 100
+    # amp_peak_2: 100
+    # etc...
+    characteristic_distance_1: 40
+    # characteristic_distance_2: 5
+    # etc.
+    characteristic_distance_broadening: 15
+    loc_prec_sd: 10
+    loc_prec_amp: 100
+    bg_slope: 0
+    bg_offset: 10
+
+# --- transverse model params -----
+# define all the possible values each parameter can take in a list
+transverse:
+  fitlength: [52, 57, 62]
+  dimension: [2]
+  background: [null, flat, linear, trans_bg_0, trans_bg_1, trans_bg_2]
+  n_peaks: [0, 2, 3]
+  peak_type: [variable] 
+  charac_dist: [one, multiple_fixed, multiple_ratio] 
+  charac_dist_ratio: [1, 1.4142, 2]
+  repeats: [True, False]
+  offset: [False] 
+  normalise: [True] 
+
+  # initial guesses at parameters
+  params_initial:
+    # amplitude of peak 1
+    amp_peak_1: 10
+    amp_peak_2: 10
+    amp_peak_3: 10
+    # amplitude of peak 2
+    # amp_peak_2: 5
+    # etc...
+    # first characteristic distance
+    characteristic_distance_1: [20, 10, 24] # each distance corresponses to each charac dist type
+    characteristic_distance_2: 25
+    characteristic_distance_3: 45
+    # second characteristic distance
+    # characteristic_distance_2: 5
+    # etc.
+    # sigma for characteristic distance
+    characteristic_distance_broadening: 5
+    # standard deviation of localisation precision
+    loc_prec_sd: 5
+    # amplitude of peak due to repeated localisations
+    loc_prec_amp: 10
+    # background slope
+    bg_slope: 0.1
+    # background offset
+    bg_offset: 0
+    # quadratic & cubic coeff for trans. bg
+    trans_bg_quad_coeff: -0.1
+    trans_bg_cubic_coeff: 0.1
+
+  # lower bounds for parameters
+  params_lower:
+    amp_peak_1: 0
+    amp_peak_2: 0
+    amp_peak_3: 0
+    # amp_peak_2: 0
+    # etc...
+    characteristic_distance_1: [5, 5, 10] 
+    characteristic_distance_2: 20
+    characteristic_distance_3: 40
+    # etc.
+    characteristic_distance_broadening: 0
+    loc_prec_sd: 0
+    loc_prec_amp: 0
+    bg_slope: 0
+    bg_offset: 0
+    trans_bg_quad_coeff: -10
+    trans_bg_cubic_coeff: 0
+
+  # upper bounds for parameters
+  params_upper:
+    amp_peak_1: 100
+    amp_peak_2: 100
+    amp_peak_3: 100
+    # amp_peak_2: 100
+    # etc...
+    characteristic_distance_1: [40, 20, 33] 
+    characteristic_distance_2: 40
+    characteristic_distance_3: 57
+    # etc.
+    characteristic_distance_broadening: 15
+    loc_prec_sd: 10
+    loc_prec_amp: 100
+    bg_slope: 10
+    bg_offset: 10
+    trans_bg_quad_coeff: 0
+    trans_bg_cubic_coeff: 10
