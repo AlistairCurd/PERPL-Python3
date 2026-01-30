@@ -26,7 +26,7 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.githubpages",
     "sphinx_rtd_theme",
-    "myST_parser"
+    "myST_parser",
     "autodoc2"
 ]
 
