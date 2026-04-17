@@ -58,7 +58,7 @@ This will read in output data from the *relative_positions.py* script and compar
 **NB** These scripts use meaningful filenames and directories to store the results. This sometimes creats long paths which Windows in particular finds difficult to handle. If this happens use the *-s* flag at the ends of these commands to switch to a shorter naming convention.
 
 ## USAGE:
-There are two **Python scripts** that can be executed from the command line from a shell with Python 3 available, these are *relative_positions.py* and *rot_2d_symm_fit.py*.
+There are two **Python scripts** in src/perpl that can be executed from the command line from a shell with Python 3 available, these are *relative_positions.py* and *rot_2d_symm_fit.py*.
 
 Each of these can be run from the command line in two ways:
 
@@ -112,6 +112,8 @@ To get information on the flags and usage, type:
 
 Examples of usage are in the bash script *command_line_demo.sh*. This is a Linux script and will not run on Windows in an Anaconda shell. If you transfer this script to a Linux system you may need to run the `dos2unix` command on it to make it work, as well as `chmod u+x command_line_demo.sh`. If you create the **data-perpl** directory as described in the **DATA** section then the script should pick up the data without you having to change the path in the script.
 
+### Automation
+Scripts are provided in dev/, with README, for procedural data preprocessing and model generation, fitting and comparison.
 
 ### Jupyter notebooks (in /notebooks/)
 
@@ -131,7 +133,7 @@ This was formerly generated with Doxygen. It needs to be regenerated.
 
 ## DATA
 
-Test data for this software, or examples with which the software can be used, can be found at [https://bitbucket.org/apcurd/perpl_test_data](https://bitbucket.org/apcurd/perpl_test_data).
+The original test data for this software, or examples with which the software can be used, can be found at [https://bitbucket.org/apcurd/perpl_test_data](https://bitbucket.org/apcurd/perpl_test_data).
 These files are:
 
 * *ACTN2-Affimer_PERPL-relpos_200.0filter_len2440488.pkl*
@@ -154,15 +156,6 @@ The shell script *command_line_demo.sh* and the Jupyter notebooks will find thes
     * *perpl-python3*
 
 You can also download the data into any directory on your system and edit the file name and path in the relevant script/notebook, if you prefer.
-
-## FILES INCLUDED: 
-
-* *README.md*: This file, which contains information about the software in this project.
-* *command_line_demo.sh*: A bash script that executes the Python scripts relative_positions.py and rot_2d_symm_fit.py with various command line options.
-* *license.md*: Software licensing file.
-* *pyproject.toml*: Configuration file for package and environment building.
-* *.gitignore*: Hidden configuration file for git, a distributed version-control system.
-* *.gitattributes*: Hidden configuration file for git, a distributed version-control system.
 
 ### Python Code
 
