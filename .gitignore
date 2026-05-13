@@ -53,7 +53,7 @@ bak
 *.bak
 doc/*
 doc/
-data/
+# data/
 relposdensity_TestData*
 *~
 *.pylint*
