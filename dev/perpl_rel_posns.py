@@ -79,12 +79,12 @@ def main(argv=None):
 
     args = parser.parse_args(argv)
 
-    folder = os.path.join("experiments", args.experiment, "output")
+    folder = os.path.join("experiments", args.experiment)
 
     input_folder = os.path.join(
         folder, "data"
     )
-    output_folder = os.path.join(folder, "perpl_relative_posns")
+    output_folder = os.path.join(folder, "output", "perpl_relative_posns")
 
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
