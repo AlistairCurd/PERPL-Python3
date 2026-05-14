@@ -26,11 +26,11 @@ jobs:
           pip install build
 
           
-      # Ensure tag commit is on main branch
-      - name: Check tag is on main branch
+      # Ensure tag commit is on master branch
+      - name: Check tag is on master branch
         run: |
-          git fetch origin main
-          if ! git branch -r --contains $GITHUB_SHA | grep -q 'origin/main'; then
+          git fetch origin master
+          if ! git branch -r --contains $GITHUB_SHA | grep -q 'origin/master'; then
             echo "Tag commit is not on main branch"
             exit 1
           fi
