@@ -1,0 +1,84 @@
+
+cff-version: 1.2.0
+title: "PERPL (Pattern Extraction from Relative Positions of Localisations)"
+message: "If you use this software, please cite the associated paper."
+type: software
+
+authors:
+  - family-names: Curd
+    given-names: Alistair P.
+  - family-names: Leng
+    given-names: Joanna
+  - family-names: Hughes
+    given-names: Ruth E.
+  - family-names: Cleasby
+    given-names: Alexa J.
+  - family-names: Rogers
+    given-names: Brendan
+  - family-names: Trinh
+    given-names: Chi H.
+  - family-names: Baird
+    given-names: Michelle A.
+  - family-names: Takagi
+    given-names: Yasuharu
+  - family-names: Tiede
+    given-names: Christian
+  - family-names: Sieben
+    given-names: Christian
+  - family-names: Manley
+    given-names: Suliana
+  - family-names: Schlichthaerle
+    given-names: Thomas
+  - family-names: Jungmann
+    given-names: Ralf
+  - family-names: Ries
+    given-names: Jonas
+  - family-names: Shroff
+    given-names: Hari
+  - family-names: Peckham
+    given-names: Michelle
+
+preferred-citation:
+  type: article
+  title: "Nanoscale Pattern Extraction from Relative Positions of Sparse 3D Localizations"
+  authors:
+    - family-names: Curd
+      given-names: Alistair P.
+    - family-names: Leng
+      given-names: Joanna
+    - family-names: Hughes
+      given-names: Ruth E.
+    - family-names: Cleasby
+      given-names: Alexa J.
+    - family-names: Rogers
+      given-names: Brendan
+    - family-names: Trinh
+      given-names: Chi H.
+    - family-names: Baird
+      given-names: Michelle A.
+    - family-names: Takagi
+      given-names: Yasuharu
+    - family-names: Tiede
+      given-names: Christian
+    - family-names: Sieben
+      given-names: Christian
+    - family-names: Manley
+      given-names: Suliana
+    - family-names: Schlichthaerle
+      given-names: Thomas
+    - family-names: Jungmann
+      given-names: Ralf
+    - family-names: Ries
+      given-names: Jonas
+    - family-names: Shroff
+      given-names: Hari
+    - family-names: Peckham
+      given-names: Michelle
+  journal: "Nano Letters"
+  year: 2021
+  volume: 21
+  issue: 3
+  start: 1213
+  end: 1220
+  doi: 10.1021/acs.nanolett.0c03332
+``
