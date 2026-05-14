@@ -31,10 +31,10 @@ jobs:
         run: |
           git fetch origin master
           if ! git branch -r --contains $GITHUB_SHA | grep -q 'origin/master'; then
-            echo "Tag commit is not on main branch"
+            echo "Tag commit is not on master branch"
             exit 1
           fi
-          echo "Tag commit is on main branch"
+          echo "Tag commit is on master branch"
 
       # Check tag matches pyproject.toml
       - name: Get version from pyproject.toml
