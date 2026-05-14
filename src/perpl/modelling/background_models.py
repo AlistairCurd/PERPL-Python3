@@ -26,9 +26,7 @@ specific language governing permissions and limitations under the License.
 import numpy as np
 
 
-def exponential_decay_1d_pair_corr(separation_values,
-                                   amplitude,
-                                   scale_param):
+def exponential_decay_1d_pair_corr(separation_values, amplitude, scale_param):
     """1D pair-correlation function for localisations where the probability of
     detection decreases exponentially along the relevant direction, starting
     from any location (the location parameter of the exponential p.d.f. does
@@ -55,10 +53,9 @@ def exponential_decay_1d_pair_corr(separation_values,
     return rpd
 
 
-def zero_to_constant_gradient(separation_values,
-                              gradient,
-                              crossover_distance,
-                              variation_amplitude):
+def zero_to_constant_gradient(
+    separation_values, gradient, crossover_distance, variation_amplitude
+):
     """Function which will tend to zero for low separation values and to a
     constant gradient at high separation values, relative to a crossover
     distance.
@@ -105,10 +102,7 @@ def zero_to_constant_gradient(separation_values,
     # It is possible the powers of x below should be greater,
     # and could possibly be fitted,
     # but should be one greater in the numerator than in the denominator.
-    rpd = gradient * ((amplitude * x_values ** 3)
-                      /
-                      (crossover + amplitude * x_values ** 2)
-                      )
+    rpd = gradient * ((amplitude * x_values**3) / (crossover + amplitude * x_values**2))
 
     return rpd
 
@@ -133,22 +127,23 @@ def pair_correlation_disk(separation_values, radius):
             Provides values for separation_values upto the diameter of the
             disk.
     """
-    rpd = (2 * np.pi
-           * separation_values
-           * ((np.arccos(separation_values / (2 * radius))
-               -
-               np.arctan(separation_values
-                         /
-                         np.sqrt(4 * radius ** 2 - separation_values ** 2)
-                         )
-               + np.pi / 2
-               )
-              * radius ** 2
-              - separation_values * np.sqrt(4 * radius ** 2
-                                            - separation_values ** 2
-                                            ) / 2
-              ) * 10 ** -7
-           )
+    rpd = (
+        2
+        * np.pi
+        * separation_values
+        * (
+            (
+                np.arccos(separation_values / (2 * radius))
+                - np.arctan(
+                    separation_values / np.sqrt(4 * radius**2 - separation_values**2)
+                )
+                + np.pi / 2
+            )
+            * radius**2
+            - separation_values * np.sqrt(4 * radius**2 - separation_values**2) / 2
+        )
+        * 10**-7
+    )
     return rpd
 
 
@@ -172,15 +167,13 @@ def internalbg(separation_values, diameter, amp):
     """
     # Generate the background distribution, for separation_values upto
     # the diameter of the disk.
-    disk_background = (amp
-                       * pair_correlation_disk(np.arange(np.round(diameter)),
-                                               radius=diameter/2.
-                                               )
-                       )
+    disk_background = amp * pair_correlation_disk(
+        np.arange(np.round(diameter)), radius=diameter / 2.0
+    )
 
     # Pad out to cover the rest of the required distance range with zeros,
     # for use with other model components.
-    rpd = np.pad(disk_background,
-                 (0, len(separation_values) - len(disk_background)), 'constant'
-                 )
+    rpd = np.pad(
+        disk_background, (0, len(separation_values) - len(disk_background)), "constant"
+    )
     return rpd

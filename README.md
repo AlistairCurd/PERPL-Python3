@@ -1,208 +1,116 @@
 [![Python application](https://github.com/AlistairCurd/PERPL-Python3/actions/workflows/python-app.yml/badge.svg)](https://github.com/AlistairCurd/PERPL-Python3/actions/workflows/python-app.yml)
 
+# PERPL
 
-# PERPL (Pattern Extraction from Relative Positions of Localisations) 
+## Pattern Extraction from Relative Positions of Localisations
 
-This project provides functions for finding relative positions between points in 3D space and plotting as distance histograms for single molecule localisation microscopy data e.g. direct stochastic optical reconstruction microscopy (dSTORM) or photoactivated light microscopy (PALM). It also provides functions for fitting in silico model relative position distributions to those obtained from experimental localisations and allows the user to select the most likely structural model to describe the experimental data.
+PERPL infers structure that is not directly visible in point-cloud data, including when data is sparse relative to the underlying structure. It was initially developed for localisation microscopy, but is also applicable to other point-cloud data.
 
-The software uses a file containing localisation data, analyses the distribution of relative positions between them within a certain maximum distance ('filter distance') and outputs and saves these relative positions. The filter distance is applied in 3D (or in 2D, as required). The software compares these outputs to relative position distributions obtained from synthetic localisation data models based on hypotheses of structural features. It outputs model fits and relative likelihoods for these models.
+PERPL works by computing pairwise relative positions between data points in a relative position distribution (RPD). It compares this experimental RPD with RPDs generated from candidate model structures and assists in final model selection.
 
-The algorithms were developed by **Alistair Curd** of the University of Leeds, from 30 July 2018.
+Originally developed at the University of Leeds.
 
-Copyright 2018 Peckham Lab
+## Citation
 
-It was ported from Python 2 to Python 3 and made more user friendly by **Joanna Leng** at the University of Leeds who was funded by EPSRC as a Research Software Engineering Fellow (EP/R025819/1).
+If you use PERPL in your work, please cite:
 
-**History before 2022-12-20:** On 2022-12-20 this project was migrated from Bitbucket ([https://bitbucket.org/apcurd/perpl-python3/](https://bitbucket.org/apcurd/perpl-python3/)). We were unable to port the whole history because it included files that were too large for Github. The current repository ([https://github.com/AlistairCurd/PERPL-Python3](https://github.com/AlistairCurd/PERPL-Python3)) holds development of the master branch from that point.
+Curd, A. P., Leng, J., Hughes, R. E., Cleasby, A. J., Rogers, B., Trinh, C. H.,
+Baird, M. A., Takagi, Y., Tiede, C., Sieben, C., Manley, S., Schlichthaerle, T.,
+Jungmann, R., Ries, J., Shroff, H., & Peckham, M.
+Nanoscale Pattern Extraction from Relative Positions of Sparse 3D Localizations.
+**Nano Letters** 2021, 21 (3), 1213–1220.
+https://doi.org/10.1021/acs.nanolett.0c03332
 
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+### BibTeX
 
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+```bibtex
+@article{curd2021perpl,
+  title = {Nanoscale Pattern Extraction from Relative Positions of Sparse 3D Localizations},
+  author = {Curd, Alistair P. and Leng, Joanna and Hughes, Ruth E. and Cleasby, Alexa J. and Rogers, Brendan and Trinh, Chi H. and Baird, Michelle A. and Takagi, Yasuharu and Tiede, Christian and Sieben, Christian and Manley, Suliana and Schlichthaerle, Thomas and Jungmann, Ralf and Ries, Jonas and Shroff, Hari and Peckham, Michelle},
+  journal = {Nano Letters},
+  year = {2021},
+  volume = {21},
+  number = {3},
+  pages = {1213--1220},
+  doi = {10.1021/acs.nanolett.0c03332}
+}
+```
 
 
-## DEVELOPED WITH: 
-The latest version was developed using Python 3.11 and Mamba on a Windows 10 system, and with Windows Subsystem for Linux 2 (WSL2) with Ubuntu 22.04.3 LTS.  Previous versions have also been developed on a Centos system and exectuted a limited number of times on an Apple Mac.
+## Installation
 
-## QUICK START: 
+Requires Python 3.11+ (e.g. in a new conda environment)
 
-### Prerequisites
-You will need to be able to create a Python 3.11 environment, e.g. with Anaconda or Miniconda or Mamba. We recommend [Mamba](https://mamba.readthedocs.io/en/latest/)).
+`pip install perpl` for released versions
 
-### Installation
-1. Create a Python 3.11 environment:
+or
 
-    e.g., in Miniforge (see [here](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html)):
+Download or clone this repository and `pip install .`
 
-    `mamba create -n perpl python=3.11`
+Tested on Linux and Windows
 
-2. Activate the environment:
+## Quick start 
 
-    e.g., `mamba activate perpl`
+Input data should be a table of 2D or 3D data points in a CSV file, with one row per data point. The first columns must contain the X and Y coordinates (and Z for 3D data).
 
-3. Install perpl:
-    * To use without downloading this repository: `pip install perpl`
-    * To use notebooks or develop:
-        1. Clone or download this repository
-        2. Navigate to your copy of this repository, then `pip install .`
+* Collect 2D (`-d 2`) relative positions with filter distance (`-f`) 200:
 
-### Run scripts
+`relpos -i INPUT_DATA.csv -d 2 -f 200`
 
-Type `relpos` to execute *relative_positions.py*. (If you run into admin rights issues on Windows, use WSL2 or navigate to src/perpl and type `python relative_positions.py` instead.)
+* Example analysis: radial symmetry modelling from the RPD. This uses output from the `relpos` command:
 
-This analyses localisation data that has been processed into *X* and *Y* (2D) or *X*, *Y* and *Z* (3D) coordinates stored in a text or .csv file. You will be asked to provide input, such as the input data filename, to the script as it executes. Example data files can be found as described in the **DATA** section. A relatively small data file useful for testing the software is *Nup107_3D_10000_from_36297_locs.csv*, choose 3D analysis and a filter distance of 200nm. We plan to upload the data to Zenodo and include instructions here on how to access them.
+`rotsym2d -i RPD_DATA.csv`
 
-Type `rotsym2d` to execute *rot_2d_symm_fit.py*. (Similar to above, you can also use `python rot_symm_fit.py`.)
+Output is generated in new subdirectories in the input directories.
 
-This will read in output data from the *relative_positions.py* script and compare it to a model of localisations with 2D rotational symmetry. Again you will be asked to provide input, which should be a list of relative positions, not a list of localisations. A good test file for this script is *Nup107_SNAP_3D_GRROUPED_10nmZprec_PERPL-relpos_200.0filter.csv*, which itself was generated by running *relative_positions.py* on *Nup107_SNAP_3D_GRROUPED_10nmZprec.txt*.
+HTML reports are generated alongside the output files.
 
-**NB** These scripts use meaningful filenames and directories to store the results. This sometimes creats long paths which Windows in particular finds difficult to handle. If this happens use the *-s* flag at the ends of these commands to switch to a shorter naming convention.
+## Usage
 
-## USAGE:
-There are two **Python scripts** that can be executed from the command line from a shell with Python 3 available, these are *relative_positions.py* and *rot_2d_symm_fit.py*.
+Run `relpos -h` or `rotsym2d -h` to see available command-line options.
 
-Each of these can be run from the command line in two ways:
+The `-s` flag can be used to shorten output path if this becomes a problem in Windows.
 
-1. They can be executed and all the necessary parameters for the code to execute successfully can be provided as flags/arguments at the command line. 
-2. They can be executed from the command line where no flags/arguments are provided. In this case the user is asked to provide the necessary information as the script executes via a file browser for the input file and via the command line for all other information.
+Output is generated in a subdirectory to the directory containing the input data/RPD data.
 
-In both these cases the user can choose to execute the code in verbose mode and monitor its progress via output printed to the command line (standard output).
+`relpos`/relative_positions.py generates the set of 2D/3D relative positions, plots of distance histograms and an HTML report.
 
-Each time these scripts run, a HTML report is created in the directory where the input data is stored. The paths and filenames provide information on when the script executed and the parameters selected, as well as being documented in the report. The image files used in the report are saved to the directory with the report. You can view the report in a web browser on the machine where it was created by double clicking on the HTML file in the directory. If you wish to share the file, you can print it (or save it as a pdf if correctly configured) via your web browser. If you wish to share the HTML report as HTML, remember to share the image files with the HTML file.
+Here is one of the distance histograms for data from a nuclear pore complex protein (located around a ring of approx. 100 nm diameter):
 
-There are also **Jupyter notebooks** for fitting models to the data and producing plots and numerical results. These may be run interactively, and modified, e.g. for path to the input data and choice of model to fit to the input data. These may be found and run in a web browser by typing `jupyter notebook` in the command prompt.
+![Example](images/histogram_xy_separation_in_nm_300.png)
 
-### relative_positions.py
+`rotsym2d`/rot_2d_symm_fit.py generates visualisations of fitted structures and fit results, and an HTML report containing detailed fit results and comparisons of different orders of symmetry.
 
-To execute interactively, provide no flags (arguments) and type:
+Here is a plot with the fits to model RPDs with different orders of symmetry:
 
-`relpos` (or see above for rights issues on Windows)
+![Example](images/Histogram_with_Fitted_Curves_200.png)
 
-To execute silently with default values, all you need is to include a data file; type:
+### Core components
 
-`relpos -i data_file.csv`
+- `relpos` (`relative_positions.py`): computes relative positions and generates distance histograms and reports.
+- `modelling/modelling_general.py`: contains the class and functions for building and fitting models.
 
-To execute silently with your own values you also need to include a data file; type for example:
+See `src/perpl/` for additional modules including structural model implementations.
 
-`relpos -i data_file.csv -d 2 -f 200 -z 12 -s`
+### Automation
+Scripts are provided in `dev/`, with README, for procedural data preparation and model generation, fitting and comparison.
 
-To get information on the flags and usage, type:
+## Data
 
-`relpos -h`
+The original test data for this software and examples with which the software can be used, can be found at 
 
-This script can take several minutes to run, depending on the size (number of localisations) and density of the input data.
+ [https://bitbucket.org/apcurd/perpl_test_data](https://bitbucket.org/apcurd/perpl_test_data).
 
-### rot_2d_symm_fit.py
-This script is executed to compare a model with rotational 2D symmetry with experimental fluorescence localisation microscopy data. The script reads in output data generated by relative_positions.py and compares it to a model that it generates.
+## Documentation
 
-To execute interactively, provide no flags (arguments) and type:
+More detailed documentation is available in `dev/old-readme.md` and will be improved in future releases.
 
-`rotsym2d`
+### Notebooks
+See `notebooks/` for interactive examples, developed from work reported [here](https://doi.org/10.1021/acs.nanolett.0c03332).
 
-To execute silently with default values, all you need is to include a data file; type:
+## Authors
 
-`rotsym2d -i data_file_output_from_relative_positions.csv`
+Alistair Curd, Oliver Umney, Joanna Leng
 
-To execute silently with your own values, you need to include a data file and filter distance (the filter distance only has an effect if it is less than that used in generating the input data when executing relative_positions.py); type for example:
-
-`rotsym2d -i data_file_output_from_relative_positions.csv -f 100`
-
-To get information on the flags and usage, type:
-
-`rotsym2d -h`
-
-Examples of usage are in the bash script *command_line_demo.sh*. This is a Linux script and will not run on Windows in an Anaconda shell. If you transfer this script to a Linux system you may need to run the `dos2unix` command on it to make it work, as well as `chmod u+x command_line_demo.sh`. If you create the **data-perpl** directory as described in the **DATA** section then the script should pick up the data without you having to change the path in the script.
-
-
-### Jupyter notebooks (in /notebooks/)
-
-To start the Jupyter notebook environment, go to an Anaconda shell that is running the PERPL environment and type:
-
-`jupyter notebook`
-
-The notebook environment will open in your web browser. Select a notebook. Select **Python 3** for the **kernel**, if necessary. If working in WSL2:
-* Copy a URL given in the output and paste into a web browser in Windows.
-* For accessing data, use paths as expected in the Linux environment.
-
-**NB** Each notebook requires you to load data into it (see **DATA** section).
-
-
-## DOCUMENTATION
-This was formerly generated with Doxygen. It needs to be regenerated.
-
-## DATA
-
-Test data for this software, or examples with which the software can be used, can be found at [https://bitbucket.org/apcurd/perpl_test_data](https://bitbucket.org/apcurd/perpl_test_data).
-These files are:
-
-* *ACTN2-Affimer_PERPL-relpos_200.0filter_len2440488.pkl*
-* *ACTN2-Affimer_locs_maxprec5.pkl*
-* *ACTN2-mEos2_PERPL-relpos_200.0filter_6FOVs_aligned_len1229656.pkl*
-* *DNA-origami_DNA-PAINT_locs_xyz.csv*
-* *DNA-origami_DNA-PAINT_locs_xyz_PERPL-relpos_250.0filter.csv*
-* *Nup107_3D_10000_from_36297_locs.csv* **(useful for quick first test of *relative_positions.py*)**
-* *Nup107_SNAP_3D_GRROUPED.txt*
-* *Nup107_SNAP_3D_GRROUPED_10nmZprec.txt*
-* *Nup107_SNAP_3D_GRROUPED_10nmZprec_PERPL-relpos_200.0filter.csv* **(useful for test of *rot_2d_sym_fit.py*)**
-    * This file was itself generated by running *relative_positions.py* on *Nup107_SNAP_3D_GRROUPED_10nmZprec.txt* with a 200-nm filter distance.
-* *mEos3-LASP2_PERPL-relpos_200.0filter_5FOVs_aligned_len533140.pkl*
-* *mEos3-MYPN_NNS_aligned_5_FOVs_len1445698.pkl*
-
-The shell script *command_line_demo.sh* and the Jupyter notebooks will find these files and load the required data from relative paths. This will work if the data is placed in a directory called *data-perpl*, which is within the same parent directory (*perpl-home*, or a name of your choice) as the PERPL software directory (*perpl-python3*). A schematic of this directory structure is given below. 
-
-- *perpl-home*
-	* *data-perpl*
-    * *perpl-python3*
-
-You can also download the data into any directory on your system and edit the file name and path in the relevant script/notebook, if you prefer.
-
-## FILES INCLUDED: 
-
-* *README.md*: This file, which contains information about the software in this project.
-* *command_line_demo.sh*: A bash script that executes the Python scripts relative_positions.py and rot_2d_symm_fit.py with various command line options.
-* *license.md*: Software licensing file.
-* *pyproject.toml*: Configuration file for package and environment building.
-* *.gitignore*: Hidden configuration file for git, a distributed version-control system.
-* *.gitattributes*: Hidden configuration file for git, a distributed version-control system.
-
-### Python Code
-
-In src/perpl:
-
-* *relative_positions.py*:  A Python script that calculates the relative positions between points detected during fluorescence localisation microscopy.
-* *rot_2d_symm_fit.py*:     A Python script that fits rotational symmetry models to relative positions among localisation microscopy data. The models are generated from synthetic localisation data.
-* *background_models.py*:   A Python module that creates models of relative position data resulting from background in fluorescence localisation microscopy data.
-* *centriole_analysis.py*: A Python module that fits centriole model data to relative positions among localisation microscopy data. The models are generated from synthetic localisation data.
-* *dna_paint_data_fitting.py*: A Python module that fits model data to relative positions among localisation microscopy data from DNA-PAINT imaging of a DNA-origami structure. The models are generated from synthetic localisation data, e.g. in *polyhedramodelling.py*.
-* *linearrepeatmodels.py*: A Python module containing candidate models for relative position distributions in a 1D arrangement of localisations of a target molecule.
-* *modelling_general.py*: A Python module with functions generally useful for analysing relative positions, and generating and fitting models of fluorescence localisation microscopy data.
-* *modelstats.py*: A Python module with statistical functions useful for analysing models against experimental data.
-* *plotting.py*: A Python module with functions to create plots of data and analysis results.
-* *polyhedramodelling.py* A Python module containing candidate models for relative position distributions in simple polyhedral arrangements of localisations of a target protein.
-* *reports.py*: A Python module with functions to produce html reports for the python scripts relative_positions.py and rot_2d_symm_fit.py.
-* *two_layer_fitting.py*: A Python module which fits a two-layer model of locallisation distribution to experimental data.
-* *utils.py*: A Python module with useful functions.
-* *zdisk_modelling.py*: A Python module which fits models of relative positions in Z-disc data to relative positions among localisation microscopy data.
-* *zdisk_plots.py* A Python module containing function for plotting relative position data and fitted models for Z-disc protein localisation data.
-
-* *test_relative_positions.py*: test file for the relative_positions.py module.
-* *test_linearrepeatmodels.py*: test file for the linearrepeatmodels.py module.
-
-### Jupyter notebooks
-
-Open as notebook with Jupyter.
-
-Do version control with paired Python scripts to avoid including distracting notebook-related data.
-
-* *make_ACTN2_Affimer_PERPL_plots.py*: A Jupyter notebook for generating plots and model fits to Z-disc protein relative position data.
-* *make_ACTN2_Affimer_reconstructions.py*: A Jupyter notebook for generating XY projections of the distribution of single molecule localisations in a FOV.
-* *make_ACTN2_mEos_PERPL_plots.py*: A Jupyter notebook for generating plots and model fits to Z-disc protein relative position data.
-* *make_DNA_origami_PERPL_plots.py*: A Jupyter notebook for generating plots and model fits to relative position data among DNA-origami localisation data.
-* *make_Nup107_reconstructions.py*: A Jupyter notebook for generating XY projections of the distribution of single molecule localisations in a FOV.
-* *make_Nup107_Z_PERPL_plots.py*: A Jupyter notebook for generating plots and model fits to relative position data among nuclear pore protein localisation data (along the Z-axis).
-* *make_mEos_LASP2_PERPL_plots.py*: A Jupyter notebook for generating plots and model fits to Z-disc protein relative position data.
-
-### Unittests
-
-There are unit tests in the tests directory. These will be of interest to a software engineer who wishes to extend this project. They can be run from a Python 3 shell with the command.
-
-`python -m unittest discover -s tests`
+## License
+Apache License 2.0 — see LICENSE file for details.

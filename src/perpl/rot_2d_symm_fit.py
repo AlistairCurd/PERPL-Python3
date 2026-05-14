@@ -51,6 +51,7 @@ class Number:
     """Class object providing only a number, to be passed to rotational
     symmetry models to provide the order of symmetry, without being fitted.
     """
+
     def __init__(self, number):
         self.number = number
 
@@ -69,52 +70,53 @@ def get_inputs(info):
     Returns:
         Nothing
     """
-    #root = Tk()
+    # root = Tk()
     Tk().withdraw()
-    print('\n\nPlease select input file containing relative positions to assess '
-          'for rotational symmetry (.csv or .txt with comma delimiters).')
-    print('The file should contain an array with one relative position '
-          'vector per row. '
-          'The first two columns of the array (e.g. X-separation, Y-separation) '
-          'will be used for the investigation.\n')
+    print(
+        "\n\nPlease select input file containing relative positions to assess "
+        "for rotational symmetry (.csv or .txt with comma delimiters)."
+    )
+    print(
+        "The file should contain an array with one relative position "
+        "vector per row. "
+        "The first two columns of the array (e.g. X-separation, Y-separation) "
+        "will be used for the investigation.\n"
+    )
 
     infile = askopenfilename()
-    #root.destroy()
+    # root.destroy()
 
     print("The file you selected is: ", infile)
 
-    info['in_file_and_path'] = infile
-
-
+    info["in_file_and_path"] = infile
 
     # Set longest distance used between localisations when producing
     # distance histograms and fitting.
     try:
-        fitlength = int(input('What is the maximum distance between '
-                              'localisations that you would like to use in the '
-                              'analysis (nm)? '))
+        fitlength = int(
+            input(
+                "What is the maximum distance between "
+                "localisations that you would like to use in the "
+                "analysis (nm)? "
+            )
+        )
     except ValueError:
-        print('This must be an integer.\n')
+        print("This must be an integer.\n")
         sys.exit("The filter distance must be an integer.\n")
 
-    info['filter_dist'] = fitlength
+    info["filter_dist"] = fitlength
 
-    print('\nDo you want updates printed to the screen as the analysis '
-          'progresses?')
-
+    print("\nDo you want updates printed to the screen as the analysis " "progresses?")
 
     silent = False
-    answer = input('yes/no \n').lower()
-    if answer.startswith('y'):
+    answer = input("yes/no \n").lower()
+    if answer.startswith("y"):
         silent = True
 
-    info['verbose'] = silent
+    info["verbose"] = silent
 
 
-def rot_sym_only(separation_values,
-                 diameter,
-                 broadening,
-                 amplitude):
+def rot_sym_only(separation_values, diameter, broadening, amplitude):
     """Parametric model for distances between localisations on vertices
     of a polygon (order of symmetry = number of vertices). The value of
     the model at a distance is termed the relative position density (RPD)
@@ -139,35 +141,30 @@ def rot_sym_only(separation_values,
             The relative position density given by the model at the
             separation_values.
     """
-    vertices = models.generate_polygon_points(sym_order.number,
-                                              diameter)
+    vertices = models.generate_polygon_points(sym_order.number, diameter)
     filter_distance = 2 * diameter
     # getdistances includes removel of duplicates 27/11/2019
     relative_positions = getdistances(vertices, filter_distance)[1]
-    xy_separations = np.sqrt(relative_positions[:, 0] ** 2
-                             + relative_positions[:, 1] ** 2)
+    xy_separations = np.sqrt(
+        relative_positions[:, 0] ** 2 + relative_positions[:, 1] ** 2
+    )
 
     # Initialise array for set of density values.
-    rpd = separation_values * 0.
+    rpd = separation_values * 0.0
 
     # Add 2D pair correlations at the distances between vertices.
     for distance in xy_separations:
-        rpd = (rpd
-               + (amplitude * models.pairwise_correlation_2d(separation_values,
-                                                             distance,
-                                                             broadening)
-                  )
-               )
+        rpd = rpd + (
+            amplitude
+            * models.pairwise_correlation_2d(separation_values, distance, broadening)
+        )
 
     return rpd
 
 
 def rot_sym_with_replocs_and_substructure_isotropic_bg(
-        r, dia,
-        vertssd, vertsamp,
-        replocssd, replocsamp,
-        substructsd, substructamp,
-        bggrad):
+    r, dia, vertssd, vertsamp, replocssd, replocsamp, substructsd, substructamp, bggrad
+):
     """Parametric model for distances between localisations on vertices
     of a polygon (order of symmetry = number of vertices). The value of
     the model at a distance is termed the relative position density (RPD)
@@ -203,22 +200,31 @@ def rot_sym_with_replocs_and_substructure_isotropic_bg(
     background = r * bggrad
     rpd = rpd + background
     # Add pair correlation distribution for repeated localisations.
-    rpd = rpd + replocsamp * models.pairwise_correlation_2d(r, 0., np.sqrt(2) * replocssd)
+    rpd = rpd + replocsamp * models.pairwise_correlation_2d(
+        r, 0.0, np.sqrt(2) * replocssd
+    )
 
     # Add pair correlation distribution for unresolvable substructure/
     # mislocalisations of simultaneous nearby emitters.
-    rpd = rpd + substructamp * models.pairwise_correlation_2d(r, 0.,
-                                                              np.sqrt(2) * substructsd)
+    rpd = rpd + substructamp * models.pairwise_correlation_2d(
+        r, 0.0, np.sqrt(2) * substructsd
+    )
 
     return rpd
 
 
 def rot_sym_replocs_substructure_isotropic_bg_with_onset(
-        r, dia,
-        vertssd, vertsamp,
-        replocssd, replocsamp,
-        substructsd, substructamp,
-        bggrad, bgonset):
+    r,
+    dia,
+    vertssd,
+    vertsamp,
+    replocssd,
+    replocsamp,
+    substructsd,
+    substructamp,
+    bggrad,
+    bgonset,
+):
     """Parametric model for distances between localisations on vertices
     of a polygon (order of symmetry = number of vertices). The value of
     the model at a distance is termed the relative position density (RPD)
@@ -279,27 +285,22 @@ def rot_sym_replocs_substructure_isotropic_bg_with_onset(
     rpd = rpd + background
 
     # Add pair correlation distribution for repeated localisations.
-    rpd = rpd + (replocsamp
-                 * models.pairwise_correlation_2d(r,
-                                                  0.,
-                                                  np.sqrt(2) * replocssd
-                                                  )
-                 )
+    rpd = rpd + (
+        replocsamp * models.pairwise_correlation_2d(r, 0.0, np.sqrt(2) * replocssd)
+    )
 
     # Add pair correlation distribution for unresolvable substructure/
     # mislocalisations of simultaneous nearby emitters.
-    rpd = rpd + (substructamp
-                 * models.pairwise_correlation_2d(r,
-                                                  0.,
-                                                  np.sqrt(2) * substructsd
-                                                  )
-                 )
+    rpd = rpd + (
+        substructamp * models.pairwise_correlation_2d(r, 0.0, np.sqrt(2) * substructsd)
+    )
 
     return rpd
 
 
 def rot_sym_with_replocs_and_substructure_isotropic_bg_with_onset_vectorargs(
-        input_vector):
+    input_vector,
+):
     """Function to calculate the values given by
     rot_sym_with_replocs_and_substructure_isotropic_bg_with_onset, but using a
     vector input for the parameters, so that the numdifftools package can be
@@ -319,31 +320,48 @@ def rot_sym_with_replocs_and_substructure_isotropic_bg_with_onset_vectorargs(
             The relative position density given by the model at the input
             distances (called separation_values_1d).
     """
-    (separation_values_1d,
-     dia,
-     vertssd, vertsamp,
-     replocssd, replocsamp,
-     substructsd, substructamp,
-     bggrad, bgonset) = input_vector
+    (
+        separation_values_1d,
+        dia,
+        vertssd,
+        vertsamp,
+        replocssd,
+        replocsamp,
+        substructsd,
+        substructamp,
+        bggrad,
+        bgonset,
+    ) = input_vector
 
     rpd = rot_sym_replocs_substructure_isotropic_bg_with_onset(
         separation_values_1d,
         dia,
-        vertssd, vertsamp,
-        replocssd, replocsamp,
-        substructsd, substructamp,
-        bggrad, bgonset)
+        vertssd,
+        vertsamp,
+        replocssd,
+        replocsamp,
+        substructsd,
+        substructamp,
+        bggrad,
+        bgonset,
+    )
 
     return rpd
 
 
 def rot_sym_with_replocs_and_substructure_isotropic_bg_with_smooth_onset(
-        separation_values,
-        dia,
-        vertssd, vertsamp,
-        replocssd, replocsamp,
-        substructsd, substructamp,
-        bggrad, bgonset, bgvariation):
+    separation_values,
+    dia,
+    vertssd,
+    vertsamp,
+    replocssd,
+    replocsamp,
+    substructsd,
+    substructamp,
+    bggrad,
+    bgonset,
+    bgvariation,
+):
     """Parametric model for distances between localisations on vertices
     of a polygon (order of symmetry = number of vertices). The value of
     the model at a distance is termed the relative position density (RPD)
@@ -401,58 +419,58 @@ def rot_sym_with_replocs_and_substructure_isotropic_bg_with_smooth_onset(
     rpd = rot_sym_only(separation_values, dia, vertssd, vertsamp)
 
     # Add 2D isotropic background with onset distance.
-    background = zero_to_constant_gradient(separation_values,
-                                           bggrad, bgonset, bgvariation)
+    background = zero_to_constant_gradient(
+        separation_values, bggrad, bgonset, bgvariation
+    )
 
     rpd = rpd + background
     # Add pair correlation distribution for repeated localisations.
-    rpd = rpd + (replocsamp
-                 * models.pairwise_correlation_2d(separation_values,
-                                                  0.,
-                                                  np.sqrt(2) * replocssd)
-                 )
+    rpd = rpd + (
+        replocsamp
+        * models.pairwise_correlation_2d(separation_values, 0.0, np.sqrt(2) * replocssd)
+    )
 
     # Add pair correlation distribution for unresolvable substructure/
     # mislocalisations of simultaneous nearby emitters.
-    rpd = rpd + (substructamp
-                 * models.pairwise_correlation_2d(separation_values,
-                                                  0.,
-                                                  np.sqrt(2) * substructsd)
-                 )
+    rpd = rpd + (
+        substructamp
+        * models.pairwise_correlation_2d(
+            separation_values, 0.0, np.sqrt(2) * substructsd
+        )
+    )
 
     return rpd
 
 
-def test_plot_withvectorinput(relpos,
-                              model_with_info,
-                              fitlength=200.):
+def test_plot_withvectorinput(relpos, model_with_info, fitlength=200.0):
     """Testing vector-input version of parametric model function."""
     plt.figure()
     axes = plt.subplot(111)
-    xy_histogram = models.make_xy_histogram_nm(relpos, fitlength=fitlength,
-                                               axes=axes)[0]
+    xy_histogram = models.make_xy_histogram_nm(relpos, fitlength=fitlength, axes=axes)[
+        0
+    ]
     sym_order.number = 8
-    (params_optimised,
-     params_covar,
-     params_1sd_error) = models.fit_model_to_experiment(xy_histogram,
-                                                        model_with_info.model_rpd,
-                                                        model_with_info.initial_params,
-                                                        model_with_info.param_bounds,
-                                                        fitlength=fitlength)
+    (params_optimised, params_covar, params_1sd_error) = models.fit_model_to_experiment(
+        xy_histogram,
+        model_with_info.model_rpd,
+        model_with_info.initial_params,
+        model_with_info.param_bounds,
+        fitlength=fitlength,
+    )
 
     x_values = np.arange(fitlength) + 0.5
 
     vector_input = np.concatenate(x_values, params_optimised)
-    rpd = rot_sym_with_replocs_and_substructure_isotropic_bg_with_onset_vectorargs(vector_input)
+    rpd = rot_sym_with_replocs_and_substructure_isotropic_bg_with_onset_vectorargs(
+        vector_input
+    )
 
     axes.plot(x_values, rpd)
 
 
 def rotsym_withreplocs_nosubstructure_isotropicbgwithonset(
-        r, dia,
-        vertssd, vertsamp,
-        replocssd, replocsamp,
-        bggrad, bgonset):
+    r, dia, vertssd, vertsamp, replocssd, replocsamp, bggrad, bgonset
+):
     """Parametric model for distances between localisations on vertices
     of a polygon (order of symmetry = number of vertices). The value of
     the model at a distance is termed the relative position density (RPD)
@@ -489,10 +507,10 @@ def rotsym_withreplocs_nosubstructure_isotropicbgwithonset(
     relpos = getdistances(verts, filterdist=2 * dia)[1]
     dists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2)
     # Select unduplicated distances between the vertices.
-    dists = dists[0:(sym_order.number - 1)]
+    dists = dists[0 : (sym_order.number - 1)]
     # sigma = np.array([sigma0, sigma1, sigma2, sigma3])
     # Initialise array for set of density values.
-    rpd = r * 0.
+    rpd = r * 0.0
     # Add 2D pair correlations at the distances between vertices.
     for dist in dists:
         rpd = rpd + vertsamp * models.pairwise_correlation_2d(r, dist, vertssd)
@@ -501,17 +519,23 @@ def rotsym_withreplocs_nosubstructure_isotropicbgwithonset(
     background[background < 0] = 0
     rpd = rpd + background
     # Add pair correlation distribution for repeated localisations.
-    rpd = rpd + replocsamp * models.pairwise_correlation_2d(r, 0., np.sqrt(2) * replocssd)
+    rpd = rpd + replocsamp * models.pairwise_correlation_2d(
+        r, 0.0, np.sqrt(2) * replocssd
+    )
 
     return rpd
 
 
 def model_replocs_substruct_no_bg(
-        separation_values,
-        diameter,
-        vertices_broadening, vertices_amplitude,
-        rept_locs_broadening, rept_locs_amplitude,
-        substructure_broadening, substructure_amplitude):
+    separation_values,
+    diameter,
+    vertices_broadening,
+    vertices_amplitude,
+    rept_locs_broadening,
+    rept_locs_amplitude,
+    substructure_broadening,
+    substructure_amplitude,
+):
     """Parametric model for distances between localisations on vertices
     of a polygon (order of symmetry = number of vertices). The value of
     the model at a distance is termed the relative position density (RPD)
@@ -553,26 +577,26 @@ def model_replocs_substruct_no_bg(
     """
     # Get RPD arising from rotationally symmetric structure with broadening
     # only from imprecision on single vertex points.
-    rpd = rot_sym_only(separation_values,
-                       diameter,
-                       vertices_broadening,
-                       vertices_amplitude
-                       )
+    rpd = rot_sym_only(
+        separation_values, diameter, vertices_broadening, vertices_amplitude
+    )
 
     # Add pair correlation distribution for repeated localisations.
-    rpd = rpd + (rept_locs_amplitude
-                 * models.pairwise_correlation_2d(separation_values,
-                                                  0.,
-                                                  np.sqrt(2) * rept_locs_broadening)
-                 )
+    rpd = rpd + (
+        rept_locs_amplitude
+        * models.pairwise_correlation_2d(
+            separation_values, 0.0, np.sqrt(2) * rept_locs_broadening
+        )
+    )
 
     # Add pair correlation distribution for unresolvable substructure/
     # mislocalisations of simultaneous nearby emitters.
-    rpd = rpd + (substructure_amplitude
-                 * models.pairwise_correlation_2d(separation_values,
-                                                  0.,
-                                                  np.sqrt(2) * substructure_broadening)
-                 )
+    rpd = rpd + (
+        substructure_amplitude
+        * models.pairwise_correlation_2d(
+            separation_values, 0.0, np.sqrt(2) * substructure_broadening
+        )
+    )
 
     return rpd
 
@@ -597,31 +621,43 @@ def model_replocs_substruct_no_bg_vectorargs(input_vector):
             The relative position density given by the model at the input
             distances (called separation_values).
     """
-    (separation_values,
-     diameter,
-     vertices_broadening, vertices_amplitude,
-     rept_locs_broadening, rept_locs_amplitude,
-     substructure_broadening, substructure_amplitude) = input_vector
+    (
+        separation_values,
+        diameter,
+        vertices_broadening,
+        vertices_amplitude,
+        rept_locs_broadening,
+        rept_locs_amplitude,
+        substructure_broadening,
+        substructure_amplitude,
+    ) = input_vector
 
-    rpd = model_replocs_substruct_no_bg(separation_values,
-                                        diameter,
-                                        vertices_broadening,
-                                        vertices_amplitude,
-                                        rept_locs_broadening,
-                                        rept_locs_amplitude,
-                                        substructure_broadening,
-                                        substructure_amplitude)
+    rpd = model_replocs_substruct_no_bg(
+        separation_values,
+        diameter,
+        vertices_broadening,
+        vertices_amplitude,
+        rept_locs_broadening,
+        rept_locs_amplitude,
+        substructure_broadening,
+        substructure_amplitude,
+    )
 
     return rpd
 
 
 def rot_sym_with_replocs_and_substructure_isotropic_bg_after_onset(
-        separation_values,
-        diameter,
-        vertices_broadening, vertices_amplitude,
-        rept_locs_broadening, rept_locs_amplitude,
-        substructure_broadening, substructure_amplitude,
-        bg_grad, bg_onset):
+    separation_values,
+    diameter,
+    vertices_broadening,
+    vertices_amplitude,
+    rept_locs_broadening,
+    rept_locs_amplitude,
+    substructure_broadening,
+    substructure_amplitude,
+    bg_grad,
+    bg_onset,
+):
     """Parametric model for distances between localisations on vertices
     of a polygon (order of symmetry = number of vertices). The value of
     the model at a distance is termed the relative position density (RPD)
@@ -671,26 +707,26 @@ def rot_sym_with_replocs_and_substructure_isotropic_bg_after_onset(
     """
     # Get RPD arising from rotationally symmetric structure with broadening
     # only from imprecision on single vertex points.
-    rpd = rot_sym_only(separation_values,
-                       diameter,
-                       vertices_broadening,
-                       vertices_amplitude
-                       )
+    rpd = rot_sym_only(
+        separation_values, diameter, vertices_broadening, vertices_amplitude
+    )
 
     # Add pair correlation distribution for repeated localisations.
-    rpd = rpd + (rept_locs_amplitude
-                 * models.pairwise_correlation_2d(separation_values,
-                                                  0.,
-                                                  np.sqrt(2) * rept_locs_broadening)
-                 )
+    rpd = rpd + (
+        rept_locs_amplitude
+        * models.pairwise_correlation_2d(
+            separation_values, 0.0, np.sqrt(2) * rept_locs_broadening
+        )
+    )
 
     # Add pair correlation distribution for unresolvable substructure/
     # mislocalisations of simultaneous nearby emitters.
-    rpd = rpd + (substructure_amplitude
-                 * models.pairwise_correlation_2d(separation_values,
-                                                  0.,
-                                                  np.sqrt(2) * substructure_broadening)
-                 )
+    rpd = rpd + (
+        substructure_amplitude
+        * models.pairwise_correlation_2d(
+            separation_values, 0.0, np.sqrt(2) * substructure_broadening
+        )
+    )
 
     background = separation_values * bg_grad - bg_grad * bg_onset
 
@@ -719,35 +755,48 @@ def model_linear_bg_after_onset_vectorargs(input_vector):
             The relative position density given by the model at the input
             distances (called separation_values_1d).
     """
-    (separation_values,
-     diameter,
-     vertices_broadening, vertices_amplitude,
-     rept_locs_broadening, rept_locs_amplitude,
-     substructure_broadening, substructure_amplitude,
-     bg_grad, bg_onset) = input_vector
+    (
+        separation_values,
+        diameter,
+        vertices_broadening,
+        vertices_amplitude,
+        rept_locs_broadening,
+        rept_locs_amplitude,
+        substructure_broadening,
+        substructure_amplitude,
+        bg_grad,
+        bg_onset,
+    ) = input_vector
 
-    rpd = rot_sym_with_replocs_and_substructure_isotropic_bg_after_onset(separation_values,
-                                                                         diameter,
-                                                                         vertices_broadening,
-                                                                         vertices_amplitude,
-                                                                         rept_locs_broadening,
-                                                                         rept_locs_amplitude,
-                                                                         substructure_broadening,
-                                                                         substructure_amplitude,
-                                                                         bg_grad,
-                                                                         bg_onset)
+    rpd = rot_sym_with_replocs_and_substructure_isotropic_bg_after_onset(
+        separation_values,
+        diameter,
+        vertices_broadening,
+        vertices_amplitude,
+        rept_locs_broadening,
+        rept_locs_amplitude,
+        substructure_broadening,
+        substructure_amplitude,
+        bg_grad,
+        bg_onset,
+    )
 
     return rpd
 
 
 def model_variable_vertices_replocs_substructure_no_bg(
-        separation_values,
-        diameter,
-        vertssd,
-        vertamp1, vertamp2, vertamp3, vertamp4,
-        replocssd, replocsamp,
-        substructsd, substructamp
-        ):
+    separation_values,
+    diameter,
+    vertssd,
+    vertamp1,
+    vertamp2,
+    vertamp3,
+    vertamp4,
+    replocssd,
+    replocsamp,
+    substructsd,
+    substructamp,
+):
     """Parametric model for distances between localisations on vertices
     of a polygon (order of symmetry = number of vertices). The value of
     the model at a distance is termed the relative position density (RPD)
@@ -797,48 +846,41 @@ def model_variable_vertices_replocs_substructure_no_bg(
 
     filter_distance = 2 * diameter
     relative_positions = getdistances(vertices, filter_distance)[1]
-    xy_separations = np.sqrt(relative_positions[:, 0] ** 2
-                             + relative_positions[:, 1] ** 2)
+    xy_separations = np.sqrt(
+        relative_positions[:, 0] ** 2 + relative_positions[:, 1] ** 2
+    )
     # Select unduplicated inter-vertex distances
     # (round down from # vertices divided by 2).
-    xy_separations = xy_separations[0:int(np.floor(sym_order / 2))]
+    xy_separations = xy_separations[0 : int(np.floor(sym_order / 2))]
 
     # Include the contributions from the inter-vertex distance in the RPD.
-    rpd = separation_values * 0.
+    rpd = separation_values * 0.0
     for i, distance in enumerate(xy_separations):
-        rpd = (rpd
-               + vertices_contributions[i]
-               * models.pairwise_correlation_2d(separation_values,
-                                                distance,
-                                                vertssd
-                                                )
-               )
+        rpd = rpd + vertices_contributions[i] * models.pairwise_correlation_2d(
+            separation_values, distance, vertssd
+        )
 
     # Add pair correlation distribution for repeated localisations.
-    rpd = rpd + (replocsamp
-                 * models.pairwise_correlation_2d(separation_values,
-                                                  0.,
-                                                  np.sqrt(2) * replocssd
-                                                  )
-                 )
+    rpd = rpd + (
+        replocsamp
+        * models.pairwise_correlation_2d(separation_values, 0.0, np.sqrt(2) * replocssd)
+    )
 
     # Add pair correlation distribution for unresolvable substructure/
     # mislocalisations of simultaneous nearby emitters.
-    rpd = rpd + (substructamp
-                 * models.pairwise_correlation_2d(separation_values,
-                                                  0.,
-                                                  np.sqrt(2) * substructsd
-                                                  )
-                 )
+    rpd = rpd + (
+        substructamp
+        * models.pairwise_correlation_2d(
+            separation_values, 0.0, np.sqrt(2) * substructsd
+        )
+    )
 
     return rpd
 
 
 def get_1sd_error_on_model_before_and_after_background_onset(
-        x_values,
-        params_optimised,
-        params_covar,
-        bg_onset):
+    x_values, params_optimised, params_covar, bg_onset
+):
     """Use stdev_of_models in modelling_general (uses numdifftools) to acquire
     stdev of the models before and after the background onset distance, and
     concatenate to provide output.
@@ -872,31 +914,30 @@ def get_1sd_error_on_model_before_and_after_background_onset(
     # rot_sym_with_replocs_and_substructure_isotropic_bg_with_onset
     # in rotationalsymettrymodelling, except for background (final two)
     # parameters
-    stdev_before_onset = stdev_of_model(x_values_before_onset,
-                                        params_optimised[0:-2],
-                                        params_covar[0:-2, 0:-2],
-                                        model_replocs_substruct_no_bg_vectorargs
-                                        )
-    print('Calculated stdev before background onset.')
+    stdev_before_onset = stdev_of_model(
+        x_values_before_onset,
+        params_optimised[0:-2],
+        params_covar[0:-2, 0:-2],
+        model_replocs_substruct_no_bg_vectorargs,
+    )
+    print("Calculated stdev before background onset.")
 
     # Use fitted parameters from
     # rot_sym_with_replocs_and_substructure_isotropic_bg_with_onset
-    stdev_after_onset = stdev_of_model(x_values_after_onset,
-                                       params_optimised,
-                                       params_covar,
-                                       model_linear_bg_after_onset_vectorargs
-                                       )
-    print('Calculated stdev after background onset.')
+    stdev_after_onset = stdev_of_model(
+        x_values_after_onset,
+        params_optimised,
+        params_covar,
+        model_linear_bg_after_onset_vectorargs,
+    )
+    print("Calculated stdev after background onset.")
 
     stdev_complete = np.append(stdev_before_onset, stdev_after_onset)
 
     return stdev_complete
 
 
-def nup_xy_fig_plot(
-        relative_position_array,
-        model_with_info,
-        fitlength=200.):
+def nup_xy_fig_plot(relative_position_array, model_with_info, fitlength=200.0):
     """Create a plot showing optimised model and uncertainties from fitting
     hard-onset Nup107 model.
 
@@ -916,58 +957,47 @@ def nup_xy_fig_plot(
     """
     plt.figure()
     axes = plt.subplot(111)
-    xy_histogram = models.make_xy_histogram_nm(relative_position_array,
-                                               fitlength=fitlength,
-                                               axes=axes)[0]
+    xy_histogram = models.make_xy_histogram_nm(
+        relative_position_array, fitlength=fitlength, axes=axes
+    )[0]
 
-    (params_optimised,
-     params_covar,
-     params_1sd_error) = models.fit_model_to_experiment(xy_histogram,
-                                                        model_with_info.model_rpd,
-                                                        model_with_info.initial_params,
-                                                        model_with_info.param_bounds,
-                                                        fitlength=fitlength)
+    (params_optimised, params_covar, params_1sd_error) = models.fit_model_to_experiment(
+        xy_histogram,
+        model_with_info.model_rpd,
+        model_with_info.initial_params,
+        model_with_info.param_bounds,
+        fitlength=fitlength,
+    )
     x_values = np.arange(fitlength) + 0.5
 
-    axes.plot(x_values, model_with_info.model_rpd(x_values,
-                                                  *params_optimised
-                                                  ),
-              lw=0.5, color='xkcd:red'
-              )
+    axes.plot(
+        x_values,
+        model_with_info.model_rpd(x_values, *params_optimised),
+        lw=0.5,
+        color="xkcd:red",
+    )
 
     # Find background onset distance from the optimised parameters
     bg_onset = params_optimised[-1]
 
     # Get uncertainties below and above background onset and concatenate
     stdev = get_1sd_error_on_model_before_and_after_background_onset(
-                x_values,
-                params_optimised,
-                params_covar,
-                bg_onset
-                )
-    print('Calculated stdev for whole model.')
+        x_values, params_optimised, params_covar, bg_onset
+    )
+    print("Calculated stdev for whole model.")
 
-    axes.fill_between(x_values,
-                      (model_with_info.model_rpd(x_values,
-                                                 *params_optimised
-                                                 )
-                       - stdev * 1.96
-                       ),
-                      (model_with_info.model_rpd(x_values,
-                                                 *params_optimised
-                                                 )
-                       + stdev * 1.96
-                       ),
-                      color='xkcd:red', alpha=0.25
-                      )
+    axes.fill_between(
+        x_values,
+        (model_with_info.model_rpd(x_values, *params_optimised) - stdev * 1.96),
+        (model_with_info.model_rpd(x_values, *params_optimised) + stdev * 1.96),
+        color="xkcd:red",
+        alpha=0.25,
+    )
 
     return bg_onset, stdev
 
 
-def nup_xy_plot_model_components(
-        relpos,
-        model_with_info,
-        fitlength=200):
+def nup_xy_plot_model_components(relpos, model_with_info, fitlength=200):
     """Creates a plot
     Args:
         relpos:
@@ -978,63 +1008,67 @@ def nup_xy_plot_model_components(
     """
     plt.figure()
     axes = plt.subplot(111)
-    xy_histogram = models.make_xy_histogram_nm(relpos,
-                                               fitlength=fitlength,
-                                               axes=axes)[0]
+    xy_histogram = models.make_xy_histogram_nm(relpos, fitlength=fitlength, axes=axes)[
+        0
+    ]
 
-    (params_optimised,
-     params_covar,
-     params_1sd_error) = models.fit_model_to_experiment(xy_histogram,
-                                                        model_with_info.model_rpd,
-                                                        model_with_info.initial_params,
-                                                        model_with_info.param_bounds,
-                                                        fitlength=fitlength)
-    dia,\
-    vertssd, vertsamp,\
-    replocssd, replocsamp,\
-    substructsd, substructamp,\
-    bggrad, bgonset\
-    = params_optimised
+    (params_optimised, params_covar, params_1sd_error) = models.fit_model_to_experiment(
+        xy_histogram,
+        model_with_info.model_rpd,
+        model_with_info.initial_params,
+        model_with_info.param_bounds,
+        fitlength=fitlength,
+    )
+    (
+        dia,
+        vertssd,
+        vertsamp,
+        replocssd,
+        replocsamp,
+        substructsd,
+        substructamp,
+        bggrad,
+        bgonset,
+    ) = params_optimised
 
     x_values = np.arange(fitlength) + 0.5
     # Plot fitted model curve
     axes.plot(x_values, model_with_info.model_rpd(x_values, *params_optimised))
     # Plot localisation precision component
-    axes.plot(x_values,
-              replocsamp
-              * models.pairwise_correlation_2d(x_values,
-                                               0.,
-                                               np.sqrt(2) * replocssd
-                                               )
-              )
+    axes.plot(
+        x_values,
+        replocsamp
+        * models.pairwise_correlation_2d(x_values, 0.0, np.sqrt(2) * replocssd),
+    )
     # Plot substructure component
-    axes.plot(x_values,
-              substructamp
-              * models.pairwise_correlation_2d(x_values,
-                                               0.,
-                                               np.sqrt(2) * substructsd
-                                               )
-              )
+    axes.plot(
+        x_values,
+        substructamp
+        * models.pairwise_correlation_2d(x_values, 0.0, np.sqrt(2) * substructsd),
+    )
     # Plot symmetry related peaks
     verts = models.generate_polygon_points(sym_order.number, dia)
     filterdist = 2 * dia
 
     relpos = getdistances(verts, filterdist)[1]
     dists = np.sqrt(relpos[:, 0] ** 2 + relpos[:, 1] ** 2)
-    dists = dists[0: 4]  # Select unduplicated distances between the vertices.
+    dists = dists[0:4]  # Select unduplicated distances between the vertices.
     contributions = np.array([2, 2, 2, 1])
     for peak, dist in enumerate(dists):
-        axes.plot(x_values,
-                  vertsamp * contributions[peak]
-                  * models.pairwise_correlation_2d(x_values, dist, vertssd))
+        axes.plot(
+            x_values,
+            vertsamp
+            * contributions[peak]
+            * models.pairwise_correlation_2d(x_values, dist, vertssd),
+        )
 
     # Plot background
     background = x_values * bggrad - bggrad * bgonset
     background[background < 0] = 0
     axes.plot(x_values, background)
     axes.set_xlim([0, 150])
-    axes.set_xlabel('XY-separation (nm)')
-    axes.set_ylabel('Counts (scaled)')
+    axes.set_xlabel("XY-separation (nm)")
+    axes.set_ylabel("Counts (scaled)")
 
 
 def create_default_fitting_params_dicts():
@@ -1049,59 +1083,62 @@ def create_default_fitting_params_dicts():
         initial_params_dict (dict):
             Dictionary of default initial parameter value options.
     """
-    lower_bound_dict = {'diameter': 0,
-                        'vertices_sd': 0,
-                        'vertices_amp': 0,
-                        'vertex_amp_1': 0,
-                        'vertex_amp_2': 0,
-                        'vertex_amp_3': 0,
-                        'vertex_amp_4': 0,
-                        'loc_prec_sd': 0,
-                        'loc_prec_amp': 0,
-                        'substruct_sd': 0,
-                        'substruct_amp': 0,
-                        'bg_slope': 0,
-                        'bg_onset': 0,
-                        'bg_variation': 0,
-                        'bg_dia': 0,
-                        'bg_amp': 0
-                        }
+    lower_bound_dict = {
+        "diameter": 0,
+        "vertices_sd": 0,
+        "vertices_amp": 0,
+        "vertex_amp_1": 0,
+        "vertex_amp_2": 0,
+        "vertex_amp_3": 0,
+        "vertex_amp_4": 0,
+        "loc_prec_sd": 0,
+        "loc_prec_amp": 0,
+        "substruct_sd": 0,
+        "substruct_amp": 0,
+        "bg_slope": 0,
+        "bg_onset": 0,
+        "bg_variation": 0,
+        "bg_dia": 0,
+        "bg_amp": 0,
+    }
 
-    upper_bound_dict = {'diameter': 200.,
-                        'vertices_sd': 50.,
-                        'vertices_amp': 100.,
-                        'vertex_amp_1': 500.,
-                        'vertex_amp_2': 500.,
-                        'vertex_amp_3': 500.,
-                        'vertex_amp_4': 500.,
-                        'loc_prec_sd': 50.,
-                        'loc_prec_amp': 50.,
-                        'substruct_sd': 50.,
-                        'substruct_amp': 50.,
-                        'bg_slope': 1.,
-                        'bg_onset': 150.,
-                        'bg_variation': 1.,
-                        'bg_dia': 1000.,
-                        'bg_amp': 100.
-                        }
+    upper_bound_dict = {
+        "diameter": 200.0,
+        "vertices_sd": 50.0,
+        "vertices_amp": 100.0,
+        "vertex_amp_1": 500.0,
+        "vertex_amp_2": 500.0,
+        "vertex_amp_3": 500.0,
+        "vertex_amp_4": 500.0,
+        "loc_prec_sd": 50.0,
+        "loc_prec_amp": 50.0,
+        "substruct_sd": 50.0,
+        "substruct_amp": 50.0,
+        "bg_slope": 1.0,
+        "bg_onset": 150.0,
+        "bg_variation": 1.0,
+        "bg_dia": 1000.0,
+        "bg_amp": 100.0,
+    }
 
-    initial_params_dict = {'diameter': 100.,
-                           'vertices_sd': 10.,
-                           'vertices_amp': 10.,
-                           'vertex_amp_1': 100.,
-                           'vertex_amp_2': 100.,
-                           'vertex_amp_3': 100.,
-                           'vertex_amp_4': 100.,
-                           'loc_prec_sd': 3.,
-                           'loc_prec_amp': 10.,
-                           'substruct_sd': 10.,
-                           'substruct_amp': 10.,
-                           'bg_slope': 0.1,
-                           'bg_onset': 50.,
-                           'bg_variation': 0.1,
-                           'bg_dia': 300.,
-                           'bg_amp': 10.
-                           }
+    initial_params_dict = {
+        "diameter": 100.0,
+        "vertices_sd": 10.0,
+        "vertices_amp": 10.0,
+        "vertex_amp_1": 100.0,
+        "vertex_amp_2": 100.0,
+        "vertex_amp_3": 100.0,
+        "vertex_amp_4": 100.0,
+        "loc_prec_sd": 3.0,
+        "loc_prec_amp": 10.0,
+        "substruct_sd": 10.0,
+        "substruct_amp": 10.0,
+        "bg_slope": 0.1,
+        "bg_onset": 50.0,
+        "bg_variation": 0.1,
+        "bg_dia": 300.0,
+        "bg_amp": 10.0,
+    }
 
     return lower_bound_dict, upper_bound_dict, initial_params_dict
 
@@ -1131,63 +1168,62 @@ def set_up_model_replocs_substruct_iso_bg_with_onset_with_fit_settings():
                 scipy.optimize.curve_fit runs.
     """
     # Generate ModelWithFitSettings object, conatining a model_rpd
-    model_replocs_substruct_iso_bg_with_onset_with_fit_settings = (
-        ModelWithFitSettings(
-            model_rpd=rot_sym_replocs_substructure_isotropic_bg_with_onset
-            )
-        )
+    model_replocs_substruct_iso_bg_with_onset_with_fit_settings = ModelWithFitSettings(
+        model_rpd=rot_sym_replocs_substructure_isotropic_bg_with_onset
+    )
 
     # Add fitting parameters to ModelWithFitSettings object
-    (lower_bound_dict,
-     upper_bound_dict,
-     initial_params_dict) = create_default_fitting_params_dicts()
+    (lower_bound_dict, upper_bound_dict, initial_params_dict) = (
+        create_default_fitting_params_dicts()
+    )
 
     # Can optionally modify these dictionaries here:
 
-    initial_params = [initial_params_dict['diameter'],
-                      initial_params_dict['vertices_sd'],
-                      initial_params_dict['vertices_amp'],
-                      initial_params_dict['loc_prec_sd'],
-                      initial_params_dict['loc_prec_amp'],
-                      initial_params_dict['substruct_sd'],
-                      initial_params_dict['substruct_amp'],
-                      initial_params_dict['bg_slope'],
-                      initial_params_dict['bg_onset']
-                      ]
+    initial_params = [
+        initial_params_dict["diameter"],
+        initial_params_dict["vertices_sd"],
+        initial_params_dict["vertices_amp"],
+        initial_params_dict["loc_prec_sd"],
+        initial_params_dict["loc_prec_amp"],
+        initial_params_dict["substruct_sd"],
+        initial_params_dict["substruct_amp"],
+        initial_params_dict["bg_slope"],
+        initial_params_dict["bg_onset"],
+    ]
 
-    lower_bounds = [lower_bound_dict['diameter'],
-                    lower_bound_dict['vertices_sd'],
-                    lower_bound_dict['vertices_amp'],
-                    lower_bound_dict['loc_prec_sd'],
-                    lower_bound_dict['loc_prec_amp'],
-                    lower_bound_dict['substruct_sd'],
-                    lower_bound_dict['substruct_amp'],
-                    lower_bound_dict['bg_slope'],
-                    lower_bound_dict['bg_onset']
-                    ]
+    lower_bounds = [
+        lower_bound_dict["diameter"],
+        lower_bound_dict["vertices_sd"],
+        lower_bound_dict["vertices_amp"],
+        lower_bound_dict["loc_prec_sd"],
+        lower_bound_dict["loc_prec_amp"],
+        lower_bound_dict["substruct_sd"],
+        lower_bound_dict["substruct_amp"],
+        lower_bound_dict["bg_slope"],
+        lower_bound_dict["bg_onset"],
+    ]
 
-    upper_bounds = [upper_bound_dict['diameter'],
-                    upper_bound_dict['vertices_sd'],
-                    upper_bound_dict['vertices_amp'],
-                    upper_bound_dict['loc_prec_sd'],
-                    upper_bound_dict['loc_prec_amp'],
-                    upper_bound_dict['substruct_sd'],
-                    upper_bound_dict['substruct_amp'],
-                    upper_bound_dict['bg_slope'],
-                    upper_bound_dict['bg_onset']
-                    ]
+    upper_bounds = [
+        upper_bound_dict["diameter"],
+        upper_bound_dict["vertices_sd"],
+        upper_bound_dict["vertices_amp"],
+        upper_bound_dict["loc_prec_sd"],
+        upper_bound_dict["loc_prec_amp"],
+        upper_bound_dict["substruct_sd"],
+        upper_bound_dict["substruct_amp"],
+        upper_bound_dict["bg_slope"],
+        upper_bound_dict["bg_onset"],
+    ]
 
     bounds = (lower_bounds, upper_bounds)
 
     model_replocs_substruct_iso_bg_with_onset_with_fit_settings.initial_params = (
         initial_params
-        )
-    model_replocs_substruct_iso_bg_with_onset_with_fit_settings.param_bounds = (
-        bounds
-        )
+    )
+    model_replocs_substruct_iso_bg_with_onset_with_fit_settings.param_bounds = bounds
     model_replocs_substruct_iso_bg_with_onset_with_fit_settings.vector_input_model = (
         rot_sym_with_replocs_and_substructure_isotropic_bg_with_onset_vectorargs
-        )
+    )
 
     return model_replocs_substruct_iso_bg_with_onset_with_fit_settings
 
@@ -1216,78 +1252,75 @@ def set_up_model_replocs_substruct_no_bg_with_fit_settings():
                 scipy.optimize.curve_fit runs.
     """
     # Generate ModelWithFitSettings object, conatining a model_rpd
-    model_replocs_substruct_no_bg_with_fit_settings = (
-        ModelWithFitSettings(
-            model_rpd=model_replocs_substruct_no_bg
-            )
-        )
+    model_replocs_substruct_no_bg_with_fit_settings = ModelWithFitSettings(
+        model_rpd=model_replocs_substruct_no_bg
+    )
 
     # Add fitting parameters to ModelWithFitSettings object
-    (lower_bound_dict,
-     upper_bound_dict,
-     initial_params_dict) = create_default_fitting_params_dicts()
+    (lower_bound_dict, upper_bound_dict, initial_params_dict) = (
+        create_default_fitting_params_dicts()
+    )
 
     # Can optionally modify these dictionaries here:
 
-#    initial_params = [initial_params_dict['diameter'],
-#                      initial_params_dict['vertices_sd'],
-#                      initial_params_dict['vertices_amp'],
-#                      initial_params_dict['loc_prec_sd'],
-#                      initial_params_dict['loc_prec_amp'],
-#                      initial_params_dict['substruct_sd'],
-#                      initial_params_dict['substruct_amp'],
-#                      ]
+    #    initial_params = [initial_params_dict['diameter'],
+    #                      initial_params_dict['vertices_sd'],
+    #                      initial_params_dict['vertices_amp'],
+    #                      initial_params_dict['loc_prec_sd'],
+    #                      initial_params_dict['loc_prec_amp'],
+    #                      initial_params_dict['substruct_sd'],
+    #                      initial_params_dict['substruct_amp'],
+    #                      ]
 
-    initial_params = [300.0, # diameter
-                      35.0, # vertssd
-                      100., # vertsamp
-                      10.0, # replocssd
-                      10.0, # replocsamp
-                      10., # substructsd
-                      10. # substructamp
-                      ]
+    initial_params = [
+        300.0,  # diameter
+        35.0,  # vertssd
+        100.0,  # vertsamp
+        10.0,  # replocssd
+        10.0,  # replocsamp
+        10.0,  # substructsd
+        10.0,  # substructamp
+    ]
 
-    lower_bounds = [lower_bound_dict['diameter'],
-                    lower_bound_dict['vertices_sd'],
-                    lower_bound_dict['vertices_amp'],
-                    lower_bound_dict['loc_prec_sd'],
-                    lower_bound_dict['loc_prec_amp'],
-                    lower_bound_dict['substruct_sd'],
-                    lower_bound_dict['substruct_amp'],
-                    ]
+    lower_bounds = [
+        lower_bound_dict["diameter"],
+        lower_bound_dict["vertices_sd"],
+        lower_bound_dict["vertices_amp"],
+        lower_bound_dict["loc_prec_sd"],
+        lower_bound_dict["loc_prec_amp"],
+        lower_bound_dict["substruct_sd"],
+        lower_bound_dict["substruct_amp"],
+    ]
 
-    upper_bounds = [upper_bound_dict['diameter'],
-                    upper_bound_dict['vertices_sd'],
-                    upper_bound_dict['vertices_amp'],
-                    upper_bound_dict['loc_prec_sd'],
-                    upper_bound_dict['loc_prec_amp'],
-                    upper_bound_dict['substruct_sd'],
-                    upper_bound_dict['substruct_amp'],
-                    ]
+    upper_bounds = [
+        upper_bound_dict["diameter"],
+        upper_bound_dict["vertices_sd"],
+        upper_bound_dict["vertices_amp"],
+        upper_bound_dict["loc_prec_sd"],
+        upper_bound_dict["loc_prec_amp"],
+        upper_bound_dict["substruct_sd"],
+        upper_bound_dict["substruct_amp"],
+    ]
 
-    upper_bounds = [400.0, # diameter
-                    1000.0, # vertssd
-                    500., #vertsamp
-                    50.0, # replocssd
-                    500.0, # replocsamp
-                    50., # substructsd
-                    500. # substructamp
-                    ]
+    upper_bounds = [
+        400.0,  # diameter
+        1000.0,  # vertssd
+        500.0,  # vertsamp
+        50.0,  # replocssd
+        500.0,  # replocsamp
+        50.0,  # substructsd
+        500.0,  # substructamp
+    ]
 
     bounds = (lower_bounds, upper_bounds)
 
-    model_replocs_substruct_no_bg_with_fit_settings.initial_params = (
-        initial_params
-        )
-    model_replocs_substruct_no_bg_with_fit_settings.param_bounds = (
-        bounds
-        )
+    model_replocs_substruct_no_bg_with_fit_settings.initial_params = initial_params
+    model_replocs_substruct_no_bg_with_fit_settings.param_bounds = bounds
     model_replocs_substruct_no_bg_with_fit_settings.vector_input_model = (
         model_replocs_substruct_no_bg_vectorargs
-        )
+    )
 
     return model_replocs_substruct_no_bg_with_fit_settings
-
 
 
 # Set up callable symmetry order object, with default value
@@ -1318,50 +1351,63 @@ def main():
     """
 
     # handle the input arguments (flags)
-    prog = 'rot_2d_symm_fit'
-    prog_short_name = 'r2dsf'
-    description = ('Fits rotational symmetry models to relative positions '
-                   'among localisation microscopy data. The models are '
-                   'generated from synthetic localisation data.')
+    prog = "rot_2d_symm_fit"
+    prog_short_name = "r2dsf"
+    description = (
+        "Fits rotational symmetry models to relative positions "
+        "among localisation microscopy data. The models are "
+        "generated from synthetic localisation data."
+    )
 
-    info = {'prog': prog,
-            'prog_short_name': prog_short_name,
-            'description': description}
+    info = {
+        "prog": prog,
+        "prog_short_name": prog_short_name,
+        "description": description,
+    }
 
-    start = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    start = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-    info['start'] = start
+    info["start"] = start
 
     parser = argparse.ArgumentParser(prog, description)
 
-    parser.add_argument('-i', '--input_file',
-                        dest='input_file',
-                        type=argparse.FileType('r'),
-                        help='File of localisations which is a .csv (or .txt '
-                             'with comma delimiters) or .npy and containing N '
-                             'localisations in N rows.',
-                        metavar="FILE")
+    parser.add_argument(
+        "-i",
+        "--input_file",
+        dest="input_file",
+        type=argparse.FileType("r"),
+        help="File of localisations which is a .csv (or .txt "
+        "with comma delimiters) or .npy and containing N "
+        "localisations in N rows.",
+        metavar="FILE",
+    )
 
-    parser.add_argument('-f', '--filter_distance',
-                        dest='filter_dist',
-                        type=int,
-                        # default=150, PROBLEM LINE
-                        default=200,
-                        help="Filter distance.")
+    parser.add_argument(
+        "-f",
+        "--filter_distance",
+        dest="filter_dist",
+        type=int,
+        # default=150, PROBLEM LINE
+        default=200,
+        help="Filter distance.",
+    )
 
-    parser.add_argument('-s', '--short_names',
-                        help="Uses shortened names for the results files and "
-                        "directories. While this makes the results less easy to"
-                        " navigate it can be particularly useful on Windows"
-                        " systems that do not allow long names and paths. "
-                        "The input file name is used for the results filename"
-                        " and this shortened names has the first and last 5"
-                        " characters with -s- is the middle.",
-                        action="store_true")
+    parser.add_argument(
+        "-s",
+        "--short_names",
+        help="Uses shortened names for the results files and "
+        "directories. While this makes the results less easy to"
+        " navigate it can be particularly useful on Windows"
+        " systems that do not allow long names and paths. "
+        "The input file name is used for the results filename"
+        " and this shortened names has the first and last 5"
+        " characters with -s- is the middle.",
+        action="store_true",
+    )
 
-    parser.add_argument('-v', '--verbose',
-                        help="Increase output verbosity",
-                        action="store_true")
+    parser.add_argument(
+        "-v", "--verbose", help="Increase output verbosity", action="store_true"
+    )
 
     args = parser.parse_args()
 
@@ -1370,58 +1416,66 @@ def main():
     if args.verbose:
         print("Verbosity is turned on.\n")
 
-    info['filter_dist'] = args.filter_dist
-    info['verbose'] = args.verbose
-    info['short_names'] = args.short_names
-
+    info["filter_dist"] = args.filter_dist
+    info["verbose"] = args.verbose
+    info["short_names"] = args.short_names
 
     if args.input_file is None:
         get_inputs(info)
     else:
-        info['in_file_and_path'] = args.input_file.name
+        info["in_file_and_path"] = args.input_file.name
 
-    info['host'], info['ip_address'], info['operating_system'] = utils.find_hostname_and_ip()
+    info["host"], info["ip_address"], info["operating_system"] = (
+        utils.find_hostname_and_ip()
+    )
 
     read_start = timeit.default_timer()
     xyz_values = utils.secondary_read_data_in(info)
     # print("data read!!\n")
     read_end = timeit.default_timer()
-    reading_time = (read_end-read_start)/60
+    reading_time = (read_end - read_start) / 60
 
     utils.secondary_filename_and_path_setup(info)
 
+    if info["verbose"]:
+        print(
+            "\nTime to read the input file was: "
+            + str(round(reading_time, 3))
+            + " minutes."
+        )
+        print(
+            "This contains "
+            + str(info["values"])
+            + " xyz locations with "
+            + str(info["columns"])
+            + " columns.\n"
+        )
 
-    if info['verbose']:
-        print("\nTime to read the input file was: "+str(round(reading_time, 3))+\
-              " minutes.")
-        print('This contains '+str(info['values'])+' xyz locations with '
-              +str(info['columns'])+' columns.\n')
-
-    if info['short_names'] is True:
+    if info["short_names"] is True:
         try:
-            os.makedirs(info['short_results_dir'])
+            os.makedirs(info["short_results_dir"])
         except OSError:
             print("Unexpected error:", sys.exc_info()[0])
             sys.exit("Could not create directory for the results.")
     else:
         try:
-            os.makedirs(info['results_dir'])
+            os.makedirs(info["results_dir"])
         except OSError:
             print("Unexpected error:", sys.exc_info()[0])
             sys.exit("Could not create directory for the results.")
 
     # Get histogram data ready to fit to model
-    #xy_histogram = models.make_xy_histogram_nm(xyz_values, fitlength=fitlength,
-    #fig_toggle=False)[0]
+    # xy_histogram = models.make_xy_histogram_nm(xyz_values, fitlength=fitlength,
+    # fig_toggle=False)[0]
     xydists = np.sqrt(xyz_values[:, 0] ** 2 + xyz_values[:, 1] ** 2)
-    fitlength = info['filter_dist']
+    fitlength = info["filter_dist"]
     bin_vals = np.arange(fitlength + 1)
 
-    xy_histogram, bin_values = np.histogram(xydists,
-                                            weights=np.repeat(float(fitlength) / len(xydists),
-                                                              len(xydists)),
-                                            bins=bin_vals)
-
+    xy_histogram, bin_values = np.histogram(
+        xydists,
+        weights=np.repeat(float(fitlength) / len(xydists), len(xydists)),
+        bins=bin_vals,
+    )
 
     # Define symmetries over which to perform and evaluate fit
     symmetries = range(5, 12)
@@ -1429,47 +1483,46 @@ def main():
     # Prepare to record fit metric (AICc)
     aiccs = np.zeros(len(symmetries))
 
-
     # Define model, including parameter guesses and bounds to pass to
     # scipy.optimize.curve_fit
     model_with_info = (
         set_up_model_replocs_substruct_iso_bg_with_onset_with_fit_settings()
-        )
-    info['model_name'] = model_with_info.model_rpd.__name__
+    )
+    info["model_name"] = model_with_info.model_rpd.__name__
 
-
-    info['p0'] = model_with_info.initial_params
-    info['optimisation_bounds'] = model_with_info.param_bounds
-
+    info["p0"] = model_with_info.initial_params
+    info["optimisation_bounds"] = model_with_info.param_bounds
 
     curve_values = []
     diameter_values = []
     table_param_values = []
 
-
     for i, sym in enumerate(symmetries):
         sym_order.number = sym
 
-        (params_optimised,
-         params_covar,
-         params_1sd_error) = models.fit_model_to_experiment(xy_histogram,
-                                                            model_with_info.model_rpd,
-                                                            model_with_info.initial_params,
-                                                            model_with_info.param_bounds,
-                                                            fitlength=fitlength)
-        aicc = stats.aic_from_least_sqr_fit(xy_histogram,
-                                            model_with_info.model_rpd,
-                                            params_optimised,
-                                            fitlength=fitlength)[1]
+        (params_optimised, params_covar, params_1sd_error) = (
+            models.fit_model_to_experiment(
+                xy_histogram,
+                model_with_info.model_rpd,
+                model_with_info.initial_params,
+                model_with_info.param_bounds,
+                fitlength=fitlength,
+            )
+        )
+        aicc = stats.aic_from_least_sqr_fit(
+            xy_histogram,
+            model_with_info.model_rpd,
+            params_optimised,
+            fitlength=fitlength,
+        )[1]
         aiccs[i] = aicc
         x_values = np.arange(fitlength) + 0.5
         diameter_values.append(params_optimised[0])
 
         curve_values.append(model_with_info.model_rpd(x_values, *params_optimised))
 
-
-        if info['verbose']:
-            print('\nSymmetry:', sym)
+        if info["verbose"]:
+            print("\nSymmetry:", sym)
             print("\nParameter    Optimised Value")
 
         param_string_values = []
@@ -1485,49 +1538,43 @@ def main():
             param_string_values.append(value_str)
             uncertainty_string_values.append(uncertainty_str)
 
-            if info['verbose']:
-                print(f'  {count + 1}            {value_str} +/- {uncertainty_str} ')
+            if info["verbose"]:
+                print(f"  {count + 1}            {value_str} +/- {uncertainty_str} ")
 
-
-        params = np.column_stack((params_optimised,
-                                  params_1sd_error,
-                                  param_string_values,
-                                  uncertainty_string_values))
-
+        params = np.column_stack(
+            (
+                params_optimised,
+                params_1sd_error,
+                param_string_values,
+                uncertainty_string_values,
+            )
+        )
 
         table_param_values.append(params)
 
-    plotting.plot_histogram_with_curves(bin_values,
-                                        xy_histogram,
-                                        symmetries,
-                                        x_values,
-                                        curve_values,
-                                        info)
-
-
+    plotting.plot_histogram_with_curves(
+        bin_values, xy_histogram, symmetries, x_values, curve_values, info
+    )
 
     for i, sym in enumerate(symmetries):
         sym_order.number = sym
         plotting.plot_rot_2d_geometry(sym, diameter_values[i], info)
 
-
     weights = stats.akaike_weights(aiccs)
 
-    if info['verbose']:
-        print('\nSymmetry\tAICc\t\tAkaike weight')
+    if info["verbose"]:
+        print("\nSymmetry\tAICc\t\tAkaike weight")
 
         for index, symmetry in enumerate(symmetries):
-            print(f'{symmetry:2d}\t\t{aiccs[index]:.2f} \t{weights[index]:.2}')
+            print(f"{symmetry:2d}\t\t{aiccs[index]:.2f} \t{weights[index]:.2}")
 
-
-    reports.write_rot_2d_html_report(info, symmetries, aiccs, weights, table_param_values)
-
-
+    reports.write_rot_2d_html_report(
+        info, symmetries, aiccs, weights, table_param_values
+    )
 
 
 if __name__ == "__main__":
-    #Tk().withdraw()
+    # Tk().withdraw()
     main()
-    #print('\nHit Enter to exit')
-    #input()
-    
+    # print('\nHit Enter to exit')
+    # input()

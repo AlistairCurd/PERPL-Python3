@@ -32,7 +32,7 @@ specific language governing permissions and limitations under the License.
 import numpy as np
 
 
-def aic_from_least_sqr_fit(expt, mod, popt, fitlength=400.):
+def aic_from_least_sqr_fit(expt, mod, popt, fitlength=400.0):
     """Calculate AICc for a model fit to data using (non-linear) least
     squares. AICc is corrected Akaike information criterion, Model
     Selection and Inference, Burnham & Anderson, 1998, pub.
@@ -58,10 +58,9 @@ def aic_from_least_sqr_fit(expt, mod, popt, fitlength=400.):
                         given set of data
     """
     k = float(len(popt) + 1)  # No. free parameters,
-                              # including var. of residuals
-                              # for least squares fit.
-    ssr = np.sum((mod(np.arange(fitlength) + 0.5, *popt) -
-                  expt) ** 2)
+    # including var. of residuals
+    # for least squares fit.
+    ssr = np.sum((mod(np.arange(fitlength) + 0.5, *popt) - expt) ** 2)
     aic = fitlength * np.log(ssr / fitlength) + 2 * k
     aicc = aic + 2 * k * (k + 1) / (fitlength - k - 1)
     # aiccorr = aic + 2 * k * (k + 1) / (len(axpoints) - k - 1)
