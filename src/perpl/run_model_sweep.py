@@ -276,49 +276,46 @@ def main(argv=None):
     )
 
     parser.add_argument(
+        "-cf",
+        "--config_folder",
+        action="store",
+        type=str,
+        help="path to the directory containing the config file "
+             "and the models directory",
+        required=True,
+    )
+
+    parser.add_argument(
         "-fh",
         "--fit_histograms",
         action="store_true",
-        help="fit histograms",
-        required=False,
-    )
-
-    parser.add_argument(
-        "-a",
-        "--only_axial",
-        action="store_true",
-        help="Fit only the axial direction",
-        required=False,
-    )
-
-    parser.add_argument(
-        "-t",
-        "--only_transverse",
-        action="store_true",
-        help="Fit only the transverse plane",
+        help="fit histograms - default is False (meaning fit KDEs)",
         required=False,
     )
 
     args = parser.parse_args(argv)
 
-    config_folder = os.path.join("experiments", args.experiment, "perpl_config")
+    config_folder = args.config_folder
+
+    parent, _ = os.path.split(config_folder)
 
     output_modelling_folder = os.path.join(
-        "experiments", args.experiment, "output/perpl_modelling"
+        parent, "modelling_output"
     )
 
     if not os.path.exists(output_modelling_folder):
         os.makedirs(output_modelling_folder)
 
     # load in configuration
+    ########## ADD IN AND REMOVE FIELDS ##################
     with open(os.path.join(config_folder, "config.yaml"), "r") as ymlfile:
         config = yaml.safe_load(ymlfile)
 
     relpos_filter = config["relpos_filter"]
     axial_direction = config["axial_direction"]
     transverse_direction = config["transverse_direction"]
-    transverse_limit = config["transverse_limit"]
-    axial_limit = config["axial_limit"]
+    transverse_limit = config["transverse_limit"]   # NEW LIMITS
+    axial_limit = config["axial_limit"]  # NEW LIMITS
     limits = {
         "transverse": transverse_limit,
         "axial": axial_limit,
@@ -329,172 +326,33 @@ def main(argv=None):
     fitlength_lst_axial = config["axial"]["fitlength"]
     fitlength_lst_trans = config["transverse"]["fitlength"]
 
-    # load in axial models
-    axial_models = os.listdir(os.path.join(config_folder, "axial_models"))
-    print(f"{len(axial_models)} axial models are being tested")
+    # load in models
+    models = os.listdir(os.path.join(config_folder, "models"))
+    print(f"{len(models)} models are being tested")
 
-    axial_models_configs = []
-    for i, axial_model in enumerate(axial_models):
+    model_configs = []
+    for i, model in enumerate(models):
         with open(
-            os.path.join(config_folder, "axial_models", axial_model), "r"
+            os.path.join(config_folder, "models", model), "r"
         ) as ymlfile:
             config = yaml.safe_load(ymlfile)
-            axial_models_configs.append(config)
+            model_configs.append(config)
 
-    # load in transverse models
-    transverse_models = os.listdir(os.path.join(config_folder, "transverse_models"))
-    print(f"{len(transverse_models)} transverse models are being tested")
+    # +++ FIT...
 
-    transverse_models_configs = []
-    for i, transverse_model in enumerate(transverse_models):
-        with open(
-            os.path.join(config_folder, "transverse_models", transverse_model), "r"
-        ) as ymlfile:
-            config = yaml.safe_load(ymlfile)
-            transverse_models_configs.append(config)
 
-    # one list
-    models = {
-        "axial": axial_models,
-        "transverse": transverse_models,
-    }
+    output_folder = os.path.join(output_modelling_folder, "axial")
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
 
-    model_configs = {
-        "axial": axial_models_configs,
-        "transverse": transverse_models_configs,
-    }
+    for f in ["histograms", "kdes"]:
+        i = os.path.join(output_folder, f)
+        if not os.path.exists(i):
+            os.makedirs(i)
 
-    # +++ FIT AXIAL....
-    if not args.only_transverse:
+    # .... histogram
 
-        output_folder = os.path.join(output_modelling_folder, "axial")
-        if not os.path.exists(output_folder):
-            os.makedirs(output_folder)
-
-        for f in ["histograms", "kdes"]:
-            i = os.path.join(output_folder, f)
-            if not os.path.exists(i):
-                os.makedirs(i)
-
-        # .... histogram
-
-        if args.fit_histograms:
-
-            ssrs = []
-            aics = []
-            aiccorrs = []
-            setups = []
-            fitlengths = []
-            locprecisions = []
-            nlocs = []
-            bgbelowzeros = []
-            nparams = []
-            ndatapoints = []
-            ndistances = []
-            expt_locprecision = []
-            popt_at_bounds = []
-            large_uncertainties = []
-
-            for param in list(
-                product(
-                    loc_precision_filter_lst,
-                    numberoflocalisations_lst,
-                    bin_size_lst,
-                    fitlength_lst_axial,
-                )
-            ):
-                loc_precision_filter, numberoflocalisations, bin_size, fitlength = param
-
-                model_the_data(
-                    "axial",
-                    "histogram",
-                    limits,
-                    models,
-                    model_configs,
-                    args.experiment,
-                    loc_precision_filter,
-                    bin_size,
-                    numberoflocalisations,
-                    fitlength,
-                    relpos_filter,
-                    axial_direction,
-                    transverse_direction,
-                    output_folder,
-                    ssrs,
-                    aics,
-                    aiccorrs,
-                    setups,
-                    fitlengths,
-                    locprecisions,
-                    nlocs,
-                    bgbelowzeros,
-                    nparams,
-                    ndatapoints,
-                    ndistances,
-                    expt_locprecision,
-                    popt_at_bounds,
-                    large_uncertainties,
-                )
-
-            (
-                aiccorrs,
-                aics,
-                ssrs,
-                setups,
-                fitlengths,
-                locprecisions,
-                nlocs,
-                bgbelowzeros,
-                nparams,
-                ndatapoints,
-                ndistances,
-                expt_locprecision,
-                popt_at_bounds,
-                large_uncertainties,
-            ) = zip(
-                *sorted(
-                    zip(
-                        aiccorrs,
-                        aics,
-                        ssrs,
-                        setups,
-                        fitlengths,
-                        locprecisions,
-                        nlocs,
-                        bgbelowzeros,
-                        nparams,
-                        ndatapoints,
-                        ndistances,
-                        expt_locprecision,
-                        popt_at_bounds,
-                        large_uncertainties,
-                    )
-                )
-            )
-
-            with open(os.path.join(output_folder, "results_histograms.csv"), "w") as f:
-                f.write(
-                    "Model,AICcorr,AIC,SSR,Fitlength,Locprecision,Nlocs,BGbelowzero,Nparams,Ndatapoints,Ndistances,ExptLocprecision,POptAtBounds,LargeUncertainty\n"
-                )
-                for row in zip(
-                    setups,
-                    aiccorrs,
-                    aics,
-                    ssrs,
-                    fitlengths,
-                    locprecisions,
-                    nlocs,
-                    bgbelowzeros,
-                    nparams,
-                    ndatapoints,
-                    ndistances,
-                    expt_locprecision,
-                    popt_at_bounds,
-                    large_uncertainties,
-                ):
-                    f.write(",".join(map(str, row)) + "\n")
-
-        # ... KDE
+    if args.fit_histograms:
 
         ssrs = []
         aics = []
@@ -513,20 +371,23 @@ def main(argv=None):
 
         for param in list(
             product(
-                loc_precision_filter_lst, numberoflocalisations_lst, fitlength_lst_axial
+                loc_precision_filter_lst,
+                numberoflocalisations_lst,
+                bin_size_lst,
+                fitlength_lst_axial,
             )
         ):
-            loc_precision_filter, numberoflocalisations, fitlength = param
+            loc_precision_filter, numberoflocalisations, bin_size, fitlength = param
 
             model_the_data(
                 "axial",
-                "kde",
+                "histogram",
                 limits,
                 models,
                 model_configs,
                 args.experiment,
                 loc_precision_filter,
-                None,
+                bin_size,
                 numberoflocalisations,
                 fitlength,
                 relpos_filter,
@@ -585,7 +446,7 @@ def main(argv=None):
             )
         )
 
-        with open(os.path.join(output_folder, "results_kdes.csv"), "w") as f:
+        with open(os.path.join(output_folder, "results_histograms.csv"), "w") as f:
             f.write(
                 "Model,AICcorr,AIC,SSR,Fitlength,Locprecision,Nlocs,BGbelowzero,Nparams,Ndatapoints,Ndistances,ExptLocprecision,POptAtBounds,LargeUncertainty\n"
             )
@@ -607,195 +468,48 @@ def main(argv=None):
             ):
                 f.write(",".join(map(str, row)) + "\n")
 
-    # +++ FIT TRANSVERSE +++
-    if not args.only_axial:
+    # ... KDE
 
-        output_folder = os.path.join(output_modelling_folder, "transverse")
-        if not os.path.exists(output_folder):
-            os.makedirs(output_folder)
+    ssrs = []
+    aics = []
+    aiccorrs = []
+    setups = []
+    fitlengths = []
+    locprecisions = []
+    nlocs = []
+    bgbelowzeros = []
+    nparams = []
+    ndatapoints = []
+    ndistances = []
+    expt_locprecision = []
+    popt_at_bounds = []
+    large_uncertainties = []
 
-        for f in ["histograms", "kdes"]:
-            i = os.path.join(output_folder, f)
-            if not os.path.exists(i):
-                os.makedirs(i)
+    for param in list(
+        product(
+            loc_precision_filter_lst, numberoflocalisations_lst, fitlength_lst_axial
+        )
+    ):
+        loc_precision_filter, numberoflocalisations, fitlength = param
 
-        # .... histogram
-
-        if args.fit_histograms:
-
-            ssrs = []
-            aics = []
-            aiccorrs = []
-            setups = []
-            fitlengths = []
-            locprecisions = []
-            nlocs = []
-            bgbelowzeros = []
-            nparams = []
-            ndatapoints = []
-            ndistances = []
-            expt_locprecision = []
-            popt_at_bounds = []
-            large_uncertainties = []
-
-            for param in list(
-                product(
-                    loc_precision_filter_lst,
-                    numberoflocalisations_lst,
-                    bin_size_lst,
-                    fitlength_lst_trans,
-                )
-            ):
-                loc_precision_filter, numberoflocalisations, bin_size, fitlength = param
-
-                model_the_data(
-                    "transverse",
-                    "histogram",
-                    limits,
-                    models,
-                    model_configs,
-                    args.experiment,
-                    loc_precision_filter,
-                    bin_size,
-                    numberoflocalisations,
-                    fitlength,
-                    relpos_filter,
-                    axial_direction,
-                    transverse_direction,
-                    output_folder,
-                    ssrs,
-                    aics,
-                    aiccorrs,
-                    setups,
-                    fitlengths,
-                    locprecisions,
-                    nlocs,
-                    bgbelowzeros,
-                    nparams,
-                    ndatapoints,
-                    ndistances,
-                    expt_locprecision,
-                    popt_at_bounds,
-                    large_uncertainties,
-                )
-
-            (
-                aiccorrs,
-                aics,
-                ssrs,
-                setups,
-                fitlengths,
-                locprecisions,
-                nlocs,
-                bgbelowzeros,
-                nparams,
-                ndatapoints,
-                ndistances,
-                expt_locprecision,
-                popt_at_bounds,
-                large_uncertainties,
-            ) = zip(
-                *sorted(
-                    zip(
-                        aiccorrs,
-                        aics,
-                        ssrs,
-                        setups,
-                        fitlengths,
-                        locprecisions,
-                        nlocs,
-                        bgbelowzeros,
-                        nparams,
-                        ndatapoints,
-                        ndistances,
-                        expt_locprecision,
-                        popt_at_bounds,
-                        large_uncertainties,
-                    )
-                )
-            )
-
-            with open(os.path.join(output_folder, "results_histograms.csv"), "w") as f:
-                f.write(
-                    "Model,AICcorr,AIC,SSR,Fitlength,Locprecision,Nlocs,BGbelowzero, Nparams,Ndatapoints,NDistances,ExptLocprecision,POptAtBounds,LargeUncertainty\n"
-                )
-                for row in zip(
-                    setups,
-                    aiccorrs,
-                    aics,
-                    ssrs,
-                    fitlengths,
-                    locprecisions,
-                    nlocs,
-                    bgbelowzeros,
-                    nparams,
-                    ndatapoints,
-                    ndistances,
-                    expt_locprecision,
-                    popt_at_bounds,
-                    large_uncertainties,
-                ):
-                    f.write(",".join(map(str, row)) + "\n")
-
-        # ... KDE
-
-        ssrs = []
-        aics = []
-        aiccorrs = []
-        setups = []
-        fitlengths = []
-        locprecisions = []
-        nlocs = []
-        bgbelowzeros = []
-        nparams = []
-        ndatapoints = []
-        ndistances = []
-        expt_locprecision = []
-        popt_at_bounds = []
-        large_uncertainties = []
-
-        for param in list(
-            product(
-                loc_precision_filter_lst, numberoflocalisations_lst, fitlength_lst_trans
-            )
-        ):
-            loc_precision_filter, numberoflocalisations, fitlength = param
-
-            model_the_data(
-                "transverse",
-                "kde",
-                limits,
-                models,
-                model_configs,
-                args.experiment,
-                loc_precision_filter,
-                None,
-                numberoflocalisations,
-                fitlength,
-                relpos_filter,
-                axial_direction,
-                transverse_direction,
-                output_folder,
-                ssrs,
-                aics,
-                aiccorrs,
-                setups,
-                fitlengths,
-                locprecisions,
-                nlocs,
-                bgbelowzeros,
-                nparams,
-                ndatapoints,
-                ndistances,
-                expt_locprecision,
-                popt_at_bounds,
-                large_uncertainties,
-            )
-
-        (
-            aiccorrs,
-            aics,
+        model_the_data(
+            "axial",
+            "kde",
+            limits,
+            models,
+            model_configs,
+            args.experiment,
+            loc_precision_filter,
+            None,
+            numberoflocalisations,
+            fitlength,
+            relpos_filter,
+            axial_direction,
+            transverse_direction,
+            output_folder,
             ssrs,
+            aics,
+            aiccorrs,
             setups,
             fitlengths,
             locprecisions,
@@ -807,36 +521,30 @@ def main(argv=None):
             expt_locprecision,
             popt_at_bounds,
             large_uncertainties,
-        ) = zip(
-            *sorted(
-                zip(
-                    aiccorrs,
-                    aics,
-                    ssrs,
-                    setups,
-                    fitlengths,
-                    locprecisions,
-                    nlocs,
-                    bgbelowzeros,
-                    nparams,
-                    ndatapoints,
-                    ndistances,
-                    expt_locprecision,
-                    popt_at_bounds,
-                    large_uncertainties,
-                )
-            )
         )
 
-        with open(os.path.join(output_folder, "results_kdes.csv"), "w") as f:
-            f.write(
-                "Model,AICcorr,AIC,SSR,Fitlength,Locprecision,Nlocs,BGbelowzero,Nparams,Ndatapoints,NDistances,ExptLocprecision,POptAtBounds,LargeUncertainty\n"
-            )
-            for row in zip(
-                setups,
+    (
+        aiccorrs,
+        aics,
+        ssrs,
+        setups,
+        fitlengths,
+        locprecisions,
+        nlocs,
+        bgbelowzeros,
+        nparams,
+        ndatapoints,
+        ndistances,
+        expt_locprecision,
+        popt_at_bounds,
+        large_uncertainties,
+    ) = zip(
+        *sorted(
+            zip(
                 aiccorrs,
                 aics,
                 ssrs,
+                setups,
                 fitlengths,
                 locprecisions,
                 nlocs,
@@ -847,8 +555,31 @@ def main(argv=None):
                 expt_locprecision,
                 popt_at_bounds,
                 large_uncertainties,
-            ):
-                f.write(",".join(map(str, row)) + "\n")
+            )
+        )
+    )
+
+    with open(os.path.join(output_folder, "results_kdes.csv"), "w") as f:
+        f.write(
+            "Model,AICcorr,AIC,SSR,Fitlength,Locprecision,Nlocs,BGbelowzero,Nparams,Ndatapoints,Ndistances,ExptLocprecision,POptAtBounds,LargeUncertainty\n"
+        )
+        for row in zip(
+            setups,
+            aiccorrs,
+            aics,
+            ssrs,
+            fitlengths,
+            locprecisions,
+            nlocs,
+            bgbelowzeros,
+            nparams,
+            ndatapoints,
+            ndistances,
+            expt_locprecision,
+            popt_at_bounds,
+            large_uncertainties,
+        ):
+            f.write(",".join(map(str, row)) + "\n")
 
 
 if __name__ == "__main__":
