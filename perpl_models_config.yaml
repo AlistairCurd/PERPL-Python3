@@ -86,7 +86,7 @@ charac_dist_ratio: [null]  # null or e.g. [1.0, 0.7, 0.4] for max n_peaks: 3
 repeats: [True, False]  # True, False or try both
   
 # Include offset - Not implemented yet
-# offset: [False] # True, False
+offset: [False] # True, False
 
 
 # Normalise the model RPD
