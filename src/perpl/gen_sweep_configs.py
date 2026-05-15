@@ -51,7 +51,7 @@ def gen_configs(config_file):
         assert len(params_initial["characteristic_distance_1"]) == len(charac_dists)
         warnings.warn(
             "Multiple characteristic distances for first peak "
-            f"for {direction} direction. Therefore, assuming peak distances "
+            ". Therefore, assuming peak distances "
             "are for each type of characteristic distance."
         )
         multiple_charac_dists = True
