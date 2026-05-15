@@ -2,12 +2,10 @@ import argparse
 import os
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import polars as pl
-import seaborn as sns
 
 from perpl.io import plotting
-from perpl.relative_positions import main as calculate_relative_positions
+# from perpl.relative_positions import main as calculate_relative_positions
 from perpl.relative_positions import getdistances, get_vectors, save_relative_positions
 
 
