@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.17.1
+#       jupytext_version: 1.19.2
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -76,7 +76,9 @@ axial_distances = zdisk_modelling.remove_duplicates(axial_distances)
 
 hist_values, bin_edges = zdisk_plots.plot_distance_hist(
     axial_distances,
-    fitlength
+    fitlength,
+    bin_size=1,
+    transverse_limit=transverse_limit
     )
 bin_centres = (bin_edges[0:(len(bin_edges) - 1)]
                + bin_edges[1:]
@@ -88,7 +90,8 @@ bin_centres = (bin_edges[0:(len(bin_edges) - 1)]
 kde_x_values, kde = zdisk_plots.plot_distance_kde(
     axial_distances,
     af647_precision,
-    100.
+    100.,
+    transverse_limit=transverse_limit
     )
 
 # ## Calculate the axial RPD with smoothing for Churchman 1D function
@@ -110,7 +113,8 @@ axial_model_with_info = zdisk_modelling.set_up_model_4_peaks_fixed_ratio_with_fi
 
 (params_optimised,
  params_covar,
- params_1sd_error) = zdisk_modelling.fitmodel_to_hist(
+ params_1sd_error,
+ ssr, aic, aiccorr) = zdisk_modelling.fitmodel_to_hist(
     bin_centres,
     hist_values,
     axial_model_with_info.model_rpd,
@@ -129,6 +133,7 @@ print(axial_model_with_info.param_bounds)
 fig, axes = zdisk_plots.plot_distance_hist_and_fit(
     axial_distances,
     fitlength,
+    1,
     params_optimised,
     params_covar,
     axial_model_with_info
@@ -141,6 +146,7 @@ fig, axes = zdisk_plots.plot_distance_hist_and_fit(
 zdisk_plots.plot_distance_hist_and_fit(
     axial_distances,
     fitlength,
+    1,
     params_optimised,
     params_covar,
     axial_model_with_info,
@@ -224,7 +230,8 @@ trans_model_with_info = zdisk_modelling.set_up_model_2d_onepeak_plus_replocs_fla
 
 (params_optimised,
  params_covar,
- params_1sd_error) = zdisk_modelling.fitmodel_to_hist(
+ params_1sd_error,
+ ssr, aic, aiccorr) = zdisk_modelling.fitmodel_to_hist(
     norm_rpd_calculation_points[0:31],
     normalised_transverse_rpd[0:31],
     trans_model_with_info.model_rpd,
@@ -266,7 +273,8 @@ np.save('..//..//perpl_test_data//normalised_transverse_rpd_smoothed_Churchman-8
 
 (params_optimised,
  params_covar,
- params_1sd_error) = zdisk_modelling.fitmodel_to_hist(
+ params_1sd_error,
+ ssr, aic, aiccorr) = zdisk_modelling.fitmodel_to_hist(
     norm_rpd_calculation_points[0:31],
     normalised_transverse_rpd_s8[0:31],
     trans_model_with_info.model_rpd,
@@ -321,7 +329,8 @@ np.save('..//..//perpl_test_data//normalised_transverse_rpd_smoothed_Churchman-6
 
 (params_optimised,
  params_covar,
- params_1sd_error) = zdisk_modelling.fitmodel_to_hist(
+ params_1sd_error,
+ ssr, aic, aiccorr) = zdisk_modelling.fitmodel_to_hist(
     norm_rpd_calculation_points[0:31],
     normalised_transverse_rpd_s6[0:31],
     trans_model_with_info.model_rpd,
@@ -348,7 +357,6 @@ zdisk_plots.plot_fitted_model(
 
 # ## Set up another model and fit
 # Tried a few smoothing widths again
-# ### This model fits much better
 
 trans_model_with_info = zdisk_modelling.set_up_model_2d_twopeaks_flat_bg_with_fit_settings()
 
@@ -358,7 +366,8 @@ norm_rpd_calculation_points = calculation_points[calculation_points > 0.]
 
 (params_optimised,
  params_covar,
- params_1sd_error) = zdisk_modelling.fitmodel_to_hist(
+ params_1sd_error,
+ ssr, aic, aiccorr) = zdisk_modelling.fitmodel_to_hist(
     norm_rpd_calculation_points[0:31],
     normalised_transverse_rpd_s6[0:31],
     trans_model_with_info.model_rpd,
@@ -385,7 +394,8 @@ zdisk_plots.plot_fitted_model(
 
 (params_optimised,
  params_covar,
- params_1sd_error) = zdisk_modelling.fitmodel_to_hist(
+ params_1sd_error,
+ ssr, aic, aiccorr) = zdisk_modelling.fitmodel_to_hist(
     norm_rpd_calculation_points[0:31],
     normalised_transverse_rpd[0:31],
     trans_model_with_info.model_rpd,
@@ -416,7 +426,8 @@ norm_rpd_calculation_points = calculation_points[calculation_points > 0.]
 
 (params_optimised,
  params_covar,
- params_1sd_error) = zdisk_modelling.fitmodel_to_hist(
+ params_1sd_error,
+ ssr, aic, aiccorr) = zdisk_modelling.fitmodel_to_hist(
     norm_rpd_calculation_points[0:31],
     normalised_transverse_rpd_s8[0:31],
     trans_model_with_info.model_rpd,
@@ -443,7 +454,8 @@ zdisk_plots.plot_fitted_model(
 
 (params_optimised,
  params_covar,
- params_1sd_error) = zdisk_modelling.fitmodel_to_hist(
+ params_1sd_error,
+ ssr, aic, aiccorr) = zdisk_modelling.fitmodel_to_hist(
     norm_rpd_calculation_points[0:31],
     normalised_transverse_rpd_s5[0:31],
     trans_model_with_info.model_rpd,
