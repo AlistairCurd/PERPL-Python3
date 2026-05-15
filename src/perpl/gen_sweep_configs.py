@@ -7,28 +7,45 @@ import warnings
 import yaml
 
 
-def gen_configs(config_folder, direction):
+def gen_configs(config_file):
+    """Generate models to fit.
+
+    Args:
+        config_file (str):
+            Path to config file for generating models to sweep through.
+    
+    Returns:
+        Nothing
+    
+    Saves model configurations in parent folder of the config file.
+    """
 
     # load in configuration
-    with open(os.path.join(config_folder, "config.yaml"), "r") as ymlfile:
+    # with open(os.path.join(config_folder, "config.yaml"), "r") as ymlfile:
+    with open(config_file, "r") as ymlfile:
         config = yaml.safe_load(ymlfile)
+    
+    # Set output locations
+    config_folder, _ = os.path.split(config_file)
+    models_folder = os.path.join(config_folder, "models")
+    os.mkdir(models_folder)
 
-    # load in params for particular direction
-    direction_params = config[direction]
+    ## load in params for particular direction
+    # direction_params = config[direction]  # Was axial/transverse
 
     # load in params list
-    dimension = direction_params["dimension"]
-    backgrounds = direction_params["background"]
-    n_peaks = direction_params["n_peaks"]
-    peak_types = direction_params["peak_type"]
-    charac_dists = direction_params["charac_dist"]
-    charac_dist_ratio = direction_params["charac_dist_ratio"]
-    repeats = direction_params["repeats"]
-    offsets = direction_params["offset"]
-    normalises = direction_params["normalise"]
-    params_initial = direction_params["params_initial"]
-    params_lower = direction_params["params_lower"]
-    params_upper = direction_params["params_upper"]
+    dimension = config["dimension"]
+    backgrounds = config["background"]
+    n_peaks = config["n_peaks"]
+    peak_types = config["peak_type"]
+    charac_dists = config["charac_dist"]
+    charac_dist_ratio = config["charac_dist_ratio"]
+    repeats = config["repeats"]
+    offsets = config["offset"]
+    normalises = config["normalise"]
+    params_initial = config["params_initial"]
+    params_lower = config["params_lower"]
+    params_upper = config["params_upper"]
 
     if type(params_initial["characteristic_distance_1"]) is list:
         assert len(params_initial["characteristic_distance_1"]) == len(charac_dists)
@@ -75,7 +92,9 @@ def gen_configs(config_folder, direction):
             "params_upper": params_upper_copy,
         }
 
-        # if something
+        # If multiple characteristic distance types present
+        # (e.g. sweeping through both models using multiples of a unit distance
+        # and models using independent distances)
         if multiple_charac_dists:
             # change params_values
             for name, file in zip(
@@ -89,7 +108,7 @@ def gen_configs(config_folder, direction):
 
         # save yaml file
         model_config_save_loc = os.path.join(
-            config_folder, f"{direction}_models/model_{index}.yaml"
+            models_folder, f"model_{index}.yaml"
         )
         with open(model_config_save_loc, "w") as outfile:
             yaml.dump(model_config, outfile)
@@ -106,57 +125,30 @@ def main(argv=None):
         description="Generate configuration files for parameter sweep"
     )
 
+    # parser.add_argument(
+    #    "-e",
+    #    "--experiment",
+    #    action="store",
+    #    type=str,
+    #    help="name of the experiment",
+    #    required=True,
+    #)
+
     parser.add_argument(
-        "-e",
-        "--experiment",
+        "-cf",
+        "--config_file",
         action="store",
         type=str,
-        help="name of the experiment",
+        help="path to the config file for building the model sweep",
         required=True,
-    )
-
-    parser.add_argument(
-        "-a",
-        "--only_axial",
-        action="store_true",
-        help="Fit only the axial direction",
-        required=False,
-    )
-
-    parser.add_argument(
-        "-t",
-        "--only_transverse",
-        action="store_true",
-        help="Fit only the transverse plane",
-        required=False,
     )
 
     args = parser.parse_args(argv)
 
-    config_folder = os.path.join("experiments", args.experiment, "perpl_config")
+    # config_folder = os.path.join("experiments", args.experiment, "perpl_config")
 
-    folders = ["axial_models", "transverse_models"]
+    gen_configs(args.config_file)
 
-    if args.only_axial:
-        folders.remove("transverse_models")
-    
-    if args.only_transverse:
-        folders.remove("axial_models")
-
-    for f in folders:
-        folder = os.path.join(config_folder, f)
-        if os.path.exists(folder):
-            raise ValueError(f"Cannot proceed as {folder} folder already exists")
-
-    for f in folders:
-        folder = os.path.join(config_folder, f)
-        os.makedirs(folder)
-
-    # generate axial and transverse config files
-    if not args.only_transverse:
-        gen_configs(config_folder, "axial")
-    if not args.only_axial:
-        gen_configs(config_folder, "transverse")
 
 
 if __name__ == "__main__":
