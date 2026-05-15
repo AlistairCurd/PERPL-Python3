@@ -19,18 +19,32 @@ x_limit: 200.
 y_limit: 10.
 z_limit: 10.
 
-# sizes of bins for histogram analysis
-bin_sizes: [5]
+
+# FROM HERE, INCLUDE ALL DESIRED VALUES FOR MODELS
+# IN THE PARAMETER SWEEP IN A LIST
+
+# FITTED RPD PARAMETERS
+# Do not compare information criteria between different
+# bin_size, loc_precision or fitlwength values
+
+# Bin size for histogram analysis (not used for KDE)
+bin_sizes: [5]  # e.g. [1, 2, 5]
+
+
+# Localisation precision: kernel size for building experimental KDE
+## Max estimated localisation precision
+## or average estimated localisation precision are reasonable
+## and several values can be tried
+loc_precision: [3.2]  # e.g. [5, 6, 7]
+
+  
+# Maximum distance for the fit (less than relpos_filter if using a KDE)
+fitlength: [105, 115, 125]  # Can try multiple fit lengths
+
 
 # MODEL PARAMS
 # Define the form of the model
 # Include all desired values each parameter in a list
-  
-# Maximum distance for the fit (less than relpos_filter if using a KDE)
-fitlength: [105, 115, 125]  # Can try multiple fit lengths
-# DO NOT COMPARE INFORMATION CRITERIA BETWEEN DIFFERENT FIT LENGTHS
-# FOR MODEL SELECTION
-  
 
 # Background model options
 # null, flat, linear, linear_flat, trans_bg_0, trans_bg_1, trans_bg_2
