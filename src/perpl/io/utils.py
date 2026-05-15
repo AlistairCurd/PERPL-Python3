@@ -199,7 +199,7 @@ def primary_filename_and_path_setup(info):
 
     ## Set up short directory name to save space
     short_filename_without_extension = (
-        filename_without_extension[:5] + r"-s-" + filename_without_extension[-5:]
+        filename_without_extension[:6]
     )
 
     # Include some parameters for short name
