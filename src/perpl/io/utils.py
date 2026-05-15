@@ -189,13 +189,13 @@ def primary_filename_and_path_setup(info):
 
     results_dir = (
         path
-        + r"/PERPL_output"
+        + r"/PERPL"
         + r"/rel_posns_"
         + parameter_str
     )
 
     # Include start time
-    results_dir = results_dir + info["start"]
+    results_dir = results_dir + "_" + info["start"]
 
     ## Set up short directory name to save space
     short_filename_without_extension = (
@@ -224,7 +224,7 @@ def primary_filename_and_path_setup(info):
 
     short_results_dir = (
         path
-        + r"/PERPL_output"
+        + r"/PERPL"
         + r"/rel_posns_"
         + short_parameter_str
     )
@@ -260,10 +260,10 @@ def secondary_filename_and_path_setup(info):
     index_of_dot = in_file_no_path.index(".")
     filename_without_extension = in_file_no_path[:index_of_dot]
 
-    parameter_str = "filter_" + str(info["filter_dist"]) + "_"
+    parameter_str = "filter_" + str(info["filter_dist"])
 
     results_dir = (
-        path + r"/" + info["prog"] + r"/" + r"/" + parameter_str + info["start"]
+        path + r"/" + info["prog"] + r"/" + parameter_str + "_" + info["start"]
     )
 
     short_filename_without_extension = (
@@ -279,7 +279,7 @@ def secondary_filename_and_path_setup(info):
         + short_filename_without_extension
         + r"/"
         + short_parameter_str
-        + info["start"]
+        + "_" + info["start"]
     )
 
     info["results_dir"] = results_dir
