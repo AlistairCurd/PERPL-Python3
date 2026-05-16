@@ -2,84 +2,44 @@ import argparse
 from itertools import product
 import matplotlib.pyplot as plt
 import os
+import sys
 
 import numpy as np
 import pandas as pd
 
-# import seaborn as sns
 import yaml
 
 from perpl.io import plotting
-from perpl.modelling import zdisk_modelling
 from perpl.modelling.modelling_general import PERPLModel
 
 
 def model_the_data(
-    direction,
+    distances,  # 1D numpy array of distances
     plot_type,
-    limits,
     models,
     model_configs,
-    experiment,
-    loc_precision_filter,
+    kde_kernel_size,
     bin_size,
-    numberoflocalisations,
     fitlength,
-    relpos_filter,
-    axial_direction,
-    transverse_direction,
     output_folder,
     ssrs,
     aics,
     aiccorrs,
     setups,
     fitlengths,
-    locprecisions,
-    nlocs,
     bgbelowzeros,
     nparams,
     ndatapoints,
     ndistances,
-    expt_locprecision,
     popt_at_bounds,
     large_uncertainties,
 ):
-
-    models = models[direction]
-
-    loc_prec_path = rf"experiments/{experiment}/output/perpl_relative_posns/all_z_disks_{loc_precision_filter}precisionfilter_{numberoflocalisations}numberoflocalisations_PERPL-locprec_{relpos_filter}filter.txt"
-    relpos_path = rf"experiments/{experiment}/output/perpl_relative_posns/all_z_disks_{loc_precision_filter}precisionfilter_{numberoflocalisations}numberoflocalisations_PERPL-relpos_{relpos_filter}filter.csv"  # path to relative posn data
-
-    loc_precision = np.loadtxt(loc_prec_path)
-
-    # load in relative positions and calculate axial and transverse characteristic distances
-    relpos = pd.read_csv(relpos_path)
-
-    relpos = pd.DataFrame(
-        {
-            "axial": relpos[f"{axial_direction}_separation"],
-            "transverse": relpos[f"{transverse_direction}_separation"],
-        },
-    )
-
-    if direction == "axial":
-        distances = zdisk_modelling.getaxialseparations_no_smoothing(
-            relpos,
-            max_distance=relpos[direction].max(),
-            transverse_limit=limits["transverse"],
-        )
-    elif direction == "transverse":
-        distances = zdisk_modelling.get_transverse_separations(
-            relpos, max_distance=relpos[direction].max(), axial_limit=limits["axial"]
-        )
-
-    distances = zdisk_modelling.remove_duplicates(distances)
 
     # for each model...
     for i, model in enumerate(models):
 
         model_name = model.rstrip(".yaml")
-        model_config = model_configs[direction][i]
+        model_config = model_configs[i]
 
         if plot_type == "histogram":
 
@@ -108,12 +68,14 @@ def model_the_data(
             elif model_config["dimension"] == 2:
                 churchman = plotting.estimate_rpd_churchman_2d
             elif model_config["dimension"] == 3:
-                churchman = plotting.estimate_rpd_churchman_3d
+                print("3D KDE function not yet implemented")
+                sys.exit()
+                # churchman = plotting.estimate_rpd_churchman_3d
 
             rpd = churchman(
                 input_distances=distances,
                 calculation_points=calculation_points,
-                combined_precision=(np.sqrt(2) * loc_precision),
+                combined_precision=kde_kernel_size,
             )
 
             if model_config["normalise"]:
@@ -144,7 +106,10 @@ def model_the_data(
             and model_config["n_peaks"] == 0
             and model_config["repeats"] is False
         ):
-            print(f"Skipping {model_name} as has nothing to fit")
+            print(f"Skipping {model_name}:"
+                  " contains no distances,"
+                  " repeated localisations or background"
+            )
             continue
 
         # print("Model name ", model_name) Debug
@@ -166,7 +131,7 @@ def model_the_data(
                 output_folder,
                 "histograms",
                 (
-                    f"{model_name}_locprec_{loc_precision_filter}_nlocs_{numberoflocalisations}_fitlength_{fitlength}_binsize_{bin_size}_histandfit.svg"
+                    f"{model_name}_fitlength_{fitlength}_binsize_{bin_size}_histandfit.svg"
                 ),
             )
 
@@ -177,7 +142,7 @@ def model_the_data(
                 output_folder,
                 "kdes",
                 (
-                    f"{model_name}_locprec_{loc_precision_filter}_nlocs_{numberoflocalisations}_fitlength_{fitlength}_kdeandfit.svg"
+                    f"{model_name}_fitlength_{fitlength}_kdeandfit.svg"
                 ),
             )
 
@@ -192,7 +157,7 @@ def model_the_data(
                 output_folder,
                 "histograms",
                 (
-                    f"{model_name}_locprec_{loc_precision_filter}_nlocs_{numberoflocalisations}_fitlength_{fitlength}_binsize_{bin_size}_modelcomponents.svg"
+                    f"{model_name}_fitlength_{fitlength}_binsize_{bin_size}_modelcomponents.svg"
                 ),
             )
         elif plot_type == "kde":
@@ -200,7 +165,7 @@ def model_the_data(
                 output_folder,
                 "kdes",
                 (
-                    f"{model_name}_locprec_{loc_precision_filter}_nlocs_{numberoflocalisations}_fitlength_{fitlength}_modelcomponents.svg"
+                    f"{model_name}_fitlength_{fitlength}_modelcomponents.svg"
                 ),
             )
         if fig2 is not None:
@@ -212,13 +177,13 @@ def model_the_data(
             opt_param_path = os.path.join(
                 output_folder,
                 "histograms",
-                f"{model_name}_locprec_{loc_precision_filter}_nlocs_{numberoflocalisations}_fitlength_{fitlength}_binsize_{bin_size}_optparams.txt",
+                f"{model_name}_fitlength_{fitlength}_binsize_{bin_size}_optparams.txt",
             )
         elif plot_type == "kde":
             opt_param_path = os.path.join(
                 output_folder,
                 "kdes",
-                f"{model_name}_locprec_{loc_precision_filter}_nlocs_{numberoflocalisations}_fitlength_{fitlength}_optparams.txt",
+                f"{model_name}_fitlength_{fitlength}_optparams.txt",
             )
         with open(opt_param_path, "w") as f:
             f.write("Optimal params +- Error\n")
@@ -239,20 +204,17 @@ def model_the_data(
         aiccorrs.append(perpl_model.aic_corrected)
         if plot_type == "histogram":
             setups.append(
-                f"{model_name}_locprec_{loc_precision_filter}_nlocs_{numberoflocalisations}_fitlength_{fitlength}_binsize_{bin_size}"
+                f"{model_name}_fitlength_{fitlength}_binsize_{bin_size}"
             )
         elif plot_type == "kde":
             setups.append(
-                f"{model_name}_locprec_{loc_precision_filter}_nlocs_{numberoflocalisations}_fitlength_{fitlength}"
+                f"{model_name}_fitlength_{fitlength}"
             )
         fitlengths.append(fitlength)
-        locprecisions.append(loc_precision_filter)
-        nlocs.append(numberoflocalisations)
         bgbelowzeros.append(perpl_model.bgbelowzero)
         nparams.append(perpl_model.n_params)
         ndatapoints.append(len(x_expt))
         ndistances.append(len(distances))
-        expt_locprecision.append(loc_precision)
         popt_at_bounds.append(perpl_model.popt_at_bound)
         large_uncertainties.append(perpl_model.large_uncertainty)
 
@@ -267,11 +229,11 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="Model the data using PERPL")
 
     parser.add_argument(
-        "-e",
-        "--experiment",
+        "-rp",
+        "--rel_posns_file",
         action="store",
-        type=str,
-        help="name of the experiment",
+        type="str",
+        help="path to the file containing the relative positions",
         required=True,
     )
 
@@ -293,66 +255,75 @@ def main(argv=None):
         required=False,
     )
 
+    parser.add_argument(
+        "-fkde",
+        "--fit_kdes",
+        action="store_true",
+        help="fit kdes - default is True",
+        required=True,
+    )
+
     args = parser.parse_args(argv)
 
     config_folder = args.config_folder
 
-    parent, _ = os.path.split(config_folder)
+    # load in relative positions and configuration
+    relpos = pd.read_csv(args.rel_posns_file)
 
-    output_modelling_folder = os.path.join(
-        parent, "modelling_output"
-    )
-
-    if not os.path.exists(output_modelling_folder):
-        os.makedirs(output_modelling_folder)
-
-    # load in configuration
-    ########## ADD IN AND REMOVE FIELDS ##################
     with open(os.path.join(config_folder, "config.yaml"), "r") as ymlfile:
         config = yaml.safe_load(ymlfile)
 
-    relpos_filter = config["relpos_filter"]
-    axial_direction = config["axial_direction"]
-    transverse_direction = config["transverse_direction"]
-    transverse_limit = config["transverse_limit"]   # NEW LIMITS
-    axial_limit = config["axial_limit"]  # NEW LIMITS
-    limits = {
-        "transverse": transverse_limit,
-        "axial": axial_limit,
-    }
-    loc_precision_filter_lst = config["loc_precision_filter"]
-    numberoflocalisations_lst = config["numberoflocalisations"]
+    # RELPOS_FILTER MAY NOT BE NEEDED
+    # relpos_filter = config["relpos_filter"]
+    model_direction = config["model_direction"]
+    limits = config["limits"]
     bin_size_lst = config["bin_sizes"]
-    fitlength_lst_axial = config["axial"]["fitlength"]
-    fitlength_lst_trans = config["transverse"]["fitlength"]
+    kde_kernel_size_lst = config["kde_kernel_size"]
+    fitlength_lst = config["fitlength"]
+
+    # Limit the relative positions in X, Y and Z if desired
+    relpos = relpos.loc[relpos["xx_separation"] < limits["x_limit"]]
+    relpos = relpos.loc[relpos["yy_separation"] < limits["y_limit"]]
+    relpos = relpos.loc[relpos["zz_separation"] < limits["z_limit"]]
+
+    # Select the data in the selected direction
+    distances = relpos[[f"{model_direction}_separation"]].to_numpy()
+
+    # Ensure absolute distance and remove duplicates
+    distances = abs(distances)[::2]
 
     # load in models
     models = os.listdir(os.path.join(config_folder, "models"))
     print(f"{len(models)} models are being tested")
 
     model_configs = []
-    for i, model in enumerate(models):
+    for model in models:
         with open(
             os.path.join(config_folder, "models", model), "r"
         ) as ymlfile:
             config = yaml.safe_load(ymlfile)
             model_configs.append(config)
 
+    # Set up output parent folder
+    ## Contains table of results and subdirector(ies) for fits 
+    parent, _ = os.path.split(config_folder)
+
+    output_modelling_folder = os.path.join(
+        parent, f"modelling_output_{model_direction}"
+    )
+    if not os.path.exists(output_modelling_folder):
+        os.makedirs(output_modelling_folder)
+
     # +++ FIT...
 
-
-    output_folder = os.path.join(output_modelling_folder, "axial")
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder)
-
-    for f in ["histograms", "kdes"]:
-        i = os.path.join(output_folder, f)
-        if not os.path.exists(i):
-            os.makedirs(i)
-
-    # .... histogram
+    # .... histograms
 
     if args.fit_histograms:
+        
+        # Create output folder
+        output_folder_hists = os.path.join(output_modelling_folder, "histogram_fits")
+        if not os.path.exists(output_folder_hists):
+            os.makedirs(output_folder_hists)
 
         ssrs = []
         aics = []
@@ -369,31 +340,23 @@ def main(argv=None):
         popt_at_bounds = []
         large_uncertainties = []
 
-        for param in list(
+        for preproc_param in list(
             product(
-                loc_precision_filter_lst,
-                numberoflocalisations_lst,
                 bin_size_lst,
-                fitlength_lst_axial,
+                fitlength_lst,
             )
         ):
-            loc_precision_filter, numberoflocalisations, bin_size, fitlength = param
+            bin_size, fitlength = preproc_param
 
             model_the_data(
-                "axial",
+                distances,
                 "histogram",
-                limits,
                 models,
                 model_configs,
-                args.experiment,
-                loc_precision_filter,
+                None,  # kde_kernel_size
                 bin_size,
-                numberoflocalisations,
                 fitlength,
-                relpos_filter,
-                axial_direction,
-                transverse_direction,
-                output_folder,
+                output_folder_hists,
                 ssrs,
                 aics,
                 aiccorrs,
@@ -446,7 +409,7 @@ def main(argv=None):
             )
         )
 
-        with open(os.path.join(output_folder, "results_histograms.csv"), "w") as f:
+        with open(os.path.join(output_folder_hists, "results_histograms.csv"), "w") as f:
             f.write(
                 "Model,AICcorr,AIC,SSR,Fitlength,Locprecision,Nlocs,BGbelowzero,Nparams,Ndatapoints,Ndistances,ExptLocprecision,POptAtBounds,LargeUncertainty\n"
             )
@@ -468,82 +431,50 @@ def main(argv=None):
             ):
                 f.write(",".join(map(str, row)) + "\n")
 
-    # ... KDE
+    # ... KDEs
+    if args.fit_kdes:
+        
+        # Create output folder
+        output_folder_kdes = os.path.join(output_modelling_folder, "kde_fits")
+        if not os.path.exists(output_folder_kdes):
+            os.makedirs(output_folder_kdes)
 
-    ssrs = []
-    aics = []
-    aiccorrs = []
-    setups = []
-    fitlengths = []
-    locprecisions = []
-    nlocs = []
-    bgbelowzeros = []
-    nparams = []
-    ndatapoints = []
-    ndistances = []
-    expt_locprecision = []
-    popt_at_bounds = []
-    large_uncertainties = []
+        ssrs = []
+        aics = []
+        aiccorrs = []
+        setups = []
+        fitlengths = []
+        locprecisions = []
+        nlocs = []
+        bgbelowzeros = []
+        nparams = []
+        ndatapoints = []
+        ndistances = []
+        expt_locprecision = []
+        popt_at_bounds = []
+        large_uncertainties = []
 
-    for param in list(
-        product(
-            loc_precision_filter_lst, numberoflocalisations_lst, fitlength_lst_axial
-        )
-    ):
-        loc_precision_filter, numberoflocalisations, fitlength = param
+        for param in list(
+            product(
+                kde_kernel_size_lst,
+                fitlength_lst,
+            )
+        ):
+            kde_kernel_size, fitlength = param
 
-        model_the_data(
-            "axial",
-            "kde",
-            limits,
-            models,
-            model_configs,
-            args.experiment,
-            loc_precision_filter,
-            None,
-            numberoflocalisations,
-            fitlength,
-            relpos_filter,
-            axial_direction,
-            transverse_direction,
-            output_folder,
-            ssrs,
-            aics,
-            aiccorrs,
-            setups,
-            fitlengths,
-            locprecisions,
-            nlocs,
-            bgbelowzeros,
-            nparams,
-            ndatapoints,
-            ndistances,
-            expt_locprecision,
-            popt_at_bounds,
-            large_uncertainties,
-        )
-
-    (
-        aiccorrs,
-        aics,
-        ssrs,
-        setups,
-        fitlengths,
-        locprecisions,
-        nlocs,
-        bgbelowzeros,
-        nparams,
-        ndatapoints,
-        ndistances,
-        expt_locprecision,
-        popt_at_bounds,
-        large_uncertainties,
-    ) = zip(
-        *sorted(
-            zip(
-                aiccorrs,
-                aics,
+            model_the_data(
+                distances,
+                "kde",
+                models,
+                model_configs,
+                args.experiment,
+                kde_kernel_size,
+                None,  # bin_size
+                fitlength,
+                output_folder_kdes,
                 ssrs,
+                aics,
+                aiccorrs,
                 setups,
                 fitlengths,
                 locprecisions,
@@ -556,18 +487,12 @@ def main(argv=None):
                 popt_at_bounds,
                 large_uncertainties,
             )
-        )
-    )
 
-    with open(os.path.join(output_folder, "results_kdes.csv"), "w") as f:
-        f.write(
-            "Model,AICcorr,AIC,SSR,Fitlength,Locprecision,Nlocs,BGbelowzero,Nparams,Ndatapoints,Ndistances,ExptLocprecision,POptAtBounds,LargeUncertainty\n"
-        )
-        for row in zip(
-            setups,
+        (
             aiccorrs,
             aics,
             ssrs,
+            setups,
             fitlengths,
             locprecisions,
             nlocs,
@@ -578,8 +503,48 @@ def main(argv=None):
             expt_locprecision,
             popt_at_bounds,
             large_uncertainties,
-        ):
-            f.write(",".join(map(str, row)) + "\n")
+        ) = zip(
+            *sorted(
+                zip(
+                    aiccorrs,
+                    aics,
+                    ssrs,
+                    setups,
+                    fitlengths,
+                    locprecisions,
+                    nlocs,
+                    bgbelowzeros,
+                    nparams,
+                    ndatapoints,
+                    ndistances,
+                    expt_locprecision,
+                    popt_at_bounds,
+                    large_uncertainties,
+                )
+            )
+        )
+
+        with open(os.path.join(output_folder_kdes, "results_kdes.csv"), "w") as f:
+            f.write(
+                "Model,AICcorr,AIC,SSR,Fitlength,Locprecision,Nlocs,BGbelowzero,Nparams,Ndatapoints,Ndistances,ExptLocprecision,POptAtBounds,LargeUncertainty\n"
+            )
+            for row in zip(
+                setups,
+                aiccorrs,
+                aics,
+                ssrs,
+                fitlengths,
+                locprecisions,
+                nlocs,
+                bgbelowzeros,
+                nparams,
+                ndatapoints,
+                ndistances,
+                expt_locprecision,
+                popt_at_bounds,
+                large_uncertainties,
+            ):
+                f.write(",".join(map(str, row)) + "\n")
 
 
 if __name__ == "__main__":
