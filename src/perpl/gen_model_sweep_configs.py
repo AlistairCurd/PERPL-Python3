@@ -125,15 +125,6 @@ def main(argv=None):
         description="Generate configuration files for parameter sweep"
     )
 
-    # parser.add_argument(
-    #    "-e",
-    #    "--experiment",
-    #    action="store",
-    #    type=str,
-    #    help="name of the experiment",
-    #    required=True,
-    #)
-
     parser.add_argument(
         "-cf",
         "--config_file",
