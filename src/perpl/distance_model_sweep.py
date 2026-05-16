@@ -1,4 +1,5 @@
 import argparse
+import datetime
 from itertools import product
 import matplotlib.pyplot as plt
 import os
@@ -10,6 +11,7 @@ import pandas as pd
 import yaml
 
 from perpl.io import plotting
+from perpl.gen_model_sweep_configs import gen_configs
 from perpl.modelling.modelling_general import PERPLModel
 
 
@@ -241,11 +243,10 @@ def main(argv=None):
 
     parser.add_argument(
         "-cf",
-        "--config_folder",
+        "--config_file",
         action="store",
         type=str,
-        help="path to the directory containing the config file "
-             "and the models directory",
+        help="path to the config file to use for generating models",
         required=True,
     )
 
@@ -265,24 +266,37 @@ def main(argv=None):
         required=False,
     )
 
+    parser.add_argument(
+        "-nofit",
+        "--no_fitting",
+        action="store_true",
+        help="Only generate model configuration files, do not fit to data",
+        required=False,
+    )
+
     args = parser.parse_args(argv)
 
     print(f"Fit hists: {args.fit_histograms}")
     print(f"Fit KDEs: {args.fit_kdes}")
 
-    config_folder = args.config_folder
+    config_file = args.config_file
 
-    # load in relative positions and configuration
-    relpos = pd.read_csv(args.rel_posns_file)
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-    with open(os.path.join(config_folder, "perpl_models_config.yaml"), "r") as ymlfile:
+    # Generate models to use
+    models_folder = gen_configs(config_file, timestamp)
+
+    # Collect data pre-processwing settings
+    with open(config_file, "r") as ymlfile:
         config = yaml.safe_load(ymlfile)
-
     model_direction = config["model_direction"]
     limits = config["limits"]
     bin_size_lst = config["bin_sizes"]
     kde_kernel_size_lst = config["kde_kernel_size"]
     fitlength_lst = config["fitlength"]
+
+    # load in relative positions and configuration
+    relpos = pd.read_csv(args.rel_posns_file)
 
     # Limit the relative positions in X, Y and Z if desired
     relpos = relpos.loc[abs(relpos["xx_separation"]) < limits["x_limit"]]
@@ -297,23 +311,27 @@ def main(argv=None):
     distances = np.sort(distances)[::2]
 
     # load in models
-    models = os.listdir(os.path.join(config_folder, "models"))
-    print(f"{len(models)} models are being tested")
+    model_files = os.listdir(models_folder)
+    print(f"{len(model_files)} models are being tested")
 
     model_configs = []
-    for model in models:
+    for model in model_files:
         with open(
-            os.path.join(config_folder, "models", model), "r"
+            os.path.join(models_folder, model), "r"
         ) as ymlfile:
             config = yaml.safe_load(ymlfile)
             model_configs.append(config)
+
+    # Stop if fitting not required
+    if args.no_fitting:
+        return
 
     # Set up output parent folder
     ## Contains table of results and subdirector(ies) for fits 
     parent, _ = os.path.split(args.rel_posns_file)
 
     output_modelling_folder = os.path.join(
-        parent, f"modelling_output_{model_direction}"
+        parent, f"modelling_output_{model_direction}_{timestamp}"
     )
     if not os.path.exists(output_modelling_folder):
         os.makedirs(output_modelling_folder)
@@ -352,7 +370,7 @@ def main(argv=None):
             model_the_data(
                 distances,
                 "histogram",  # plot_type
-                models,
+                model_files,
                 model_configs,
                 None,  # kde_kernel_size
                 bin_size,
@@ -453,7 +471,7 @@ def main(argv=None):
             model_the_data(
                 distances,
                 "kde",  # plot_type
-                models,
+                model_files,
                 model_configs,
                 kde_kernel_size,
                 None,  # bin_size
