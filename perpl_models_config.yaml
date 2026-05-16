@@ -1,5 +1,7 @@
 # distance filter for subsetting relative positions
-relpos_filter: 150.0
+# I THINK THIS IS ONLY USED FOR FILENAME AND IS NOT NEEDED
+# relpos_filter: 150.0
+
 
 # Model direction
 ## xx, yy or zz (distances in 1D);
@@ -7,17 +9,26 @@ relpos_filter: 150.0
 ### or xyz (3D Euclidean distances)
 model_direction: xx
 
+
 # Dimensionality of the space being modelled
-## 1 for linear, 2 across a plane, 3 for distances in a 3D volume
-## TODO: This should be redundant because of model_direction,
-## but still needed at the moment
+## 1 for distances along a single direction
+## 2 for distances across a plane
+## 3 for distances in a 3D volume
+##
+## Used to calculated different KDE kernels for differnet dimensionality
 dimension: [1]
 
-# limits for distance components in x, y, and z
-# Make sure that this >= relpos_filter in the directions you are modelling
-x_limit: 200. 
-y_limit: 10.
-z_limit: 10.
+
+# Limits for distance components in x, y, and z
+##
+## One use is to restrict modelling to the use of pairs of points
+## with relative postitions close to the modelling direction.
+##
+## Use "null" to apply no limite
+limits:
+  x_limit: 200.  # e.g. 10 or null 
+  y_limit: 200.
+  z_limit: 200.
 
 
 # FROM HERE, INCLUDE ALL DESIRED VALUES FOR MODELS
@@ -31,11 +42,12 @@ z_limit: 10.
 bin_sizes: [5]  # e.g. [1, 2, 5]
 
 
-# Localisation precision: kernel size for building experimental KDE
-## Max estimated localisation precision
-## or average estimated localisation precision are reasonable
-## and several values can be tried
-loc_precision: [3.2]  # e.g. [5, 6, 7]
+# kernel size for building experimental KDE
+## sqrt(2) * average or max estimated localisation precision
+## are reasonable to try and several values can be tried
+##
+## Smaller values keep more detail, larger values smoothen noise
+kde_kernel_size: [3.2]  # e.g. [5, 6, 7]
 
   
 # Maximum distance for the fit (less than relpos_filter if using a KDE)
