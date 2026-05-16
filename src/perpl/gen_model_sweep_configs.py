@@ -1,5 +1,6 @@
 import argparse
 import copy
+import datetime
 from itertools import product
 import os
 import warnings
@@ -7,33 +8,44 @@ import warnings
 import yaml
 
 
-def gen_configs(config_file):
+def gen_configs(config_file, suffix=None):
     """Generate models to fit.
 
     Args:
         config_file (str):
             Path to config file for generating models to sweep through.
+        suffix (str):
+            Text to add to label models folder and copy of config file.
     
     Returns:
-        Nothing
+        models_folder (str):
+            Path to the folder containing models as determined
+            by the config file.
     
-    Saves model configurations in parent folder of the config file.
+    Saves model configurations and a copy of the config fileas used.
     """
 
     # load in configuration
     # with open(os.path.join(config_folder, "config.yaml"), "r") as ymlfile:
     with open(config_file, "r") as ymlfile:
         config = yaml.safe_load(ymlfile)
+
+    # Use datestamp as suffix if not given
+    if suffix is None:
+        suffix = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     
     # Set output locations
     config_folder, _ = os.path.split(config_file)
-    models_folder = os.path.join(config_folder, "models")
+    models_folder = os.path.join(config_folder, f"models_{suffix}")
     os.mkdir(models_folder)
 
-    ## load in params for particular direction
-    # direction_params = config[direction]  # Was axial/transverse
+    # Save the current version of the config file
+    parent, _ = os.path.split(config_file)
+    config_copy_path = os.path.join(parent, f"models_config_{suffix}.yaml")
+    with open(config_copy_path, "w") as outfile:
+        yaml.dump(config, outfile)
 
-    # load in params list
+    # Load in params list
     dimension = config["dimension"]
     backgrounds = config["background"]
     n_peaks = config["n_peaks"]
@@ -112,6 +124,8 @@ def gen_configs(config_file):
         )
         with open(model_config_save_loc, "w") as outfile:
             yaml.dump(model_config, outfile)
+    
+    return models_folder
 
 
 def main(argv=None):
