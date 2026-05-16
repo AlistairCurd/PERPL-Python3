@@ -24,7 +24,7 @@ dimension: [1]
 ## One use is to restrict modelling to the use of pairs of points
 ## with relative postitions close to the modelling direction.
 ##
-## Use "null" to apply no limite
+## Use "null" to apply no limits
 limits:
   x_limit: 200.  # e.g. 10 or null 
   y_limit: 200.
@@ -69,10 +69,10 @@ n_peaks: [0, 1, 4, 5, 6]  # Can try models with different numbers of peaks
 
 
 # Indepedent ("variable") amplitude for characteristic distance peaks
-# or amplitudes have a "fixed" ratio. Fixed is currently (1, 1 - 1/n, 1 - 2/n, ...), as used for 1D analysis through a finite volume. 
+# or amplitudes have a "fixed_ratio". Fixed is currently (1, 1 - 1/n, 1 - 2/n, ...), as used for 1D analysis through a finite volume. 
 #
-# So "variable", "fixed", or both in the list
-peak_type: [variable]  # variable, fixed
+# So "variable", "fixed_ratio", or both in the list
+peak_type: [variable]  # variable, fixed_ratio
 
 
 # Relationship between the characteristic distances:
