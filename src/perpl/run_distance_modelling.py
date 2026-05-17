@@ -313,6 +313,11 @@ def main(argv=None):
 
     args = parser.parse_args(argv)
 
+    if not (args.fit_histograms or args.fit_kdes or args.no_fitting):
+        parser.error("Must specify at least one of"
+                     " --fh, --fkde or -nofit"
+        )
+
     print(f"Fit hists: {args.fit_histograms}")
     print(f"Fit KDEs: {args.fit_kdes}")
 
