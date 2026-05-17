@@ -11,7 +11,7 @@ import pandas as pd
 import yaml
 
 from perpl.io import plotting
-from perpl.gen_model_sweep_configs import gen_configs
+from perpl.modelling.gen_distance_model_configs import gen_configs
 from perpl.modelling.modelling_general import PERPLModel
 
 

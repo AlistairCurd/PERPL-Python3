@@ -35,7 +35,7 @@ def gen_configs(config_file, suffix=None):
     
     # Set output locations
     config_folder, _ = os.path.split(config_file)
-    models_folder = os.path.join(config_folder, f"models_{suffix}")
+    models_folder = os.path.join(config_folder, f"model_configs_{suffix}")
     os.mkdir(models_folder)
 
     # Save the current version of the config file
