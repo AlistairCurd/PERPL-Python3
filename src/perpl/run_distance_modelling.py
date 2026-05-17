@@ -24,20 +24,8 @@ def model_the_data(
     bin_size,
     fitlength,
     output_folder,
-    ssrs,
-    aics,
-    aiccorrs,
-    setups,
-    fitlengths,
-    bgbelowzeros,
-    nparams,
-    ndatapoints,
-    ndistances,
-    popt_at_bounds,
-    large_uncertainties,
+    results,
 ):
-    print("Modelling...")
-
     # for each model...
     for i, model in enumerate(models):
 
@@ -203,24 +191,47 @@ def model_the_data(
                     f.write(f"{row[0]}: {row[1]} +- {row[2]}\n")
 
         # save ssr, aic, aiccorr, setup
-        ssrs.append(perpl_model.sum_of_squares_error)
-        aics.append(perpl_model.aic)
-        aiccorrs.append(perpl_model.aic_corrected)
+        results["ssrs"].append(perpl_model.sum_of_squares_error)
+        results["aics"].append(perpl_model.aic)
+        results["aiccorrs"].append(perpl_model.aic_corrected)
         if plot_type == "histogram":
-            setups.append(
+            results["setups"].append(
                 f"{model_name}_fitlength_{fitlength}_binsize_{bin_size}"
             )
         elif plot_type == "kde":
-            setups.append(
+            results["setups"].append(
                 f"{model_name}_fitlength_{fitlength}"
             )
-        fitlengths.append(fitlength)
-        bgbelowzeros.append(perpl_model.bgbelowzero)
-        nparams.append(perpl_model.n_params)
-        ndatapoints.append(len(x_expt))
-        ndistances.append(len(distances))
-        popt_at_bounds.append(perpl_model.popt_at_bound)
-        large_uncertainties.append(perpl_model.large_uncertainty)
+        results["fitlengths"].append(fitlength)
+        results["bgbelowzeros"].append(perpl_model.bgbelowzero)
+        results["nparams"].append(perpl_model.n_params)
+        results["ndatapoints"].append(len(x_expt))
+        results["ndistances"].append(len(distances))
+        results["popt_at_bounds"].append(perpl_model.popt_at_bound)
+        results["large_uncertainties"].append(perpl_model.large_uncertainty)
+
+
+
+def save_results(path, results):
+    rows = zip(
+        results["setups"],
+        results["aiccorrs"],
+        results["aics"],
+        results["ssrs"],
+        results["fitlengths"],
+        results["bgbelowzeros"],
+        results["nparams"],
+        results["ndatapoints"],
+        results["ndistances"],
+        results["popt_at_bounds"],
+        results["large_uncertainties"],
+    )
+
+    with open(path, "w") as f:
+        f.write("Model,AICcorr,AIC,SSR,Fitlength,BGbelowzero,Nparams,"
+                "Ndatapoints,Ndistances,POptAtBounds,LargeUncertainty\n")
+        for row in rows:
+            f.write(",".join(map(str, row)) + "\n")
 
 
 def main(argv=None):
@@ -347,17 +358,19 @@ def main(argv=None):
         if not os.path.exists(output_folder_hists):
             os.makedirs(output_folder_hists)
 
-        ssrs = []
-        aics = []
-        aiccorrs = []
-        setups = []
-        fitlengths = []
-        bgbelowzeros = []
-        nparams = []
-        ndatapoints = []
-        ndistances = []
-        popt_at_bounds = []
-        large_uncertainties = []
+        results = {
+            "ssrs": [],
+            "aics": [],
+            "aiccorrs": [],
+            "setups": [],
+            "fitlengths": [],
+            "bgbelowzeros": [],
+            "nparams": [],
+            "ndatapoints": [],
+            "ndistances": [],
+            "popt_at_bounds": [],
+            "large_uncertainties": [],
+        }
 
         for preproc_param in list(
             product(
@@ -376,67 +389,14 @@ def main(argv=None):
                 bin_size,
                 fitlength,
                 output_folder_hists,
-                ssrs,
-                aics,
-                aiccorrs,
-                setups,
-                fitlengths,
-                bgbelowzeros,
-                nparams,
-                ndatapoints,
-                ndistances,
-                popt_at_bounds,
-                large_uncertainties,
+                results,
             )
 
-        (
-            aiccorrs,
-            aics,
-            ssrs,
-            setups,
-            fitlengths,
-            bgbelowzeros,
-            nparams,
-            ndatapoints,
-            ndistances,
-            popt_at_bounds,
-            large_uncertainties,
-        ) = zip(
-            *sorted(
-                zip(
-                    aiccorrs,
-                    aics,
-                    ssrs,
-                    setups,
-                    fitlengths,
-                    bgbelowzeros,
-                    nparams,
-                    ndatapoints,
-                    ndistances,
-                    popt_at_bounds,
-                    large_uncertainties,
-                )
-            )
+        output_path = os.path.join(
+            output_modelling_folder, "results_histograms.csv"
         )
 
-        with open(os.path.join(output_modelling_folder, "results_histograms.csv"), "w") as f:
-            f.write(
-                "Model,AICcorr,AIC,SSR,Fitlength,BGbelowzero,Nparams,Ndatapoints,Ndistances,POptAtBounds,LargeUncertainty\n"
-            )
-            for row in zip(
-                setups,
-                aiccorrs,
-                aics,
-                ssrs,
-                fitlengths,
-                bgbelowzeros,
-                nparams,
-                ndatapoints,
-                ndistances,
-                popt_at_bounds,
-                large_uncertainties,
-            ):
-                f.write(",".join(map(str, row)) + "\n")
+        save_results(output_path, results)
 
     # ... KDEs
     if args.fit_kdes:
@@ -446,17 +406,19 @@ def main(argv=None):
         if not os.path.exists(output_folder_kdes):
             os.makedirs(output_folder_kdes)
 
-        ssrs = []
-        aics = []
-        aiccorrs = []
-        setups = []
-        fitlengths = []
-        bgbelowzeros = []
-        nparams = []
-        ndatapoints = []
-        ndistances = []
-        popt_at_bounds = []
-        large_uncertainties = []
+        results = {
+            "ssrs": [],
+            "aics": [],
+            "aiccorrs": [],
+            "setups": [],
+            "fitlengths": [],
+            "bgbelowzeros": [],
+            "nparams": [],
+            "ndatapoints": [],
+            "ndistances": [],
+            "popt_at_bounds": [],
+            "large_uncertainties": [],
+        }
 
         for preproc_param in list(
             product(
@@ -477,69 +439,14 @@ def main(argv=None):
                 None,  # bin_size
                 fitlength,
                 output_folder_kdes,
-                ssrs,
-                aics,
-                aiccorrs,
-                setups,
-                fitlengths,
-                bgbelowzeros,
-                nparams,
-                ndatapoints,
-                ndistances,
-                popt_at_bounds,
-                large_uncertainties,
+                results,
             )
 
-            print("Modelled once.")
-
-        (
-            aiccorrs,
-            aics,
-            ssrs,
-            setups,
-            fitlengths,
-            bgbelowzeros,
-            nparams,
-            ndatapoints,
-            ndistances,
-            popt_at_bounds,
-            large_uncertainties,
-        ) = zip(
-            *sorted(
-                zip(
-                    aiccorrs,
-                    aics,
-                    ssrs,
-                    setups,
-                    fitlengths,
-                    bgbelowzeros,
-                    nparams,
-                    ndatapoints,
-                    ndistances,
-                    popt_at_bounds,
-                    large_uncertainties,
-                )
-            )
+        output_path = os.path.join(
+            output_modelling_folder, "results_kdes.csv"
         )
 
-        with open(os.path.join(output_modelling_folder, "results_kdes.csv"), "w") as f:
-            f.write(
-                "Model,AICcorr,AIC,SSR,Fitlength,BGbelowzero,Nparams,Ndatapoints,Ndistances,POptAtBounds,LargeUncertainty\n"
-            )
-            for row in zip(
-                setups,
-                aiccorrs,
-                aics,
-                ssrs,
-                fitlengths,
-                bgbelowzeros,
-                nparams,
-                ndatapoints,
-                ndistances,
-                popt_at_bounds,
-                large_uncertainties,
-            ):
-                f.write(",".join(map(str, row)) + "\n")
+        save_results(output_path, results)
 
 
 if __name__ == "__main__":
