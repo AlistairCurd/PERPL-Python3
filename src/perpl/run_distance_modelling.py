@@ -211,6 +211,13 @@ def model_the_data(
         results["large_uncertainties"].append(perpl_model.large_uncertainty)
 
 
+def make_results():
+    return {k: [] for k in [
+        "ssrs","aics","aiccorrs","setups","fitlengths",
+        "bgbelowzeros","nparams","ndatapoints","ndistances",
+        "popt_at_bounds","large_uncertainties"
+    ]}
+
 
 def save_results(path, results):
     rows = zip(
@@ -358,19 +365,7 @@ def main(argv=None):
         if not os.path.exists(output_folder_hists):
             os.makedirs(output_folder_hists)
 
-        results = {
-            "ssrs": [],
-            "aics": [],
-            "aiccorrs": [],
-            "setups": [],
-            "fitlengths": [],
-            "bgbelowzeros": [],
-            "nparams": [],
-            "ndatapoints": [],
-            "ndistances": [],
-            "popt_at_bounds": [],
-            "large_uncertainties": [],
-        }
+        results = make_results()
 
         for preproc_param in list(
             product(
@@ -406,19 +401,7 @@ def main(argv=None):
         if not os.path.exists(output_folder_kdes):
             os.makedirs(output_folder_kdes)
 
-        results = {
-            "ssrs": [],
-            "aics": [],
-            "aiccorrs": [],
-            "setups": [],
-            "fitlengths": [],
-            "bgbelowzeros": [],
-            "nparams": [],
-            "ndatapoints": [],
-            "ndistances": [],
-            "popt_at_bounds": [],
-            "large_uncertainties": [],
-        }
+        results = make_results()
 
         for preproc_param in list(
             product(
