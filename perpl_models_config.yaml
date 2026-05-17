@@ -13,7 +13,7 @@ model_direction: xx
 # Dimensionality of the space being modelled
 ## 1 for distances along a single direction
 ## 2 for distances across a plane
-## 3 for distances in a 3D volume
+## Not yet implemented for KDE: 3 for distances in a 3D volume
 ##
 ## Used to calculated different KDE kernels for differnet dimensionality
 dimension: [1]
