@@ -1,10 +1,9 @@
 import argparse
 import datetime
 from itertools import product
-import matplotlib.pyplot as plt
 import os
-import sys
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -13,6 +12,64 @@ import yaml
 from perpl.io import plotting
 from perpl.modelling.gen_distance_model_configs import gen_configs
 from perpl.modelling.modelling_general import PERPLModel
+
+
+
+def get_experimental_rpd(distances, rpd_type, fitlength,
+                          bin_size, kde_kernel_size, model_config):
+    """
+    Args:
+        ...
+        rpd_type (str):
+            "distance_histogram" or "distance_kde"
+    
+    Returns:
+        x_expt, y_expt (1D numpy arrays):
+            Values of the distance histogram or KDE (y_expt)
+            at the distances in x_expt.
+    """
+    if rpd_type == "distance_histogram":
+        hist_values, edges = np.histogram(
+            distances, bins=np.arange(0, fitlength + 1, bin_size)
+        )
+        centres = (edges[:-1] + edges[1:]) / 2
+        x_expt = centres
+        y_expt = hist_values
+
+    elif rpd_type == "distance_kde":
+        increment = max(1, round(fitlength / len(distances)))
+        x_expt = np.arange(0, fitlength + 1.0, increment)
+
+        if model_config["dimension"] == 3:
+            raise ValueError(
+                "dimension: 3 (from config file) is not implemented"
+                " for KDE generation"
+            )
+
+        churchman_map = {
+            1: plotting.estimate_rpd_churchman_1d,
+            2: plotting.estimate_rpd_churchman_2d,
+        }
+        fn = churchman_map.get(model_config["dimension"])
+
+        y_expt = fn(
+            input_distances=distances,
+            calculation_points=x_expt,
+            combined_precision=kde_kernel_size,
+        )
+
+    else:
+        raise ValueError("RPD type currently unsupported.")
+
+    # Avoid zero distance for dividing by distance
+    # Actual normalisation is done later in
+    # fit_to_experiment
+    if model_config["normalise"]:
+        mask = x_expt > 0
+        x_expt = x_expt[mask]
+        y_expt = y_expt[mask]
+
+    return x_expt, y_expt
 
 
 def model_the_data(
@@ -35,53 +92,10 @@ def model_the_data(
         model_name = model.rstrip(".yaml")
         model_config = model_configs[i]
 
-        if rpd_type == "distance_histogram":
-
-            # Get the histogram data up to distance = fitlength
-            hist_values, bin_edges = np.histogram(
-                distances, bins=np.arange(0, fitlength + 1, bin_size)
-            )
-            bin_centres = (bin_edges[:-1] + bin_edges[1:]) / 2
-
-            x_expt = bin_centres
-            y_expt = hist_values
-
-        elif rpd_type == "distance_kde":
-
-            if len(distances) == 0:
-                print(f"Skipping {model_name} as no distances to fit")
-                continue
-
-            increment = np.round(fitlength / len(distances))
-            if increment == 0:
-                increment = 1
-            calculation_points = np.arange(0, fitlength + 1.0, increment)
-
-            print("Found x points.")
-
-            if model_config["dimension"] == 1:
-                churchman = plotting.estimate_rpd_churchman_1d
-            elif model_config["dimension"] == 2:
-                churchman = plotting.estimate_rpd_churchman_2d
-            elif model_config["dimension"] == 3:
-                print("3D KDE function not yet implemented")
-                sys.exit()
-                # churchman = plotting.estimate_rpd_churchman_3d
-
-            rpd = churchman(
-                input_distances=distances,
-                calculation_points=calculation_points,
-                combined_precision=kde_kernel_size,
-            )
-
-            if model_config["normalise"]:
-                y_expt = rpd[calculation_points > 0]
-                x_expt = calculation_points[calculation_points > 0]
-            else:
-                y_expt = rpd
-                x_expt = calculation_points
-            
-            print("Set up expt RPD.")
+        x_expt, y_expt = get_experimental_rpd(
+            distances, rpd_type, fitlength,
+            bin_size, kde_kernel_size, model_config,
+        )
 
         perpl_model = PERPLModel(
             dimension=model_config["dimension"],
@@ -119,6 +133,11 @@ def model_the_data(
 
         if rpd_type == "distance_histogram":
             # plot distance hist and fit
+            bin_centres = x_expt
+            bin_width = bin_centres[1] - bin_centres[0]
+            bin_edges = x_expt - bin_width / 2
+            bin_edges = np.append(bin_edges, bin_edges[-1] + bin_width)
+
             fig = perpl_model.plot_distance_hist_and_fit(
                 distances,
                 bin_edges,
@@ -315,6 +334,8 @@ def main(argv=None):
 
     # load in relative positions and configuration
     relpos = pd.read_csv(args.rel_posns_file)
+    if relpos.empty:
+        raise ValueError("Relative positions dataframe must not be empty.")
 
     # Limit the relative positions in X, Y and Z if desired
     relpos = relpos.loc[abs(relpos["xx_separation"]) < limits["x_limit"]]
