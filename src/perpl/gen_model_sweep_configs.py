@@ -1,4 +1,3 @@
-import argparse
 import copy
 import datetime
 from itertools import product
@@ -126,35 +125,3 @@ def gen_configs(config_file, suffix=None):
             yaml.dump(model_config, outfile)
     
     return models_folder
-
-
-def main(argv=None):
-    """Main script for the module with variable arguments
-
-    Args:
-        argv : Custom arguments to run script with"""
-
-    # parse arguments
-    parser = argparse.ArgumentParser(
-        description="Generate configuration files for parameter sweep"
-    )
-
-    parser.add_argument(
-        "-cf",
-        "--config_file",
-        action="store",
-        type=str,
-        help="path to the config file for building the model sweep",
-        required=True,
-    )
-
-    args = parser.parse_args(argv)
-
-    # config_folder = os.path.join("experiments", args.experiment, "perpl_config")
-
-    gen_configs(args.config_file)
-
-
-
-if __name__ == "__main__":
-    main()
