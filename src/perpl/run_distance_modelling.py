@@ -17,7 +17,7 @@ from perpl.modelling.modelling_general import PERPLModel
 
 def model_the_data(
     distances,  # 1D numpy array of distances
-    plot_type,  # "hist" or "kde"
+    rpd_type,  # "distance_histogram" or "distance_kde"
     models,
     model_configs,
     kde_kernel_size,
@@ -35,7 +35,7 @@ def model_the_data(
         model_name = model.rstrip(".yaml")
         model_config = model_configs[i]
 
-        if plot_type == "histogram":
+        if rpd_type == "distance_histogram":
 
             # Get the histogram data up to distance = fitlength
             hist_values, bin_edges = np.histogram(
@@ -46,7 +46,7 @@ def model_the_data(
             x_expt = bin_centres
             y_expt = hist_values
 
-        elif plot_type == "kde":
+        elif rpd_type == "distance_kde":
 
             if len(distances) == 0:
                 print(f"Skipping {model_name} as no distances to fit")
@@ -117,7 +117,7 @@ def model_the_data(
             y_expt,
         )
 
-        if plot_type == "histogram":
+        if rpd_type == "distance_histogram":
             # plot distance hist and fit
             fig = perpl_model.plot_distance_hist_and_fit(
                 distances,
@@ -132,7 +132,7 @@ def model_the_data(
                 ),
             )
 
-        elif plot_type == "kde":
+        elif rpd_type == "distance_kde":
             # plot kde and fit
             fig = perpl_model.plot_distance_kde_and_fit(x_expt, y_expt, fitlength)
             figname = os.path.join(
@@ -148,14 +148,14 @@ def model_the_data(
 
         # plot model components
         fig2 = perpl_model.plot_model_components(fitlength)
-        if plot_type == "histogram":
+        if rpd_type == "distance_histogram":
             figname = os.path.join(
                 output_folder,
                 (
                     f"{model_name}_fitlength_{fitlength}_binsize_{bin_size}_modelcomponents.svg"
                 ),
             )
-        elif plot_type == "kde":
+        elif rpd_type == "distance_kde":
             figname = os.path.join(
                 output_folder,
                 (
@@ -167,12 +167,12 @@ def model_the_data(
             plt.close(fig2)
 
         # save model params and err
-        if plot_type == "histogram":
+        if rpd_type == "distance_histogram":
             opt_param_path = os.path.join(
                 output_folder,
                 f"{model_name}_fitlength_{fitlength}_binsize_{bin_size}_optparams.txt",
             )
-        elif plot_type == "kde":
+        elif rpd_type == "distance_kde":
             opt_param_path = os.path.join(
                 output_folder,
                 f"{model_name}_fitlength_{fitlength}_optparams.txt",
@@ -194,11 +194,11 @@ def model_the_data(
         results["ssrs"].append(perpl_model.sum_of_squares_error)
         results["aics"].append(perpl_model.aic)
         results["aiccorrs"].append(perpl_model.aic_corrected)
-        if plot_type == "histogram":
+        if rpd_type == "distance_histogram":
             results["setups"].append(
                 f"{model_name}_fitlength_{fitlength}_binsize_{bin_size}"
             )
-        elif plot_type == "kde":
+        elif rpd_type == "distance_kde":
             results["setups"].append(
                 f"{model_name}_fitlength_{fitlength}"
             )
@@ -377,7 +377,7 @@ def main(argv=None):
 
             model_the_data(
                 distances,
-                "histogram",  # plot_type
+                "distance_histogram",  # rpd_type
                 model_files,
                 model_configs,
                 None,  # kde_kernel_size
@@ -415,7 +415,7 @@ def main(argv=None):
 
             model_the_data(
                 distances,
-                "kde",  # plot_type
+                "distance_kde",  # rpd_type
                 model_files,
                 model_configs,
                 kde_kernel_size,
