@@ -358,7 +358,7 @@ def write_rel_pos_html_report(info):
     """
 
     html_outfile_name = (
-        info["results_dir"]
+        info["relpos_plots_report_dir"]
         + r"/"
         + info["in_file_no_extension"]
         + r"_"
@@ -368,7 +368,7 @@ def write_rel_pos_html_report(info):
 
     if info["short_names"] is True:
         html_outfile_name = (
-            info["short_results_dir"]
+            info["short_relpos_plots_report_dir"]
             + r"/"
             + info["short_filename_without_extension"]
             + r"_"

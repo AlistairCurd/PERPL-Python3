@@ -35,6 +35,14 @@ import numdifftools as nd
 import matplotlib.pyplot as plt
 from matplotlib import font_manager
 
+
+from scipy.linalg import svd
+from scipy.spatial.transform import Rotation
+from scipy.special import i0
+from scipy import stats
+from scipy.optimize import curve_fit, least_squares
+
+
 for f in font_manager.findSystemFonts(fontpaths=None, fontext="ttf"):
     # to install arial on linux had to run these commands...
     # sudo apt install ttf-mscorefonts-installer
@@ -42,11 +50,6 @@ for f in font_manager.findSystemFonts(fontpaths=None, fontext="ttf"):
     # rm -rf ~/.cache/matplotlib
     if "Arial" in f:
         plt.rcParams["font.family"] = ["Arial"]
-from scipy.linalg import svd
-from scipy.spatial.transform import Rotation
-from scipy.special import i0
-from scipy import stats
-from scipy.optimize import curve_fit, least_squares
 
 
 class PERPLModel:
@@ -104,7 +107,7 @@ class PERPLModel:
             raise ValueError("Dimension should be 1,2 or 3")
         if background not in [None, "flat", "linear", "linear_flat", "trans_bg_0", "trans_bg_1", "trans_bg_2"]:
             raise ValueError("Background should be None, flat, linear, linear_flat, trans_bg_0, trans_bg_1 or trans_bg_2")
-        if not type(n_peaks) == int:
+        if not isinstance(n_peaks, int):
             raise ValueError("n peaks should be an integer")
         if peak_type not in ["variable", "fixed_ratio"]:
             raise ValueError("Peak type should be variable or fixed_ratio")
@@ -119,11 +122,11 @@ class PERPLModel:
                 )
             if characteristic_distance_ratio[0] != 1.0:
                 raise ValueError("First peak should have ratio 1.0")
-        if not type(repeats) == bool:
+        if not isinstance(repeats, bool):
             raise ValueError("Repeats should be True or False")
-        if not type(offset) == bool:
+        if not isinstance(offset, bool):
             raise ValueError("Offset should be True or False")
-        if not type(normalise) == bool:
+        if not isinstance(normalise, bool):
             raise ValueError("Normalise should be True or False")
 
         # number of params
@@ -189,9 +192,9 @@ class PERPLModel:
         self.peak_type = peak_type
         if n_peaks > 0:
             if peak_type == "fixed_ratio":
-                self.initial_params[f"amp_peak_1"] = params_initial["amp_peak_1"]
-                self.params_lower[f"amp_peak_1"] = params_lower["amp_peak_1"]
-                self.params_upper[f"amp_peak_1"] = params_upper["amp_peak_1"]
+                self.initial_params["amp_peak_1"] = params_initial["amp_peak_1"]
+                self.params_lower["amp_peak_1"] = params_lower["amp_peak_1"]
+                self.params_upper["amp_peak_1"] = params_upper["amp_peak_1"]
                 n_params += 1
             elif peak_type == "variable":
                 for i in range(n_peaks):
@@ -297,7 +300,7 @@ class PERPLModel:
         background = bg_offset + bg_slope * x_values
     
         if self.background == "linear_flat":
-            if type(x_values) == np.float64:
+            if isinstance(x_values, np.float64):
                 if x_values >= -bg_offset / bg_slope:
                     background = 0.0
             else:
@@ -676,7 +679,7 @@ class PERPLModel:
         if plot_model_components:
             
             # Plot background term
-            if not self.background is None:
+            if self.background is not None:
                 axes.plot(calc_points, model_background, label="Background", color="C1")
                 if (model_background < 0).any():
                     axes.set_title("BG. goes below zero")
@@ -766,7 +769,7 @@ class PERPLModel:
         )
 
         # Plot background term
-        if not self.background is None:
+        if self.background is not None:
             axes.plot(x, background, label="Background", color="C0")
             if (background < 0).any():
                 axes.set_title("BG. goes below zero")

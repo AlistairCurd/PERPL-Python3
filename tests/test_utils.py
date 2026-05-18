@@ -737,15 +737,18 @@ class TestPrimaryFilenameAndPathSetup(unittest.TestCase):
         result4 = info['short_results_dir']
         result5 = info['short_filename_without_extension']
 
-        self.assertIn(result1, '/localhome/joanna/PERPL_data/PERPL_relative_'
-                      'positions/Nup107_SNAP_3D_GRROUPED_10nmZprec/'
-                      'filter_200_2D_bin1_2019-11-07_15-49-55')
+        self.assertIn(
+            result1,
+            '/localhome/joanna/PERPL_data/PERPL/'
+            'rel_posns_filter200_2D_bin1_2019-11-07_15-49-55'
+        )
         self.assertIn(result2, 'Nup107_SNAP_3D_GRROUPED_10nmZprec')
         self.assertIn(result3, 'Nup107_SNAP_3D_GRROUPED_10nmZprec.csv')
-        self.assertIn(result4, '/localhome/joanna/PERPL_data/PERPL_rp/Nup10-s-Zprec/'
-                      'f_200_2D_b1_2019-11-07_15-49-55')
-        self.assertIn(result5, 'Nup10-s-Zprec')
-
+        self.assertIn(
+            result4,
+            '/localhome/joanna/PERPL_data/PERPL/rel_posns_f200_2D_b1'
+        )
+        self.assertIn(result5, 'Nup107')
 
 
 class TestSecondaryFilenameAndPathSetup(unittest.TestCase):
@@ -793,7 +796,7 @@ class TestSecondaryFilenameAndPathSetup(unittest.TestCase):
 
         self.assertIn(result1, '/localhome/joanna/PERPL_data/PERPL_relative_'
                       'positions/Nup107_SNAP_3D_GRROUPED_10nmZprec/filter_200'
-                      '_2019-11-07_15-49-55/relative_positions//filter_200_'
+                      '_2019-11-07_15-49-55/relative_positions/filter_200_'
                       '2019-11-07_16-49-55')
         self.assertIn(result2, 'Nup107_SNAP_3D_GRROUPED_10nmZprec_PERPL-relpos_200')
         self.assertIn(result3, 'Nup107_SNAP_3D_GRROUPED_10nmZprec_PERPL-relpos_200.0filter.csv')

@@ -667,14 +667,14 @@ def save_relative_positions(d_values, filterdist, dims, info, nns=0):
     if nns == 0:
         out_file_name = (
             info["results_dir"]
-            + r"//"
+            + r"/"
             + info["in_file_no_extension"]
             + f"_PERPL-relpos_{filterdist:.1f}filter.csv"
         )
     else:
         out_file_name = (
             info["results_dir"]
-            + r"//"
+            + r"/"
             + info["in_file_no_extension"]
             + f"_PERPL-relpos_{filterdist:.1f}filter_{nns}nn.csv"
         )
@@ -682,7 +682,7 @@ def save_relative_positions(d_values, filterdist, dims, info, nns=0):
     if info["short_names"]:
         out_file_name = (
             info["short_results_dir"]
-            + r"//"
+            + r"/"
             + info["short_filename_without_extension"]
             + f"_PERPL-relpos_{filterdist:.1f}filter.csv"
         )
@@ -912,9 +912,19 @@ def main(argv=None):
         except OSError:
             print("Unexpected error:", sys.exc_info()[0])
             sys.exit("Could not create directory for the results.")
+        try:
+            os.makedirs(info["short_relpos_plots_report_dir"])
+        except OSError:
+            print("Unexpected error:", sys.exc_info()[0])
+            sys.exit("Could not create directory for the results.")
     else:
         try:
             os.makedirs(info["results_dir"])
+        except OSError:
+            print("Unexpected error:", sys.exc_info()[0])
+            sys.exit("Could not create directory for the results.")
+        try:
+            os.makedirs(info["relpos_plots_report_dir"])
         except OSError:
             print("Unexpected error:", sys.exc_info()[0])
             sys.exit("Could not create directory for the results.")
