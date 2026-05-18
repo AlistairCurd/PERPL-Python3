@@ -61,8 +61,3 @@ relposdensity_TestData*
 # Notebooks with output #
 #########################
 *.ipynb
-
-# Output #
-##########
-*.pdf
-*.png
