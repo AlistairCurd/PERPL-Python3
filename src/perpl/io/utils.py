@@ -269,7 +269,7 @@ def secondary_filename_and_path_setup(info):
     short_filename_without_extension = (
         filename_without_extension[:5] + r"-s-" + filename_without_extension[-5:]
     )
-    short_parameter_str = "f_" + str(info["filter_dist"]) + "_"
+    short_parameter_str = "f_" + str(info["filter_dist"])
 
     short_results_dir = (
         path
