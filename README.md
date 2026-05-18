@@ -1,3 +1,6 @@
+[![License Apache](https://img.shields.io/pypi/l/perpl.svg?color=green)](https://github.com/AlistairCurd/PERPL-Python3/raw/main/license.md)
+[![PyPI](https://img.shields.io/pypi/v/perpl.svg?color=green)](https://pypi.org/project/perpl)
+[![Python Version](https://img.shields.io/pypi/pyversions/perpl.svg?color=green)](https://python.org)
 [![Python application](https://github.com/AlistairCurd/PERPL-Python3/actions/workflows/python-app.yml/badge.svg)](https://github.com/AlistairCurd/PERPL-Python3/actions/workflows/python-app.yml)
 
 # PERPL
@@ -19,7 +22,7 @@ Baird, M. A., Takagi, Y., Tiede, C., Sieben, C., Manley, S., Schlichthaerle, T.,
 Jungmann, R., Ries, J., Shroff, H., & Peckham, M.
 Nanoscale Pattern Extraction from Relative Positions of Sparse 3D Localizations.
 **Nano Letters** 2021, 21 (3), 1213–1220.
-https://doi.org/10.1021/acs.nanolett.0c03332
+https://doi.org/10.1021/acs.nanolett.0c03332.
 
 ### BibTeX
 
