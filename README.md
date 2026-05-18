@@ -53,15 +53,15 @@ Tested on Linux and Windows
 
 Input data should be a table of 2D or 3D data points in a CSV file, with one row per data point. The first columns must contain the X and Y coordinates (and Z for 3D data).
 
-* Collect 2D (`-d 2`) relative positions with filter distance (`-f`) 200:
+* Collect 2D relative positions (`-d 2`) with filter distance 200  (`-f 200`).
 
 `relpos -i INPUT_DATA.csv -d 2 -f 200`
 
-* Example analysis: radial symmetry modelling from the RPD. This uses output from the `relpos` command:
+* Example analysis: radial symmetry modelling from the RPD. This uses output from the `relpos` command.
 
 `rotsym2d -i RPD_DATA.csv`
 
-* Example analysis: modelling independent and repeated distances from the RPD. Uses output from the `relpos` command and a modelling config model file based on `perpl_models_config.yaml`.
+* Example analysis: modelling independent and repeated distances from the RPD. Uses output from the `relpos` command and a modelling config model file based on `perpl_models_config.yaml`. Fit histograms of the distances (`-fh`).
 
 `modeldistances -rf RPD_DATA.csv -cf CONFIG_FILE.yaml -fh`
 
