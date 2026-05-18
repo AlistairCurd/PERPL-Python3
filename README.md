@@ -61,39 +61,43 @@ Input data should be a table of 2D or 3D data points in a CSV file, with one row
 
 `rotsym2d -i RPD_DATA.csv`
 
-Output is generated in new subdirectories in the input directories.
+* Example analysis: modelling independent and repeated distances from the RPD. Uses output from the `relpos` command and a modelling config model file based on `perpl_models_config.yaml`.
 
-HTML reports are generated alongside the output files.
+`modeldistances -rf RPD_DATA.csv -cf CONFIG_FILE.yaml -fh`
+
+Output is generated at the input data (and config file) location.
+
+HTML reports are generated in the output for `relpos` and `rotsym2d`.
 
 ## Usage
 
-Run `relpos -h` or `rotsym2d -h` to see available command-line options.
+The following commands are available:
 
-The `-s` flag can be used to shorten output path if this becomes a problem in Windows.
+* `relpos`/relative_positions.py generates the set of 2D/3D relative positions, plots of distance histograms and an HTML report.
+
+  Here is one of the distance histograms for data from a nuclear pore complex protein (located around a ring of approx. 100 nm diameter):
+
+  ![Example](images/histogram_xy_separation_in_nm_300.png)
+
+* `rotsym2d`/rot_2d_symm_fit.py generates visualisations of fitted structures and fit results, and an HTML report containing detailed fit results and a comparison of the models for different orders of symmetry.
+
+  Here is a plot with the fits to model RPDs with different orders of symmetry:
+
+  ![Example](images/Histogram_with_Fitted_Curves_200.png)
+
+* `modeldistances`/run_distance_modelling.py generates a set of models to fit from copy of `perpl_models_config.yaml`, which the user may edit and rename as desired. It then generates visualisations of distance distibutions (histogram or kernel density estimate) and model fits, and a table comparing the different models.
+
+  Here is an example plot produced for one model fit to a kernel density estimate of a distance distribution:
+
+  ![Example](images/KDE_with_fit_and_components.svg)
+
+Run `COMMAND -h` to see available command-line options.
+
+The `-s` flag can be used to shorten the output path if this becomes a problem in Windows.
 
 Output is generated in a subdirectory to the directory containing the input data/RPD data.
 
-`relpos`/relative_positions.py generates the set of 2D/3D relative positions, plots of distance histograms and an HTML report.
-
-Here is one of the distance histograms for data from a nuclear pore complex protein (located around a ring of approx. 100 nm diameter):
-
-![Example](images/histogram_xy_separation_in_nm_300.png)
-
-`rotsym2d`/rot_2d_symm_fit.py generates visualisations of fitted structures and fit results, and an HTML report containing detailed fit results and comparisons of different orders of symmetry.
-
-Here is a plot with the fits to model RPDs with different orders of symmetry:
-
-![Example](images/Histogram_with_Fitted_Curves_200.png)
-
-### Core components
-
-- `relpos` (`relative_positions.py`): computes relative positions and generates distance histograms and reports.
-- `modelling/modelling_general.py`: contains the class and functions for building and fitting models.
-
-See `src/perpl/` for additional modules including structural model implementations.
-
-### Automation
-Scripts are provided in `dev/`, with README, for procedural data preparation and model generation, fitting and comparison.
+See `src/perpl/` for all modules including structural model implementations.
 
 ## Data
 
@@ -113,4 +117,5 @@ See `notebooks/` for interactive examples, developed from work reported [here](h
 Alistair Curd, Oliver Umney, Joanna Leng
 
 ## License
+
 Apache License 2.0 — see LICENSE file for details.
