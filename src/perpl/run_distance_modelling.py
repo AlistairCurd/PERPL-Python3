@@ -119,7 +119,7 @@ def model_the_data(
             and model_config["repeats"] is False
         ):
             print(f"Skipping {model_name}:"
-                  " contains no distances,"
+                  " contains no characteristic distances,"
                   " repeated localisations or background"
             )
             continue
