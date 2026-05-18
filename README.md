@@ -1,4 +1,4 @@
-[![License Apache](https://img.shields.io/pypi/l/perpl.svg?color=green)](https://github.com/AlistairCurd/PERPL-Python3/blob/dev/LICENSE)
+[![License Apache](https://img.shields.io/pypi/l/perpl.svg?color=green)](https://github.com/AlistairCurd/PERPL-Python3/blob/main/LICENSE)
 [![PyPI](https://img.shields.io/pypi/v/perpl.svg?color=green)](https://pypi.org/project/perpl)
 [![Python Version](https://img.shields.io/pypi/pyversions/perpl.svg?color=green)](https://python.org)
 [![Python application](https://github.com/AlistairCurd/PERPL-Python3/actions/workflows/python-app.yml/badge.svg)](https://github.com/AlistairCurd/PERPL-Python3/actions/workflows/python-app.yml)
