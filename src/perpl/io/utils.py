@@ -155,87 +155,88 @@ def primary_filename_and_path_setup(info):
             the function as they can be seen in info in other functions.
     """
 
+
+
+    # Collect parameters for directory name
+    parameter_str = (
+        "filter" + str(info["filter_dist"]) + "_" + str(info["dims"]) + "D"
+    )
+
+    # Include histogram bin-size
+    parameter_str = parameter_str + "_bin" + repr(info["bin_size"])
+
+    # Include colour channel information, if used
+    if info["colours_analysed"] == 1:
+        parameter_str = parameter_str + "_col" + repr(info["start_channel"])
+    if info["colours_analysed"] == 2:
+        parameter_str = (
+            parameter_str
+            + "_cols"
+            + repr(info["start_channel"])
+            + "to"
+            + repr(info["end_channel"])
+        )
+
+    # Include number of nearest neighbours, if used
+    if info["nns"] > 0:
+        parameter_str = parameter_str + f'_{info["nns"]}nns_'
+
+    # Set results directory
     path, in_file_no_path = os.path.split(info["in_file_and_path"])
 
     index_of_dot = in_file_no_path.index(".")
     filename_without_extension = in_file_no_path[:index_of_dot]
 
-    # Put parameters in directory name
-    parameter_str = (
-        "filter_" + str(info["filter_dist"]) + "_" + str(info["dims"]) + "D_"
-    )
-
     results_dir = (
         path
-        + r"/PERPL_"
-        + info["prog"]
-        + r"/"
-        + filename_without_extension
-        + r"/"
+        + r"/PERPL"
+        + r"/rel_posns_"
         + parameter_str
     )
 
-    # Include colour channel information, if used
-    if info["colours_analysed"] == 1:
-        results_dir = results_dir + "col" + repr(info["start_channel"]) + "_"
-    if info["colours_analysed"] == 2:
-        results_dir = (
-            results_dir
-            + "cols"
-            + repr(info["start_channel"])
-            + "to"
-            + repr(info["end_channel"])
-            + "_"
-        )
-
-    # Include number of nearest neighbours, if used
-    if info["nns"] > 0:
-        results_dir = results_dir + f'{info["nns"]}nn_'
-
-    # Include histogram bin-size
-    results_dir = results_dir + "bin" + repr(info["bin_size"]) + "_"
-
     # Include start time
-    results_dir = results_dir + info["start"]
+    results_dir = results_dir + "_" + info["start"]
 
-    # Set up short directory name to save space
+    ## Set up short directory name to save space
     short_filename_without_extension = (
-        filename_without_extension[:5] + r"-s-" + filename_without_extension[-5:]
+        filename_without_extension[:6]
     )
 
-    # Include some parameters
+    # Include some parameters for short name
     short_parameter_str = (
-        "f_" + str(info["filter_dist"]) + "_" + str(info["dims"]) + "D_"
+        "f" + str(info["filter_dist"]) + "_" + str(info["dims"]) + "D"
     )
+    short_parameter_str = short_parameter_str + "_b" + repr(info["bin_size"])
 
-    short_results_dir = (
-        path
-        + r"/PERPL_"
-        + info["prog_short_name"]
-        + r"/"
-        + short_filename_without_extension
-        + r"/"
-        + short_parameter_str
-    )
     if info["colours_analysed"] == 1:
-        short_results_dir = short_results_dir + "c" + repr(info["start_channel"]) + "_"
+        short_parameter_str = short_parameter_str + "_c" + repr(info["start_channel"])
     if info["colours_analysed"] == 2:
-        short_results_dir = (
-            short_results_dir
-            + "c"
+        short_parameter_str = (
+            short_parameter_str
+            + "_c"
             + repr(info["start_channel"])
             + "-"
             + repr(info["end_channel"])
-            + "_"
         )
-    short_results_dir = short_results_dir + "b" + repr(info["bin_size"]) + "_"
-    short_results_dir = short_results_dir + info["start"]
+
+    if info["nns"] > 0:
+        short_parameter_str = short_parameter_str + f'_{info["nns"]}n'
+
+    short_results_dir = (
+        path
+        + r"/PERPL"
+        + r"/rel_posns_"
+        + short_parameter_str
+    )
 
     info["results_dir"] = results_dir
     info["in_file_no_extension"] = filename_without_extension
+    info["relpos_plots_report_dir"] = results_dir + "/histograms_and_report"
+
     info["in_file_no_path"] = in_file_no_path
     info["short_results_dir"] = short_results_dir
     info["short_filename_without_extension"] = short_filename_without_extension
+    info["short_relpos_plots_report_dir"] = short_results_dir + "/histograms_and_report"
 
 
 def secondary_filename_and_path_setup(info):
@@ -259,16 +260,16 @@ def secondary_filename_and_path_setup(info):
     index_of_dot = in_file_no_path.index(".")
     filename_without_extension = in_file_no_path[:index_of_dot]
 
-    parameter_str = "filter_" + str(info["filter_dist"]) + "_"
+    parameter_str = "filter_" + str(info["filter_dist"])
 
     results_dir = (
-        path + r"/" + info["prog"] + r"/" + r"/" + parameter_str + info["start"]
+        path + r"/" + info["prog"] + r"/" + parameter_str + "_" + info["start"]
     )
 
     short_filename_without_extension = (
         filename_without_extension[:5] + r"-s-" + filename_without_extension[-5:]
     )
-    short_parameter_str = "f_" + str(info["filter_dist"]) + "_"
+    short_parameter_str = "f_" + str(info["filter_dist"])
 
     short_results_dir = (
         path
@@ -278,7 +279,7 @@ def secondary_filename_and_path_setup(info):
         + short_filename_without_extension
         + r"/"
         + short_parameter_str
-        + info["start"]
+        + "_" + info["start"]
     )
 
     info["results_dir"] = results_dir
