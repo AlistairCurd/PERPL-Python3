@@ -582,7 +582,7 @@ def getdistances_two_colours(
 def get_vectors(d_values, dims):
     """Calculates the distances in 2D and 3D for relative position vectors.
     This function saves both 2D and 3D data.
-    NOTE: THIS FUNCTION HAS AN UNHELPFUL FILE NAME AT THE MOMENT.
+    NOTE: THIS FUNCTION HAS AN UNHELPFUL NAME AT THE MOMENT.
 
     Args:
         d_values: numpy array of localisations with distances between the
