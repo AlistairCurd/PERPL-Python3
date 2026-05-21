@@ -2,7 +2,6 @@ import copy
 import datetime
 from itertools import product
 import os
-import warnings
 
 import yaml
 
@@ -59,11 +58,19 @@ def gen_configs(config_file, suffix=None):
     params_upper = config["params_upper"]
 
     if type(params_initial["characteristic_distance_1"]) is list:
-        assert len(params_initial["characteristic_distance_1"]) == len(charac_dists)
-        warnings.warn(
-            "Multiple characteristic distances for first peak "
+        if len(params_initial["characteristic_distance_1"]) != len(charac_dists):
+            raise ValueError(
+                "There is a list of distances for the first peak."
+                " There must be the same number of entries in this list"
+                " as in charac_dist in the config file"
+                " (types of relationship between characteristic distances)."
+            )
+        print(
+            "Multiple characteristic distances present for first peak"
             ". Therefore, assuming peak distances "
-            "are for each type of characteristic distance."
+            "are given respectively for each option given for charac_dist"
+            " in the config file (types of relationship between"
+            " characteristic distances)."
         )
         multiple_charac_dists = True
     else:

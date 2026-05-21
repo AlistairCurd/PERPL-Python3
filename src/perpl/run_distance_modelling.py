@@ -2,6 +2,7 @@ import argparse
 import datetime
 from itertools import product
 import os
+import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -116,8 +117,6 @@ def model_the_data(
                 " repeated localisations or background"
         )
         return
-
-    # print("Model name ", model_name) Debug
 
     perpl_model.fit_to_experiment(
         x_expt,
@@ -356,7 +355,11 @@ def main(argv=None):
     distances = np.sort(distances)[::2]
 
     # Generate models to use and load in
-    models_folder = gen_configs(config_file, timestamp)
+    try:
+        models_folder = gen_configs(config_file, timestamp)
+    except ValueError as e:
+        print(f"Error {e}")
+        sys.exit(1)
     model_files = os.listdir(models_folder)
     print(f"{len(model_files)} models are being tested")
 
@@ -400,7 +403,7 @@ def main(argv=None):
             output_modelling_folder, results_file
         )
 
-        print(f"Output folder: {out_folder}")
+        print(f"Output folder: {out_folder_path}")
 
         # Initialise results
         results = init_fit_results()
@@ -413,6 +416,9 @@ def main(argv=None):
             bin_or_kernel_list = kde_kernel_size_lst
             bin_size = None
 
+
+        count = 0
+        
         for bin_or_kernel, fitlength in product(
                 bin_or_kernel_list,
                 fitlength_lst,
@@ -439,4 +445,10 @@ def main(argv=None):
                     results,
                 )
 
+                if (count + 1) % 10 == 0 and count > 0:
+                    print(f"{count + 1} models run out of {len(model_files)}...")
+                count += 1
+
         save_results_table(results_path, results)
+
+
