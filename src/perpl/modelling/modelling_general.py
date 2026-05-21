@@ -437,6 +437,11 @@ class PERPLModel:
             # can't put y /= x**(self.dimnension-1)
             # as y may be integers so get error
             y = y / x ** (self.dimension - 1)
+        
+        # Initialise some parameters
+        self.popt_at_bound = None
+        self.large_uncertainty = None
+
         try:
             res = least_squares(
                 self.error_fn,
@@ -683,7 +688,6 @@ class PERPLModel:
                 axes.plot(calc_points, model_background, label="Background", color="C1")
                 if (model_background < 0).any():
                     axes.set_title("BG. goes below zero")
-                    assert self.bgbelowzero
 
             # Plot characteristic distance term
             if model_characteristic_distance_terms is not None:
@@ -773,7 +777,6 @@ class PERPLModel:
             axes.plot(x, background, label="Background", color="C0")
             if (background < 0).any():
                 axes.set_title("BG. goes below zero")
-                assert self.bgbelowzero
 
         # Plot characteristic distance term
         if characteristic_distance_terms is not None:
