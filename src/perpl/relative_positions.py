@@ -212,18 +212,8 @@ def get_inputs(info):
 
 
 def read_data_in(info):
-    """Reads data from the input file thats filename is provided as an argument
-       to this program (relative_positions.py) or from the command line while
-       this program executes. Also extracts unful substrings from the input
-       filename that will be used to outpur results files and puts them in the
-       info dictionary. These are:
-          results_dir (str): All output files are saved in a directory at the same
-                             level in the directory structure as the input data and with the
-                             name that consists of the input file and a date stamp.
-          in_file_no_path (str): The input file name with no path.
-          filename_without_extension (str): Input file name wihtout the path and
-                            file extension. It is used to create a unique name of the output
-                            data file and directory.
+    """Reads localisation data from a file. Also modifies the input dictionary
+    with info for later use.
 
     Args:
         info (dict): A python dictionary containing a collection of useful parameters
@@ -231,7 +221,7 @@ def read_data_in(info):
             This dictionary is modified to contain information about the data read
             during the function.
     Returns:
-               xyz_values (numpy array): A numpy array of the x, y (and z) localisations.
+        xyz_values (numpy array): A numpy array of the x, y (and z) localisations.
     """
 
     in_file = info["in_file_and_path"]
@@ -592,7 +582,7 @@ def getdistances_two_colours(
 def get_vectors(d_values, dims):
     """Calculates the distances in 2D and 3D for relative position vectors.
     This function saves both 2D and 3D data.
-    NOTE: THIS FUNCTION HAS AN UNHELPFUL FILE NAME AT THE MOMENT.
+    NOTE: THIS FUNCTION HAS AN UNHELPFUL NAME AT THE MOMENT.
 
     Args:
         d_values: numpy array of localisations with distances between the
