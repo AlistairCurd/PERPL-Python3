@@ -75,162 +75,155 @@ def get_experimental_rpd(distances, rpd_type, fitlength,
 def model_the_data(
     distances,  # 1D numpy array of distances
     rpd_type,  # "distance_histogram" or "distance_kde"
-    models,
-    model_configs,
+    model_file,
+    model_config,
     kde_kernel_size,
     bin_size,
     fitlength,
     output_folder,
     results,
 ):
-    # for each model...
-    for i, model in enumerate(models):
+    model_name = model_file.rstrip(".yaml")
 
-        if i == 0:
-            print(f"Output folder: {output_folder}")
+    x_expt, y_expt = get_experimental_rpd(
+        distances, rpd_type, fitlength,
+        bin_size, kde_kernel_size, model_config,
+    )
 
-        model_name = model.rstrip(".yaml")
-        model_config = model_configs[i]
+    perpl_model = PERPLModel(
+        dimension=model_config["dimension"],
+        background=model_config["background"],
+        n_peaks=model_config["n_peaks"],
+        peak_type=model_config["peak_type"],
+        characteristic_distance=model_config["characteristic_distance"],
+        characteristic_distance_ratio=model_config["characteristic_distance_ratio"],
+        repeats=model_config["repeats"],
+        offset=model_config["offset"],
+        normalise=model_config["normalise"],
+        params_initial=model_config["params_initial"],
+        params_lower=model_config["params_lower"],
+        params_upper=model_config["params_upper"],
+        name=model_name,
+    )
 
-        x_expt, y_expt = get_experimental_rpd(
-            distances, rpd_type, fitlength,
-            bin_size, kde_kernel_size, model_config,
+    if (
+        model_config["background"] is None
+        and model_config["n_peaks"] == 0
+        and model_config["repeats"] is False
+    ):
+        print(f"Skipping {model_name}:"
+                " contains no characteristic distances,"
+                " repeated localisations or background"
+        )
+        return
+
+    # print("Model name ", model_name) Debug
+
+    perpl_model.fit_to_experiment(
+        x_expt,
+        y_expt,
+    )
+
+    if rpd_type == "distance_histogram":
+        # plot distance hist and fit
+        bin_centres = x_expt
+        bin_width = bin_centres[1] - bin_centres[0]
+        bin_edges = x_expt - bin_width / 2
+        bin_edges = np.append(bin_edges, bin_edges[-1] + bin_width)
+
+        fig = perpl_model.plot_distance_hist_and_fit(
+            distances,
+            bin_edges,
+            bin_centres,
+            fitlength,
+        )
+        figname = os.path.join(
+            output_folder,
+            (
+                f"{model_name}_fitlength_{fitlength}_binsize_{bin_size}_histandfit.svg"
+            ),
         )
 
-        perpl_model = PERPLModel(
-            dimension=model_config["dimension"],
-            background=model_config["background"],
-            n_peaks=model_config["n_peaks"],
-            peak_type=model_config["peak_type"],
-            characteristic_distance=model_config["characteristic_distance"],
-            characteristic_distance_ratio=model_config["characteristic_distance_ratio"],
-            repeats=model_config["repeats"],
-            offset=model_config["offset"],
-            normalise=model_config["normalise"],
-            params_initial=model_config["params_initial"],
-            params_lower=model_config["params_lower"],
-            params_upper=model_config["params_upper"],
-            name=model_name,
+    elif rpd_type == "distance_kde":
+        # plot kde and fit
+        fig = perpl_model.plot_distance_kde_and_fit(x_expt, y_expt, fitlength)
+        figname = os.path.join(
+            output_folder,
+            (
+                f"{model_name}_fitlength_{fitlength}_kdeandfit.svg"
+            ),
         )
 
-        if (
-            model_config["background"] is None
-            and model_config["n_peaks"] == 0
-            and model_config["repeats"] is False
-        ):
-            print(f"Skipping {model_name}:"
-                  " contains no characteristic distances,"
-                  " repeated localisations or background"
-            )
-            continue
+    if fig is not None:
+        fig.savefig(figname)
+        plt.close(fig)
 
-        # print("Model name ", model_name) Debug
-
-        perpl_model.fit_to_experiment(
-            x_expt,
-            y_expt,
+    # plot model components
+    fig2 = perpl_model.plot_model_components(fitlength)
+    if rpd_type == "distance_histogram":
+        figname = os.path.join(
+            output_folder,
+            (
+                f"{model_name}_fitlength_{fitlength}_binsize_{bin_size}_modelcomponents.svg"
+            ),
         )
+    elif rpd_type == "distance_kde":
+        figname = os.path.join(
+            output_folder,
+            (
+                f"{model_name}_fitlength_{fitlength}_modelcomponents.svg"
+            ),
+        )
+    if fig2 is not None:
+        fig2.savefig(figname)
+        plt.close(fig2)
 
-        if rpd_type == "distance_histogram":
-            # plot distance hist and fit
-            bin_centres = x_expt
-            bin_width = bin_centres[1] - bin_centres[0]
-            bin_edges = x_expt - bin_width / 2
-            bin_edges = np.append(bin_edges, bin_edges[-1] + bin_width)
+    # save model params and err
+    if rpd_type == "distance_histogram":
+        opt_param_path = os.path.join(
+            output_folder,
+            f"{model_name}_fitlength_{fitlength}_binsize_{bin_size}_optparams.txt",
+        )
+    elif rpd_type == "distance_kde":
+        opt_param_path = os.path.join(
+            output_folder,
+            f"{model_name}_fitlength_{fitlength}_optparams.txt",
+        )
+    with open(opt_param_path, "w") as f:
+        f.write("Optimal params +- Error\n")
+        f.write("-----------------------\n")
+        if perpl_model.params_optimised is None:
+            f.write("Model failed to fit")
+        else:
+            for row in zip(
+                perpl_model.param_names,
+                perpl_model.params_optimised,
+                perpl_model.params_err,
+            ):
+                f.write(f"{row[0]}: {row[1]} +- {row[2]}\n")
 
-            fig = perpl_model.plot_distance_hist_and_fit(
-                distances,
-                bin_edges,
-                bin_centres,
-                fitlength,
-            )
-            figname = os.path.join(
-                output_folder,
-                (
-                    f"{model_name}_fitlength_{fitlength}_binsize_{bin_size}_histandfit.svg"
-                ),
-            )
-
-        elif rpd_type == "distance_kde":
-            # plot kde and fit
-            fig = perpl_model.plot_distance_kde_and_fit(x_expt, y_expt, fitlength)
-            figname = os.path.join(
-                output_folder,
-                (
-                    f"{model_name}_fitlength_{fitlength}_kdeandfit.svg"
-                ),
-            )
-
-        if fig is not None:
-            fig.savefig(figname)
-            plt.close(fig)
-
-        # plot model components
-        fig2 = perpl_model.plot_model_components(fitlength)
-        if rpd_type == "distance_histogram":
-            figname = os.path.join(
-                output_folder,
-                (
-                    f"{model_name}_fitlength_{fitlength}_binsize_{bin_size}_modelcomponents.svg"
-                ),
-            )
-        elif rpd_type == "distance_kde":
-            figname = os.path.join(
-                output_folder,
-                (
-                    f"{model_name}_fitlength_{fitlength}_modelcomponents.svg"
-                ),
-            )
-        if fig2 is not None:
-            fig2.savefig(figname)
-            plt.close(fig2)
-
-        # save model params and err
-        if rpd_type == "distance_histogram":
-            opt_param_path = os.path.join(
-                output_folder,
-                f"{model_name}_fitlength_{fitlength}_binsize_{bin_size}_optparams.txt",
-            )
-        elif rpd_type == "distance_kde":
-            opt_param_path = os.path.join(
-                output_folder,
-                f"{model_name}_fitlength_{fitlength}_optparams.txt",
-            )
-        with open(opt_param_path, "w") as f:
-            f.write("Optimal params +- Error\n")
-            f.write("-----------------------\n")
-            if perpl_model.params_optimised is None:
-                f.write("Model failed to fit")
-            else:
-                for row in zip(
-                    perpl_model.param_names,
-                    perpl_model.params_optimised,
-                    perpl_model.params_err,
-                ):
-                    f.write(f"{row[0]}: {row[1]} +- {row[2]}\n")
-
-        # save ssr, aic, aiccorr, setup
-        results["ssrs"].append(perpl_model.sum_of_squares_error)
-        results["aics"].append(perpl_model.aic)
-        results["aiccorrs"].append(perpl_model.aic_corrected)
-        if rpd_type == "distance_histogram":
-            results["setups"].append(
-                f"{model_name}_fitlength_{fitlength}_binsize_{bin_size}"
-            )
-        elif rpd_type == "distance_kde":
-            results["setups"].append(
-                f"{model_name}_fitlength_{fitlength}"
-            )
-        results["fitlengths"].append(fitlength)
-        results["bgbelowzeros"].append(perpl_model.bgbelowzero)
-        results["nparams"].append(perpl_model.n_params)
-        results["ndatapoints"].append(len(x_expt))
-        results["ndistances"].append(len(distances))
-        results["popt_at_bounds"].append(perpl_model.popt_at_bound)
-        results["large_uncertainties"].append(perpl_model.large_uncertainty)
+    # save ssr, aic, aiccorr, setup
+    results["ssrs"].append(perpl_model.sum_of_squares_error)
+    results["aics"].append(perpl_model.aic)
+    results["aiccorrs"].append(perpl_model.aic_corrected)
+    if rpd_type == "distance_histogram":
+        results["setups"].append(
+            f"{model_name}_fitlength_{fitlength}_binsize_{bin_size}"
+        )
+    elif rpd_type == "distance_kde":
+        results["setups"].append(
+            f"{model_name}_fitlength_{fitlength}"
+        )
+    results["fitlengths"].append(fitlength)
+    results["bgbelowzeros"].append(perpl_model.bgbelowzero)
+    results["nparams"].append(perpl_model.n_params)
+    results["ndatapoints"].append(len(x_expt))
+    results["ndistances"].append(len(distances))
+    results["popt_at_bounds"].append(perpl_model.popt_at_bound)
+    results["large_uncertainties"].append(perpl_model.large_uncertainty)
 
 
-def make_results():
+def init_fit_results():
     return {k: [] for k in [
         "ssrs","aics","aiccorrs","setups","fitlengths",
         "bgbelowzeros","nparams","ndatapoints","ndistances",
@@ -238,7 +231,7 @@ def make_results():
     ]}
 
 
-def save_results(path, results):
+def save_results_table(path, results):
     rows = zip(
         results["setups"],
         results["aiccorrs"],
@@ -317,7 +310,7 @@ def main(argv=None):
         parser.error("Must specify at least one of"
                      " --fh, --fkde or -nofit"
         )
-
+    
     print(f"Fit hists: {args.fit_histograms}")
     print(f"Fit KDEs: {args.fit_kdes}")
 
@@ -325,17 +318,25 @@ def main(argv=None):
 
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-    # Generate models to use
-    models_folder = gen_configs(config_file, timestamp)
+    # Collect RPD types to run
+    run_modes = []
+    
+    if args.fit_histograms:
+        run_modes.append("distance_histogram")
+    if args.fit_kdes:
+        run_modes.append("distance_kde")
 
-    # Collect data pre-processwing settings
+    # Collect data pre-processing settings
     with open(config_file, "r") as ymlfile:
         config = yaml.safe_load(ymlfile)
     model_direction = config["model_direction"]
     limits = config["limits"]
-    bin_size_lst = config["bin_sizes"]
-    kde_kernel_size_lst = config["kde_kernel_size"]
     fitlength_lst = config["fitlength"]
+
+    if "distance_histogram" in run_modes:
+        bin_size_lst = config["bin_sizes"]
+    if "distance_kde" in run_modes:
+        kde_kernel_size_lst = config["kde_kernel_size"]
 
     # load in relative positions and configuration
     relpos = pd.read_csv(args.rel_posns_file)
@@ -354,19 +355,20 @@ def main(argv=None):
     distances = abs(distances)
     distances = np.sort(distances)[::2]
 
-    # load in models
+    # Generate models to use and load in
+    models_folder = gen_configs(config_file, timestamp)
     model_files = os.listdir(models_folder)
     print(f"{len(model_files)} models are being tested")
 
     model_configs = []
-    for model in model_files:
+    for model_file in model_files:
         with open(
-            os.path.join(models_folder, model), "r"
+            os.path.join(models_folder, model_file), "r"
         ) as ymlfile:
             config = yaml.safe_load(ymlfile)
             model_configs.append(config)
 
-    # Stop if fitting not required
+    # Stop if fitting not required, only model config files
     if args.no_fitting:
         return
 
@@ -377,86 +379,64 @@ def main(argv=None):
     output_modelling_folder = os.path.join(
         parent, f"modelling_output_{model_direction}_{timestamp}"
     )
-    if not os.path.exists(output_modelling_folder):
-        os.makedirs(output_modelling_folder)
+    os.makedirs(output_modelling_folder)
 
     # +++ FIT...
 
-    # .... histograms
+    for rpd_type in run_modes:
 
-    if args.fit_histograms:
-        
-        # Create output folder
-        output_folder_hists = os.path.join(output_modelling_folder, "histogram_fits")
-        if not os.path.exists(output_folder_hists):
-            os.makedirs(output_folder_hists)
-
-        results = make_results()
-
-        for preproc_param in list(
-            product(
-                bin_size_lst,
-                fitlength_lst,
-            )
-        ):
-            bin_size, fitlength = preproc_param
-
-            model_the_data(
-                distances,
-                "distance_histogram",  # rpd_type
-                model_files,
-                model_configs,
-                None,  # kde_kernel_size
-                bin_size,
-                fitlength,
-                output_folder_hists,
-                results,
-            )
-
-        output_path = os.path.join(
-            output_modelling_folder, "results_histograms.csv"
+        # Create output locations;
+        if rpd_type == "distance_histogram":
+            out_folder = "histogram_fits"
+            results_file = "results_histograms.csv"
+        elif rpd_type == "distance_kde":
+            out_folder = "kde_fits"
+            results_file = "results_kde.csv"
+        out_folder_path = os.path.join(
+            output_modelling_folder, out_folder
+        )
+        os.makedirs(out_folder_path)
+        results_path = os.path.join(
+            output_modelling_folder, results_file
         )
 
-        save_results(output_path, results)
+        print(f"Output folder: {out_folder}")
 
-    # ... KDEs
-    if args.fit_kdes:
-        
-        # Create output folder
-        output_folder_kdes = os.path.join(output_modelling_folder, "kde_fits")
-        if not os.path.exists(output_folder_kdes):
-            os.makedirs(output_folder_kdes)
+        # Initialise results
+        results = init_fit_results()
 
-        results = make_results()
+        # Iterate through models
+        if rpd_type == "distance_histogram":
+            bin_or_kernel_list = bin_size_lst
+            kde_kernel_size = None
+        else:
+            bin_or_kernel_list = kde_kernel_size_lst
+            bin_size = None
 
-        for preproc_param in list(
-            product(
-                kde_kernel_size_lst,
+        for bin_or_kernel, fitlength in product(
+                bin_or_kernel_list,
                 fitlength_lst,
-            )
         ):
-            kde_kernel_size, fitlength = preproc_param
+            if rpd_type == "distance_histogram":
+                bin_size = bin_or_kernel
+                kde_kernel_size = None
+            else:
+                bin_size = None
+                kde_kernel_size = bin_or_kernel
+            
+            for model_file, model_config in zip(
+                model_files, model_configs
+            ):
+                model_the_data(
+                    distances,
+                    rpd_type,
+                    model_file,
+                    model_config,
+                    kde_kernel_size,
+                    bin_size,
+                    fitlength,
+                    out_folder_path,
+                    results,
+                )
 
-            print(f"kde_kernel, fitlength: {kde_kernel_size}, {fitlength}")
-
-            model_the_data(
-                distances,
-                "distance_kde",  # rpd_type
-                model_files,
-                model_configs,
-                kde_kernel_size,
-                None,  # bin_size
-                fitlength,
-                output_folder_kdes,
-                results,
-            )
-
-        output_path = os.path.join(
-            output_modelling_folder, "results_kdes.csv"
-        )
-
-        save_results(output_path, results)
-
-
-if __name__ == "__main__":
-    main()
+        save_results_table(results_path, results)
