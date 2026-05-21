@@ -15,7 +15,7 @@ model_direction: xx
 ## 2 for distances across a plane
 ## Not yet implemented for KDE: 3 for distances in a 3D volume
 ##
-## Used to calculated different KDE kernels for differnet dimensionality
+## Used to calculate different KDE kernels for different dimensionality
 dimension: [1]
 
 
@@ -36,7 +36,7 @@ limits:
 
 # FITTED RPD PARAMETERS
 # Do not compare information criteria between different
-# bin_size, loc_precision or fitlwength values
+# bin_size, kde_kernel_size or fitlength values
 
 # Bin size for histogram analysis (not used for KDE)
 bin_sizes: [5]  # e.g. [1, 2, 5]
