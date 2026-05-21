@@ -82,7 +82,6 @@ def model_the_data(
     bin_size,
     fitlength,
     output_folder,
-    results,
 ):
     model_name = model_file.rstrip(".yaml")
 
@@ -116,7 +115,7 @@ def model_the_data(
                 " contains no characteristic distances,"
                 " repeated localisations or background"
         )
-        return
+        return None
 
     perpl_model.fit_to_experiment(
         x_expt,
@@ -201,55 +200,7 @@ def model_the_data(
             ):
                 f.write(f"{row[0]}: {row[1]} +- {row[2]}\n")
 
-    # save ssr, aic, aiccorr, setup
-    results["ssrs"].append(perpl_model.sum_of_squares_error)
-    results["aics"].append(perpl_model.aic)
-    results["aiccorrs"].append(perpl_model.aic_corrected)
-    if rpd_type == "distance_histogram":
-        results["setups"].append(
-            f"{model_name}_fitlength_{fitlength}_binsize_{bin_size}"
-        )
-    elif rpd_type == "distance_kde":
-        results["setups"].append(
-            f"{model_name}_fitlength_{fitlength}"
-        )
-    results["fitlengths"].append(fitlength)
-    results["bgbelowzeros"].append(perpl_model.bgbelowzero)
-    results["nparams"].append(perpl_model.n_params)
-    results["ndatapoints"].append(len(x_expt))
-    results["ndistances"].append(len(distances))
-    results["popt_at_bounds"].append(perpl_model.popt_at_bound)
-    results["large_uncertainties"].append(perpl_model.large_uncertainty)
-
-
-def init_fit_results():
-    return {k: [] for k in [
-        "ssrs","aics","aiccorrs","setups","fitlengths",
-        "bgbelowzeros","nparams","ndatapoints","ndistances",
-        "popt_at_bounds","large_uncertainties"
-    ]}
-
-
-def save_results_table(path, results):
-    rows = zip(
-        results["setups"],
-        results["aiccorrs"],
-        results["aics"],
-        results["ssrs"],
-        results["fitlengths"],
-        results["bgbelowzeros"],
-        results["nparams"],
-        results["ndatapoints"],
-        results["ndistances"],
-        results["popt_at_bounds"],
-        results["large_uncertainties"],
-    )
-
-    with open(path, "w") as f:
-        f.write("Model,AICcorr,AIC,SSR,Fitlength,BGbelowzero,Nparams,"
-                "Ndatapoints,Ndistances,POptAtBounds,LargeUncertainty\n")
-        for row in rows:
-            f.write(",".join(map(str, row)) + "\n")
+    return x_expt, y_expt, perpl_model
 
 
 def main(argv=None):
@@ -384,8 +335,7 @@ def main(argv=None):
     )
     os.makedirs(output_modelling_folder)
 
-    # +++ FIT...
-
+    # For histoagrmmed and kde data separately
     for rpd_type in run_modes:
 
         # Create output locations;
@@ -406,7 +356,11 @@ def main(argv=None):
         print(f"Output folder: {out_folder_path}")
 
         # Initialise results
-        results = init_fit_results()
+        if rpd_type == "distance_histogram":
+            x_kernel_col = "Bin width"
+        else:
+            x_kernel_col = "KDE kernel width"
+        model_results = []
 
         # Iterate through models
         if rpd_type == "distance_histogram":
@@ -416,9 +370,8 @@ def main(argv=None):
             bin_or_kernel_list = kde_kernel_size_lst
             bin_size = None
 
-
         count = 0
-        
+
         for bin_or_kernel, fitlength in product(
                 bin_or_kernel_list,
                 fitlength_lst,
@@ -433,7 +386,7 @@ def main(argv=None):
             for model_file, model_config in zip(
                 model_files, model_configs
             ):
-                model_the_data(
+                model_out = model_the_data(
                     distances,
                     rpd_type,
                     model_file,
@@ -441,14 +394,35 @@ def main(argv=None):
                     kde_kernel_size,
                     bin_size,
                     fitlength,
-                    out_folder_path,
-                    results,
+                    out_folder_path
                 )
+                if model_out is None:
+                    continue
+                x_expt, y_expt, fitted_model = model_out
+            
+                model_results.append({
+                    "Name": model_file.rstrip(".yaml"),
+                    "Fit length": fitlength,
+                    x_kernel_col: bin_or_kernel,
+                    "N Peaks": model_config["n_peaks"],
+                    "Peak ratios": model_config["peak_type"],
+                    "Model distance ratios": model_config["characteristic_distance"],
+                    "Repeated localisations": model_config["repeats"],
+                    "Background model": model_config["background"],
+                    "AICc": fitted_model.aic_corrected,
+                    "AIC": fitted_model.aic,
+                    "SSR": fitted_model.sum_of_squares_error,
+                    "N params": fitted_model.n_params,
+                    "N calculation points": len(x_expt),
+                    "N measured distances": len(distances),
+                    "Check: bg < 0": fitted_model.bgbelowzero, 
+                    "Check: params reached limits": fitted_model.popt_at_bound,
+                    "Check: large param uncertainty": fitted_model.large_uncertainty
+                })
 
                 if (count + 1) % 10 == 0 and count > 0:
                     print(f"{count + 1} models run out of {len(model_files)}...")
                 count += 1
 
-        save_results_table(results_path, results)
-
-
+        results_df = pd.DataFrame(model_results)
+        results_df.to_csv(results_path, index=None)
