@@ -85,7 +85,7 @@ peak_type: [variable]  # variable, fixed_ratio
 ## "multiple_fixed": Distances are at independent (multiple) distances
 
 # TODO: Change these terms
-charac_dist: [one]  # one, multiple_ratio, multiple_fixed
+charac_dists: [one]  # one, multiple_ratio, multiple_fixed
 
 
 # Ratio between characteristic distances
