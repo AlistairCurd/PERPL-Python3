@@ -47,7 +47,8 @@ test = [
 
 dev = [
     "perpl[test]",
-    "ruff~=0.4"
+    "ruff~=0.4",
+    "pre-commit~=3.7"
 ]
 
 [tool.pytest.ini_options]
