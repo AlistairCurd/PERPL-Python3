@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.19.2
+#       jupytext_version: 1.19.3
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -24,9 +24,10 @@
 # ## Imports
 
 import numpy as np
-import pandas as pd
+# import pandas as pd
 import matplotlib.pyplot as plt
-from perpl.modelling import modelling_general, zdisk_modelling, zdisk_plots
+from perpl.modelling import zdisk_modelling, zdisk_plots
+# from perpl.modelling import modelling_general
 from perpl.io import plotting
 
 # ## Set average estimated localisation precision for Affimer and PALM data.

@@ -24,16 +24,17 @@ specific language governing permissions and limitations under the License.
 """
 
 import time
-from scipy.ndimage.filters import gaussian_filter
-from scipy.io import loadmat
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
+from scipy.io import loadmat
+from scipy.ndimage.filters import gaussian_filter
 
 import perpl.modelling.modelling_general as models
-from perpl.modelling.modelling_general import ModelWithFitSettings
-from relative_positions import getdistances
 from perpl.modelling.background_models import pair_correlation_disk
+from perpl.modelling.modelling_general import ModelWithFitSettings
+from perpl.relative_positions import getdistances
 
 
 def get_input_data(
@@ -1030,7 +1031,7 @@ def make_fit_results_table_variable_vertices_model_9fold_no_bg(
     # Populate the tables
     max_fit_distance = len(distance_histograms_list[0])
 
-    for i, histogram in enumerate(distance_histograms_list):
+    for i, _ in enumerate(distance_histograms_list):
         # Do the fit
         (params_optimised, params_covar, params_1sd_error) = (
             models.fit_model_to_experiment(
@@ -1158,7 +1159,8 @@ def main():
     np.save(outfile_dist_hist_list, distance_histograms_list)
 
     # Choose model
-    # model_with_info = set_up_variable_vertices_model_9fold_internal_bg_with_fit_settings()
+    # model_with_info = \
+    #   set_up_variable_vertices_model_9fold_internal_bg_with_fit_settings()
     model_with_info = set_up_variable_vertices_model_9fold_no_bg_with_fit_settings()
 
     # Could modify the fit parameter settings here
@@ -1217,7 +1219,8 @@ def main():
         )
     )
     #     estimated_params_df.to_csv(
-    #         'C:/Temp/Centriole/5nm_precision_distance_histograms_normalised_parameter_estimates.csv',
+    #         "C:/Temp/Centriole/"
+    #         + "5nm_precision_distance_histograms_normalised_parameter_estimates.csv",
     #         index=False
     #         )
 
@@ -1258,14 +1261,14 @@ def main():
         #                       model_with_info.vector_input_model)
 
         # For model without internal background
-        stdev = plot_95_ci(
-            axes,
-            x_values,
-            model_with_info.model_rpd,
-            params_optimised,
-            params_covar,
-            model_with_info.vector_input_model,
-        )
+        # stdev = plot_95_ci(
+        #    axes,
+        #    x_values,
+        #    model_with_info.model_rpd,
+        #    params_optimised,
+        #    params_covar,
+        #    model_with_info.vector_input_model,
+        #)
         axes.set_title(
             "Centriole "
             + repr(i)
@@ -1309,14 +1312,14 @@ def main():
     fitted_curve_values = model_with_info.model_rpd(x_values, *params_optimised)
     axes.plot(x_values, fitted_curve_values, color="xkcd:red", lw=0.5)
 
-    stdev = plot_95_ci(
-        axes,
-        x_values,
-        model_with_info.model_rpd,
-        params_optimised,
-        params_covar,
-        model_with_info.vector_input_model,
-    )
+    # stdev = plot_95_ci(
+    #    axes,
+    #    x_values,
+    #    model_with_info.model_rpd,
+    #    params_optimised,
+    #    params_covar,
+    #    model_with_info.vector_input_model,
+    #)
     axes.set_title("All centrioles")
 
 
