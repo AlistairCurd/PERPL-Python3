@@ -28,6 +28,17 @@ build/
 *.tar
 *.zip
 
+# Unit test / coverage reports #
+################################
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*,cover
+
 # Logs and databases #
 ######################
 *.ipynb_checkpoints
