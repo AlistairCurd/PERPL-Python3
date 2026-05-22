@@ -46,6 +46,7 @@ test = [
 ]
 
 dev = [
+    "perpl[test]",
     "ruff~=0.4"
 ]
 
