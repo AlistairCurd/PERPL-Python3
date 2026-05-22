@@ -45,7 +45,19 @@ test = [
     "pytest-cov~=5.0"
 ]
 
+dev = [
+    "ruff~=0.4
+]
+
 [tool.pytest.ini_options]
 addopts = "-v --color=yes --cov=perpl --cov-report=term --cov-report=xml --cov-report=html"
 
-# [tool.tox], [tox] ?
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "B", "I"]
+
+[tool.ruff.format]
+quote-style = "double"
