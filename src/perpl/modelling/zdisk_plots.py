@@ -80,7 +80,7 @@ def plot_distance_hist(
     histaxes.set_ylim(bottom=0)
     histaxes.set_title("Histogram")
     histaxes.set_xlabel(
-        f"$\Delta$Axial (nm) ($\Delta$Transverse < {transverse_limit} nm)"
+        rf"$\Delta$Axial (nm) ($\Delta$Transverse < {transverse_limit} nm)"
     )
     histaxes.set_ylabel("Counts")
     if close_plots:
