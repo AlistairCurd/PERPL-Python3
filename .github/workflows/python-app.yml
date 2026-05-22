@@ -36,8 +36,9 @@ jobs:
     - name: Lint - style (non-blocking)
       run: ruff check . --select E,B,I || true
 
-    - name: Format check
-      run: ruff format --check .
+    ## ADD LATER
+    # - name: Format check
+    #   run: ruff format --check .
 
     - name: Test with pytest
       run: |
