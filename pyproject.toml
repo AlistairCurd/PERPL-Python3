@@ -46,7 +46,7 @@ test = [
 ]
 
 dev = [
-    "ruff~=0.4
+    "ruff~=0.4"
 ]
 
 [tool.pytest.ini_options]
