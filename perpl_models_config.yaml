@@ -26,7 +26,7 @@ dimension: [1]
 ##
 ## Use "null" to apply no limits
 limits:
-  x_limit: 200.  # e.g. 10 or null 
+  x_limit: 200.  # e.g. 10 or null
   y_limit: 200.
   z_limit: 200.
 
@@ -49,7 +49,7 @@ bin_sizes: [5]  # e.g. [1, 2, 5]
 ## Smaller values keep more detail, larger values smoothen noise
 kde_kernel_size: [3.2]  # e.g. [5, 6, 7]
 
-  
+
 # Maximum distance for the fit (less than relpos_filter if using a KDE)
 fitlength: [105, 115, 125]  # Can try multiple fit lengths
 
@@ -68,35 +68,38 @@ background: [null, flat, linear, linear_flat]  # Can try multiple background mod
 n_peaks: [0, 1, 4, 5, 6]  # Can try models with different numbers of peaks
 
 
-# Indepedent ("variable") amplitude for characteristic distance peaks
-# or amplitudes have a "fixed_ratio". Fixed is currently (1, 1 - 1/n, 1 - 2/n, ...), as used for 1D analysis through a finite volume. 
+# Indepedent amplitude ("indep_amp") for characteristic distance peaks
+# or amplitudes decrease linearly ("lin_decrease") (1, 1 - 1/n, 1 - 2/n, ...),
+# as used for 1D analysis through a finite volume.
 #
-# So "variable", "fixed_ratio", or both in the list
-peak_type: [variable]  # variable, fixed_ratio
+# So "indep_amp", "lin_decrease", or both in the list
+peak_amps: [indep_amp]  # indep_amp, lin_decrease
 
 
 # Relationship between the characteristic distances:
-## "one": Distances are at integer multiples of the first distance
 
-## "multiple_ratio": Distances are at other multiples of the first distance
-### For multiple_ratio, also include these distance ratios
-### in `charac_dist_ratio` below
-
-## "multiple_fixed": Distances are at independent (multiple) distances
-
-# TODO: Change these terms
-charac_dists: [one]  # one, multiple_ratio, multiple_fixed
+# Distance multipliers:
+# Multipliers for fixed relationships between distances
+#
+## "int_mults": Distances are at integer multiples of the first distance
+#
+## "custom_mults": Distances are at other multiples of the first distance
+### For custom_mults, also include these distance ratios
+### in `custom_mults_list` below
+#
+## "indep_dists": Distances are at independent (multiple) distances
+dist_mults: [int_mults]  # int_mults, custom_mults, indep_dists
 
 
 # Ratio between characteristic distances
-## null if `charac_dist` is not "multiple_ratio"
+## null if `dist_mults` is not "custom_mults"
 ## or must be list with length corresponding to max of n_peaks
-charac_dist_ratio: [null]  # null or e.g. [1.0, 0.7, 0.4] for max n_peaks: 3
+custom_mults_list: [null]  # null or e.g. [1.0, 0.7, 0.4] for max n_peaks: 3
 
 # Model repeated localisations of single underlying objects
 ## These localisations have a spread determined by the experimental precision
 repeats: [True, False]  # True, False or try both
-  
+
 # Include offset - Not implemented yet
 offset: [False] # True, False
 
@@ -125,7 +128,7 @@ params_initial:
   # First characteristic distance
   ## Can use a list corresponding to a list of different charac_dist relationships used.
   ## e.g. [20, 10, 24] would be the distances used for models with
-  ## `charac_dist` of [one, multiple_ratio, multiple_fixed],
+  ## `charac_dist` of [int_mults, custom_mults, indep_dists],
   ## if that was the list specified
   characteristic_distance_1: 20
   # Second characteristic distance
@@ -138,13 +141,13 @@ params_initial:
   # Standard deviation of localisation precision
   ## (Spread of repeated localisations)
   loc_prec_sd: 5
-    
+
   # amplitude of peak due to repeated localisations
   loc_prec_amp: 10
 
   # Background slope
   bg_slope: -0.1
-    
+
   # Background offset
   bg_offset: 0
 
@@ -166,12 +169,12 @@ params_lower:
   characteristic_distance_1: 5
   # characteristic_distance_2: 5
   # etc.
-    
+
   characteristic_distance_broadening: 0
-  
+
   loc_prec_sd: 0
   loc_prec_amp: 0
-    
+
   bg_slope: -10
   bg_offset: 0
 
@@ -187,17 +190,17 @@ params_upper:
   amp_peak_5: 100
   amp_peak_6: 100
   # etc...
-    
+
   # Can use lists as for initial guesses
   characteristic_distance_1: 40
   # characteristic_distance_2: 5
   # etc.
-    
+
   characteristic_distance_broadening: 15
 
   loc_prec_sd: 10
   loc_prec_amp: 100
-    
+
   bg_slope: 0
   bg_offset: 10
 

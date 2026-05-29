@@ -97,7 +97,7 @@ def model_the_data(
         dimension=model_config["dimension"],
         background=model_config["background"],
         n_peaks=model_config["n_peaks"],
-        peak_type=model_config["peak_type"],
+        peak_amps=model_config["peak_amps"],
         characteristic_distance=model_config["characteristic_distance"],
         characteristic_distance_ratio=model_config["characteristic_distance_ratio"],
         repeats=model_config["repeats"],
@@ -396,7 +396,7 @@ def main(argv=None):
                         "Fit length": fitlength,
                         x_kernel_col: bin_or_kernel,
                         "N Peaks": model_config["n_peaks"],
-                        "Peak ratios": model_config["peak_type"],
+                        "Peak ratios": model_config["peak_amps"],
                         "Model distance ratios": model_config[
                             "characteristic_distance"
                         ],

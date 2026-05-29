@@ -1,7 +1,7 @@
 import copy
 import datetime
-from itertools import product
 import os
+from itertools import product
 
 import yaml
 
@@ -14,12 +14,12 @@ def gen_configs(config_file, suffix=None):
             Path to config file for generating models to sweep through.
         suffix (str):
             Text to add to label models folder and copy of config file.
-    
+
     Returns:
         models_folder (str):
             Path to the folder containing models as determined
             by the config file.
-    
+
     Saves model configurations and a copy of the config fileas used.
     """
 
@@ -31,7 +31,7 @@ def gen_configs(config_file, suffix=None):
     # Use datestamp as suffix if not given
     if suffix is None:
         suffix = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    
+
     # Set output locations
     config_folder, _ = os.path.split(config_file)
     models_folder = os.path.join(config_folder, f"model_configs_{suffix}")
@@ -47,9 +47,9 @@ def gen_configs(config_file, suffix=None):
     dimension = config["dimension"]
     backgrounds = config["background"]
     n_peaks = config["n_peaks"]
-    peak_types = config["peak_type"]
-    charac_dists = config["charac_dists"]
-    charac_dist_ratio = config["charac_dist_ratio"]
+    peak_ampss = config["peak_amps"]
+    dist_mults = config["dist_mults"]
+    custom_mults_list = config["custom_mults_list"]
     repeats = config["repeats"]
     offsets = config["offset"]
     normalises = config["normalise"]
@@ -57,8 +57,8 @@ def gen_configs(config_file, suffix=None):
     params_lower = config["params_lower"]
     params_upper = config["params_upper"]
 
-    if type(params_initial["characteristic_distance_1"]) is list:
-        if len(params_initial["characteristic_distance_1"]) != len(charac_dists):
+    if isinstance(params_initial["characteristic_distance_1"], list):
+        if len(params_initial["characteristic_distance_1"]) != len(dist_mults):
             raise ValueError(
                 "There is a list of distances for the first peak."
                 " There must be the same number of entries in this list"
@@ -72,9 +72,9 @@ def gen_configs(config_file, suffix=None):
             " in the config file (types of relationship between"
             " characteristic distances)."
         )
-        multiple_charac_dists = True
+        multiple_dist_mults = True
     else:
-        multiple_charac_dists = False
+        multiple_dist_mults = False
 
     # generate all possible model configurations
     for index, params in enumerate(
@@ -82,15 +82,14 @@ def gen_configs(config_file, suffix=None):
             dimension,
             backgrounds,
             n_peaks,
-            peak_types,
-            charac_dists,
-            # charac_dist_ratios,
+            peak_ampss,
+            dist_mults,
+            # custom_mults_lists,
             repeats,
             offsets,
             normalises,
         )
     ):
-
         params_initial_copy = copy.deepcopy(params_initial)
         params_lower_copy = copy.deepcopy(params_lower)
         params_upper_copy = copy.deepcopy(params_upper)
@@ -99,9 +98,9 @@ def gen_configs(config_file, suffix=None):
             "dimension": params[0],
             "background": params[1],
             "n_peaks": params[2],
-            "peak_type": params[3],
+            "peak_amps": params[3],
             "characteristic_distance": params[4],
-            "characteristic_distance_ratio": charac_dist_ratio,
+            "characteristic_distance_ratio": custom_mults_list,
             "repeats": params[5],
             "offset": params[6],
             "normalise": params[7],
@@ -113,22 +112,21 @@ def gen_configs(config_file, suffix=None):
         # If multiple characteristic distance types present
         # (e.g. sweeping through both models using multiples of a unit distance
         # and models using independent distances)
-        if multiple_charac_dists:
+        if multiple_dist_mults:
             # change params_values
             for name, file in zip(
                 ["params_initial", "params_lower", "params_upper"],
                 [params_initial_copy, params_lower_copy, params_upper_copy],
+                strict=True,
             ):
-                idx = charac_dists.index(params[4])
+                idx = dist_mults.index(params[4])
                 model_config[name]["characteristic_distance_1"] = file[
                     "characteristic_distance_1"
                 ][idx]
 
         # save yaml file
-        model_config_save_loc = os.path.join(
-            models_folder, f"model_{index}.yaml"
-        )
+        model_config_save_loc = os.path.join(models_folder, f"model_{index}.yaml")
         with open(model_config_save_loc, "w") as outfile:
             yaml.dump(model_config, outfile)
-    
+
     return models_folder

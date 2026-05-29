@@ -30,18 +30,15 @@ specific language governing permissions and limitations under the License.
 """
 
 # import time
-import numpy as np
-import numdifftools as nd
 import matplotlib.pyplot as plt
+import numdifftools as nd
+import numpy as np
 from matplotlib import font_manager
-
-
+from scipy import stats
 from scipy.linalg import svd
+from scipy.optimize import curve_fit, least_squares
 from scipy.spatial.transform import Rotation
 from scipy.special import i0
-from scipy import stats
-from scipy.optimize import curve_fit, least_squares
-
 
 for f in font_manager.findSystemFonts(fontpaths=None, fontext="ttf"):
     # to install arial on linux had to run these commands...
@@ -67,8 +64,8 @@ class PERPLModel:
         dimension=1,
         background=None,
         n_peaks=0,
-        peak_type="variable",
-        characteristic_distance="one",
+        peak_amps="indep_amp",
+        characteristic_distance="int_mults",
         characteristic_distance_ratio=None,
         repeats=False,
         offset=False,
@@ -82,15 +79,16 @@ class PERPLModel:
 
         Args:
             dimension: Dimension of the fit (1, 2 or 3)
-            background: None, "flat", "linear", "linear_flat", "trans_bg_0", "trans_bg_1" or "trans_bg_2" background
+            background:
+                None, "flat", "linear", "linear_flat",
+                "trans_bg_0", "trans_bg_1" or "trans_bg_2" background
             n_peaks: Number of peaks (0, 1, 2, ...)
-            peak_type: "variable" or "fixed_ratio" peaks
+            peak_amps: "indep_amp" or "lin_decrease" peaks
             characteristic_distance: How to model the characteristic distance.
-                one: One characteristic distance, that is repeated at each
-                    peak.
-                multiple_fixed : As many characteristic distances as peaks at
+                int_mults: Integer multiples of a root characteristic distance.
+                indep_dists : As many characteristic distances as peaks at
                     user defined distances
-                multiple_ratio: As many characteristic distances as peaks, at
+                custom_mults: As many characteristic distances as peaks, at
                     distances calculated by scaling up one characteristic distance
                     by different ratios
             characteristic_distance_ratio: Ratio of characteristic distances
@@ -105,17 +103,29 @@ class PERPLModel:
 
         if dimension not in [1, 2, 3]:
             raise ValueError("Dimension should be 1,2 or 3")
-        if background not in [None, "flat", "linear", "linear_flat", "trans_bg_0", "trans_bg_1", "trans_bg_2"]:
-            raise ValueError("Background should be None, flat, linear, linear_flat, trans_bg_0, trans_bg_1 or trans_bg_2")
+        if background not in [
+            None,
+            "flat",
+            "linear",
+            "linear_flat",
+            "trans_bg_0",
+            "trans_bg_1",
+            "trans_bg_2",
+        ]:
+            raise ValueError(
+                "Background should be None, flat, linear, linear_flat,"
+                " trans_bg_0, trans_bg_1 or trans_bg_2"
+            )
         if not isinstance(n_peaks, int):
             raise ValueError("n peaks should be an integer")
-        if peak_type not in ["variable", "fixed_ratio"]:
-            raise ValueError("Peak type should be variable or fixed_ratio")
-        if characteristic_distance not in ["one", "multiple_fixed", "multiple_ratio"]:
+        if peak_amps not in ["indep_amp", "lin_decrease"]:
+            raise ValueError("Peak type should be indep_amp or lin_decrease")
+        if characteristic_distance not in ["int_mults", "indep_dists", "custom_mults"]:
             raise ValueError(
-                "Characteristic distance should be one, multiple_fixed or multiple_ratio"
+                "Characteristic distance should be int_mults,"
+                " indep_dists or custom_mults"
             )
-        if characteristic_distance == "multiple_ratio":
+        if characteristic_distance == "custom_mults":
             if len(characteristic_distance_ratio) < n_peaks:
                 raise ValueError(
                     "Should be a characteristic distance ratio for each peak"
@@ -162,20 +172,38 @@ class PERPLModel:
             self.initial_params["bg_slope"] = params_initial["bg_slope"]
             self.params_lower["bg_slope"] = params_lower["bg_slope"]
             self.params_upper["bg_slope"] = params_upper["bg_slope"]
-            self.initial_params["trans_bg_quad_coeff"] = params_initial["trans_bg_quad_coeff"]
-            self.params_lower["trans_bg_quad_coeff"] = params_lower["trans_bg_quad_coeff"]
-            self.params_upper["trans_bg_quad_coeff"] = params_upper["trans_bg_quad_coeff"]
+            self.initial_params["trans_bg_quad_coeff"] = params_initial[
+                "trans_bg_quad_coeff"
+            ]
+            self.params_lower["trans_bg_quad_coeff"] = params_lower[
+                "trans_bg_quad_coeff"
+            ]
+            self.params_upper["trans_bg_quad_coeff"] = params_upper[
+                "trans_bg_quad_coeff"
+            ]
             n_params += 2
         elif background == "trans_bg_2":
             self.initial_params["bg_slope"] = params_initial["bg_slope"]
             self.params_lower["bg_slope"] = params_lower["bg_slope"]
             self.params_upper["bg_slope"] = params_upper["bg_slope"]
-            self.initial_params["trans_bg_quad_coeff"] = params_initial["trans_bg_quad_coeff"]
-            self.params_lower["trans_bg_quad_coeff"] = params_lower["trans_bg_quad_coeff"]
-            self.params_upper["trans_bg_quad_coeff"] = params_upper["trans_bg_quad_coeff"]
-            self.initial_params["trans_bg_cubic_coeff"] = params_initial["trans_bg_cubic_coeff"]
-            self.params_lower["trans_bg_cubic_coeff"] = params_lower["trans_bg_cubic_coeff"]
-            self.params_upper["trans_bg_cubic_coeff"] = params_upper["trans_bg_cubic_coeff"]
+            self.initial_params["trans_bg_quad_coeff"] = params_initial[
+                "trans_bg_quad_coeff"
+            ]
+            self.params_lower["trans_bg_quad_coeff"] = params_lower[
+                "trans_bg_quad_coeff"
+            ]
+            self.params_upper["trans_bg_quad_coeff"] = params_upper[
+                "trans_bg_quad_coeff"
+            ]
+            self.initial_params["trans_bg_cubic_coeff"] = params_initial[
+                "trans_bg_cubic_coeff"
+            ]
+            self.params_lower["trans_bg_cubic_coeff"] = params_lower[
+                "trans_bg_cubic_coeff"
+            ]
+            self.params_upper["trans_bg_cubic_coeff"] = params_upper[
+                "trans_bg_cubic_coeff"
+            ]
             n_params += 3
 
         # dimension of data
@@ -189,14 +217,14 @@ class PERPLModel:
 
         # peaks in the data
         self.n_peaks = n_peaks
-        self.peak_type = peak_type
+        self.peak_amps = peak_amps
         if n_peaks > 0:
-            if peak_type == "fixed_ratio":
+            if peak_amps == "lin_decrease":
                 self.initial_params["amp_peak_1"] = params_initial["amp_peak_1"]
                 self.params_lower["amp_peak_1"] = params_lower["amp_peak_1"]
                 self.params_upper["amp_peak_1"] = params_upper["amp_peak_1"]
                 n_params += 1
-            elif peak_type == "variable":
+            elif peak_amps == "indep_amp":
                 for i in range(n_peaks):
                     self.initial_params[f"amp_peak_{i+1}"] = params_initial[
                         f"amp_peak_{i+1}"
@@ -235,7 +263,7 @@ class PERPLModel:
 
             n_params += 2
 
-            if characteristic_distance == "multiple_fixed":
+            if characteristic_distance == "indep_dists":
                 for i in range(n_peaks):
                     if i == 0:
                         continue
@@ -280,7 +308,7 @@ class PERPLModel:
     def model_rpd(
         self,
         x_values,
-        characteristic_distances=[],
+        characteristic_distances=None,
         characteristic_distance_broadening=0.0,
         loc_prec_sd=0.0,
         loc_prec_amp=None,
@@ -288,17 +316,28 @@ class PERPLModel:
         bg_offset=0.0,
         trans_bg_quad_coeff=0.0,
         trans_bg_cubic_coeff=0.0,
-        amps=[],
+        amps=None,
     ):
+        # Init args if necessary
+        if characteristic_distances is None:
+            characteristic_distances = []
 
+        if amps is None:
+            amps = []
+
+        # Init RPD
         rpd = 0.0 * x_values
 
         # background
-        if self.background == "trans_bg_0" or self.background == "trans_bg_1" or self.background == "trans_bg_2":
+        if (
+            self.background == "trans_bg_0"
+            or self.background == "trans_bg_1"
+            or self.background == "trans_bg_2"
+        ):
             assert bg_offset == 0.0
 
         background = bg_offset + bg_slope * x_values
-    
+
         if self.background == "linear_flat":
             if isinstance(x_values, np.float64):
                 if x_values >= -bg_offset / bg_slope:
@@ -306,13 +345,16 @@ class PERPLModel:
             else:
                 background[x_values >= -bg_offset / bg_slope] = 0.0
 
-        # could tidy this so just add it on - should be zero when not called anyway so should be fine 
+        # could tidy this so just add it on
+        # - should be zero when not called anyway so should be fine
         # but kept separate for the moment for clarity
         if self.background == "trans_bg_1":
-            background += trans_bg_quad_coeff * (x_values ** 2)
+            background += trans_bg_quad_coeff * (x_values**2)
 
         if self.background == "trans_bg_2":
-            background += trans_bg_quad_coeff * (x_values ** 2) + trans_bg_cubic_coeff * (x_values ** 3)
+            background += trans_bg_quad_coeff * (x_values**2) + trans_bg_cubic_coeff * (
+                x_values**3
+            )
 
         rpd += background
 
@@ -322,18 +364,18 @@ class PERPLModel:
         else:
             characteristic_distance_terms = []
         for peak_idx in range(self.n_peaks):
-            if self.peak_type == "fixed_ratio":
+            if self.peak_amps == "lin_decrease":
                 amp = amps[0] * (1 - peak_idx / self.n_peaks)
-            elif self.peak_type == "variable":
+            elif self.peak_amps == "indep_amp":
                 amp = amps[peak_idx]
 
-            if self.characteristic_distance_type == "one":
+            if self.characteristic_distance_type == "int_mults":
                 characteristic_distance = characteristic_distances[0] * (peak_idx + 1)
 
-            elif self.characteristic_distance_type == "multiple_fixed":
+            elif self.characteristic_distance_type == "indep_dists":
                 characteristic_distance = characteristic_distances[peak_idx]
 
-            elif self.characteristic_distance_type == "multiple_ratio":
+            elif self.characteristic_distance_type == "custom_mults":
                 characteristic_distance = (
                     characteristic_distances[0]
                     * self.characteristic_distances_ratio[peak_idx]
@@ -376,14 +418,13 @@ class PERPLModel:
         return rpd, background, characteristic_distance_terms, rep_locs
 
     def model_rpd_wrapper(self, x, params):
-
         # dict(zip(self.initial_params.keys(), params)
-        kwargs = dict(zip(self.param_names, params))
+        kwargs = dict(zip(self.param_names, params, strict=True))
 
         if self.n_peaks != 0:
             amps = [kwargs["amp_peak_1"]]
             kwargs.pop("amp_peak_1")
-            if self.peak_type == "variable":
+            if self.peak_amps == "indep_amp":
                 for i in range(self.n_peaks):
                     if i == 0:
                         continue
@@ -392,7 +433,7 @@ class PERPLModel:
 
             characteristic_distances = [kwargs["characteristic_distance_1"]]
             kwargs.pop("characteristic_distance_1")
-            if self.characteristic_distance_type == "multiple_fixed":
+            if self.characteristic_distance_type == "indep_dists":
                 for i in range(self.n_peaks):
                     if i == 0:
                         continue
@@ -410,11 +451,9 @@ class PERPLModel:
         )
 
     def model_rpd_wrapper_vector(self, vector_input):
-
         return self.model_rpd_wrapper(vector_input[0], vector_input[1:])[0]
 
     def error_fn(self, params, x, y):
-
         output = self.model_rpd_wrapper(x, params)[0]
 
         return output - y
@@ -437,7 +476,7 @@ class PERPLModel:
             # can't put y /= x**(self.dimnension-1)
             # as y may be integers so get error
             y = y / x ** (self.dimension - 1)
-        
+
         # Initialise some parameters
         self.popt_at_bound = None
         self.large_uncertainty = None
@@ -455,7 +494,8 @@ class PERPLModel:
             # Param optimal and covariance
             popt = res.x
 
-            # Do Moore-Penrose inverse discarding zero singular values [from scipy.linalg]
+            # Do Moore-Penrose inverse discarding zero singular values
+            # [from scipy.linalg]
             _, s, VT = svd(res.jac, full_matrices=False)
             threshold = np.finfo(float).eps * max(res.jac.shape) * s[0]
             s = s[s > threshold]
@@ -566,7 +606,6 @@ class PERPLModel:
         stdev = np.zeros(len(x))
 
         for i, x_value in enumerate(x):
-
             # Pass arguments as required for differentiation
             vector_input = np.concatenate(([x_value], self.params_optimised))
             grads = nd.Gradient(self.model_rpd_wrapper_vector)(vector_input)
@@ -626,7 +665,6 @@ class PERPLModel:
         # Get 1 SD uncertainty on model result from uncertainty on parameters
         # and plot 95% CI.
         if plot_95ci is True:
-
             stdev = self.calculate_stdev(
                 bin_centres,
             )
@@ -677,12 +715,14 @@ class PERPLModel:
         )
 
         # Plot model components
-        model_rpd, model_background, model_characteristic_distance_terms, model_rep_locs = (
-                self.model_rpd_wrapper(calc_points, self.params_optimised)
-        )
+        (
+            model_rpd,
+            model_background,
+            model_characteristic_distance_terms,
+            model_rep_locs,
+        ) = self.model_rpd_wrapper(calc_points, self.params_optimised)
 
         if plot_model_components:
-            
             # Plot background term
             if self.background is not None:
                 axes.plot(calc_points, model_background, label="Background", color="C1")
@@ -694,7 +734,7 @@ class PERPLModel:
                 for i, characteristic_distance_term in enumerate(
                     model_characteristic_distance_terms
                 ):
-                    if self.characteristic_distance_type == "one":
+                    if self.characteristic_distance_type == "int_mults":
                         label = f"Repeat distance {i+1}"
                     else:
                         label = f"Characteristic distance {i+1}"
@@ -708,10 +748,10 @@ class PERPLModel:
             # Plot repeat term for localisations of the same molecule
             if model_rep_locs is not None:
                 axes.plot(
-                    calc_points, 
-                    model_rep_locs, 
-                    label="Repeated localisations", 
-                    color="C2"
+                    calc_points,
+                    model_rep_locs,
+                    label="Repeated localisations",
+                    color="C2",
                 )
 
         # plot full model
@@ -725,7 +765,6 @@ class PERPLModel:
         # Get 1 SD uncertainty on model result from uncertainty on parameters
         # and plot 95% CI.
         if plot_95ci is True:
-
             stdev = self.calculate_stdev(
                 calc_points,
             )
@@ -783,7 +822,7 @@ class PERPLModel:
             for i, characteristic_distance_term in enumerate(
                 characteristic_distance_terms
             ):
-                if self.characteristic_distance_type == "one":
+                if self.characteristic_distance_type == "int_mults":
                     label = f"Repeat distance {i+1}"
                 else:
                     label = f"Characteristic distance {i+1}"
@@ -1363,7 +1402,6 @@ def stdev_of_model(x_values, params_optimised, params_covar, vector_input_model)
     stdev = np.zeros(len(x_values))
 
     for i, x_value in enumerate(x_values):
-
         # Pass arguments as required for differentiation
         vector_input = np.concatenate(([x_value], params_optimised))
         grads = nd.Gradient(vector_input_model)(vector_input)
