@@ -98,7 +98,7 @@ def model_the_data(
         background=model_config["background"],
         n_peaks=model_config["n_peaks"],
         peak_amps=model_config["peak_amps"],
-        characteristic_distance=model_config["characteristic_distance"],
+        dist_ratios=model_config["dist_ratios"],
         characteristic_distance_ratio=model_config["characteristic_distance_ratio"],
         repeats=model_config["repeats"],
         offset=model_config["offset"],
@@ -397,9 +397,7 @@ def main(argv=None):
                         x_kernel_col: bin_or_kernel,
                         "N Peaks": model_config["n_peaks"],
                         "Peak ratios": model_config["peak_amps"],
-                        "Model distance ratios": model_config[
-                            "characteristic_distance"
-                        ],
+                        "Model distance ratios": model_config["dist_ratios"],
                         "Repeated localisations": model_config["repeats"],
                         "Background model": model_config["background"],
                         "AICc": fitted_model.aic_corrected,

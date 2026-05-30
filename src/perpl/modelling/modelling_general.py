@@ -65,7 +65,7 @@ class PERPLModel:
         background=None,
         n_peaks=0,
         peak_amps="indep_amp",
-        characteristic_distance="int_ratios",
+        dist_ratios="int_ratios",
         characteristic_distance_ratio=None,
         repeats=False,
         offset=False,
@@ -84,7 +84,7 @@ class PERPLModel:
                 "trans_bg_0", "trans_bg_1" or "trans_bg_2" background
             n_peaks: Number of peaks (0, 1, 2, ...)
             peak_amps: "indep_amp" or "lin_decrease" peaks
-            characteristic_distance: How to model the characteristic distance.
+            dist_ratios: Relationship between the characteristic distances.
                 int_ratios: Integer multiples of a root characteristic distance.
                 indep_dists : As many characteristic distances as peaks at
                     user defined distances
@@ -120,7 +120,7 @@ class PERPLModel:
             raise ValueError("n peaks should be an integer")
         if peak_amps not in ["indep_amp", "lin_decrease"]:
             raise ValueError("Peak type should be indep_amp or lin_decrease")
-        if characteristic_distance not in [
+        if dist_ratios not in [
             "int_ratios",
             "indep_dists",
             "custom_ratios",
@@ -129,7 +129,7 @@ class PERPLModel:
                 "Characteristic distance should be int_ratios,"
                 " indep_dists or custom_ratios"
             )
-        if characteristic_distance == "custom_ratios":
+        if dist_ratios == "custom_ratios":
             if len(characteristic_distance_ratio) < n_peaks:
                 raise ValueError(
                     "Should be a characteristic distance ratio for each peak"
@@ -242,7 +242,7 @@ class PERPLModel:
                 n_params += n_peaks
 
             # characteristic distances
-            self.characteristic_distance_type = characteristic_distance
+            self.dist_ratios_type = dist_ratios
             self.characteristic_distances_ratio = characteristic_distance_ratio
 
             self.initial_params["characteristic_distance_1"] = params_initial[
@@ -267,7 +267,7 @@ class PERPLModel:
 
             n_params += 2
 
-            if characteristic_distance == "indep_dists":
+            if dist_ratios == "indep_dists":
                 for i in range(n_peaks):
                     if i == 0:
                         continue
@@ -373,13 +373,13 @@ class PERPLModel:
             elif self.peak_amps == "indep_amp":
                 amp = amps[peak_idx]
 
-            if self.characteristic_distance_type == "int_ratios":
+            if self.dist_ratios_type == "int_ratios":
                 characteristic_distance = characteristic_distances[0] * (peak_idx + 1)
 
-            elif self.characteristic_distance_type == "indep_dists":
+            elif self.dist_ratios_type == "indep_dists":
                 characteristic_distance = characteristic_distances[peak_idx]
 
-            elif self.characteristic_distance_type == "custom_ratios":
+            elif self.dist_ratios_type == "custom_ratios":
                 characteristic_distance = (
                     characteristic_distances[0]
                     * self.characteristic_distances_ratio[peak_idx]
@@ -437,7 +437,7 @@ class PERPLModel:
 
             characteristic_distances = [kwargs["characteristic_distance_1"]]
             kwargs.pop("characteristic_distance_1")
-            if self.characteristic_distance_type == "indep_dists":
+            if self.dist_ratios_type == "indep_dists":
                 for i in range(self.n_peaks):
                     if i == 0:
                         continue
@@ -738,7 +738,7 @@ class PERPLModel:
                 for i, characteristic_distance_term in enumerate(
                     model_characteristic_distance_terms
                 ):
-                    if self.characteristic_distance_type == "int_ratios":
+                    if self.dist_ratios_type == "int_ratios":
                         label = f"Repeat distance {i+1}"
                     else:
                         label = f"Characteristic distance {i+1}"
@@ -826,7 +826,7 @@ class PERPLModel:
             for i, characteristic_distance_term in enumerate(
                 characteristic_distance_terms
             ):
-                if self.characteristic_distance_type == "int_ratios":
+                if self.dist_ratios_type == "int_ratios":
                     label = f"Repeat distance {i+1}"
                 else:
                     label = f"Characteristic distance {i+1}"
