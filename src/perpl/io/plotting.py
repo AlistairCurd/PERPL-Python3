@@ -30,16 +30,17 @@ CONDITIONS OF ANY KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
 """
 
+import math
 import sys
 from sys import platform as _platform
-import math
+
+import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib
-from scipy.ndimage import gaussian_filter1d
-from scipy.ndimage import gaussian_filter
+from scipy.ndimage import gaussian_filter, gaussian_filter1d
 from tifffile import TiffWriter
+
 import perpl.modelling.modelling_general as models
 
 # information on backends is here
@@ -160,8 +161,9 @@ def draw_2col_2d_scatter_plot(
     """Creates a scatter plot and saves it to a .png file.
 
     Args:
-        xyzcolour_values (numpy array): A numpy array of the xy(and z)-coordinates of the
-            localizations (first 2 or 3 columns) and their colour channels (final column).
+        xyzcolour_values (numpy array): xy(and z)-coordinates of the
+            localizations (first 2 or 3 columns)
+            and their colour channels (final column).
         title (str): the text string that has the title for the plot.
         filename (str): The output file has all the text of the input
             file plus some more information so it is easy to recognise which
@@ -201,7 +203,7 @@ def find_thresholds(arr, zoom):
     them to mask of the input array.
 
     Args:
-       arr (numpy array): A numpy array of one of the co-ordinates for the locationation.
+       arr (numpy array): A numpy array of one of the co-ordinates of the localisations.
        zoom (int): A zoom of the central region can be created to this zoom factor.
 
     Returns:
@@ -302,7 +304,8 @@ def plot_new_histogram(data_values):
     # ax_points = relpos.axial[(relpos.axial < fitlength) & (relpos.transverse < 10)]
     ax_points = data_values[(data_values[:0] < fitlength) & (data_values[:, 6] < 10)]
 
-    # processing resulted in X distances (relpos.axial) and YZ distances (relpos.tranverse).
+    # processing resulted in X distances (relpos.axial)
+    # and YZ distances (relpos.tranverse).
 
     # Sort and remove duplicates
     ax_points = np.sort(ax_points)
@@ -458,10 +461,50 @@ def plot_histogram(
     return bin_heights
 
 
+def estimate_rpd_churchman_kernel(
+    input_distances, calculation_points, dim, combined_precision
+):
+    """Estimates a smooth distance distibrution from the experimental
+    RPD (relative position distribution) from a set
+    of distances, using Churchman's distribution for distances between
+    localisations in two clusters as a smoothing kernel.
+
+    Args:
+        input_distances (numpy array):
+            The distances between localisations in the input data.
+        calculation_points (numpy array):
+            The distances at which the RPD will be estimated.
+        dim (integer):
+            Dimensions the distances are measured through (1D, 2D or 3D space).
+        combined_precision (float):
+            The width (sigma) of the smoothing function. In later version,
+            this may be an array with one values per input distance.
+
+    Returns:
+        estimated_rpd (numpy array):
+            The RPD estimated at the calculation points.
+    """
+    churchman_map = {
+        1: models.pairwise_correlation_1d,
+        2: models.pairwise_correlation_2d,
+        3: models.pairwise_correlation_3d,
+    }
+    est_fn = churchman_map.get(dim)
+
+    estimated_rpd = np.zeros(len(calculation_points))
+    for input_distance in input_distances:
+        estimated_rpd = estimated_rpd + est_fn(
+            calculation_points, input_distance, combined_precision
+        )
+    return estimated_rpd
+
+
 def estimate_rpd_churchman_1d(input_distances, calculation_points, combined_precision):
     """Estimates a smooth 1D RPD (relative position distribution) from a set
     of distances, using Churchman's distribution for distances between
     localisations in two clusters as a smoothing kernel.
+
+    Superseded, but left in to keep existing functions working.
 
     Args:
         input_distances (numpy array):
@@ -489,6 +532,8 @@ def estimate_rpd_churchman_2d(input_distances, calculation_points, combined_prec
     (relative position distribution) from a set of distances, using
     Churchman's distribution for distances between localisations in
     two clusters as a smoothing kernel.
+
+    Superseded, but left in to keep existing functions working.
 
     Args:
         input_distances (numpy array):
@@ -551,9 +596,7 @@ def create_histogram_3d(rel_pos_xyz, filterdist, smoothing=None):
     bin_edge_vector = np.array(range(-filterdist, filterdist + 2)) - 0.5
     histogram = np.histogramdd(
         rel_pos_xyz, bins=(bin_edge_vector, bin_edge_vector, bin_edge_vector)
-    )[
-        0
-    ]  # No need for returned variable [1] (edges)
+    )[0]  # No need for returned variable [1] (edges)
 
     # Apply smoothing, if any
     if smoothing is not None:

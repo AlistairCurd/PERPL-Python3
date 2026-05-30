@@ -9,7 +9,8 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from perpl.io import plotting
+# from perpl.io import plotting
+from perpl.io.plotting import estimate_rpd_churchman_kernel
 from perpl.modelling.gen_distance_model_configs import gen_configs
 from perpl.modelling.modelling_general import PERPLModel
 
@@ -39,22 +40,10 @@ def get_experimental_rpd(
     elif rpd_type == "distance_kde":
         increment = max(1, round(fitlength / len(distances)))
         x_expt = np.arange(0, fitlength + 1.0, increment)
-
-        if model_config["dimension"] == 3:
-            raise ValueError(
-                "dimension: 3 (from config file) is not implemented"
-                " for KDE generation"
-            )
-
-        churchman_map = {
-            1: plotting.estimate_rpd_churchman_1d,
-            2: plotting.estimate_rpd_churchman_2d,
-        }
-        fn = churchman_map.get(model_config["dimension"])
-
-        y_expt = fn(
+        y_expt = estimate_rpd_churchman_kernel(
             input_distances=distances,
             calculation_points=x_expt,
+            dim=model_config["dimension"],
             combined_precision=kde_kernel_size,
         )
 
