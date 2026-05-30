@@ -101,8 +101,9 @@ dist_ratios: [int_ratios]  # int_ratios, custom_ratios, indep_dists
 #
 ## Ratios between characteristic distances
 ### null if dist_ratios is not custom_ratios
-### or must be list with length corresponding to max of n_peaks
-custom_ratios_list: [null]  # null or e.g. [1.0, 0.7, 0.4] for max n_peaks: 3
+### or must be list with length corresponding to max of n_peaks,
+### beginning with 1.
+custom_ratios_list: [null]  # null or e.g. [1.0, 1.414, 2.0] for max n_peaks: 3
 
 
 # Model repeated localisations of single underlying objects
