@@ -59,8 +59,7 @@ kde_kernel_size: [3.2]  # e.g. [5, 6, 7]
 fitlength: [105, 115, 125]  # Can try multiple fit lengths, e.g. [90, 100, 110]
 
 
-## MODEL PARAMETERS #####################################
-## Define the form of the model #########################
+## MODEL FORM PARAMETERS ################################
 ## Include all desired values each parameter in a list ##
 
 # Background model options
@@ -196,7 +195,7 @@ params_lower:
   # trans_bg_quad_coeff: -10
   # trans_bg_cubic_coeff: 0
 
-# upper bounds for parameters
+# Parameter upper bounds
 params_upper:
   amp_peak_1: 100
   amp_peak_2: 100
