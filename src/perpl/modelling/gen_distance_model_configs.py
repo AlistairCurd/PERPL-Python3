@@ -48,8 +48,8 @@ def gen_configs(config_file, suffix=None):
     backgrounds = config["background"]
     n_peaks = config["n_peaks"]
     peak_ampss = config["peak_amps"]
-    dist_mults = config["dist_mults"]
-    custom_mults_list = config["custom_mults_list"]
+    dist_ratios = config["dist_ratios"]
+    custom_ratios_list = config["custom_ratios_list"]
     repeats = config["repeats"]
     offsets = config["offset"]
     normalises = config["normalise"]
@@ -58,7 +58,7 @@ def gen_configs(config_file, suffix=None):
     params_upper = config["params_upper"]
 
     if isinstance(params_initial["characteristic_distance_1"], list):
-        if len(params_initial["characteristic_distance_1"]) != len(dist_mults):
+        if len(params_initial["characteristic_distance_1"]) != len(dist_ratios):
             raise ValueError(
                 "There is a list of distances for the first peak."
                 " There must be the same number of entries in this list"
@@ -72,9 +72,9 @@ def gen_configs(config_file, suffix=None):
             " in the config file (types of relationship between"
             " characteristic distances)."
         )
-        multiple_dist_mults = True
+        multiple_dist_ratios = True
     else:
-        multiple_dist_mults = False
+        multiple_dist_ratios = False
 
     # generate all possible model configurations
     for index, params in enumerate(
@@ -83,8 +83,8 @@ def gen_configs(config_file, suffix=None):
             backgrounds,
             n_peaks,
             peak_ampss,
-            dist_mults,
-            # custom_mults_lists,
+            dist_ratios,
+            # custom_ratios_lists,
             repeats,
             offsets,
             normalises,
@@ -100,7 +100,7 @@ def gen_configs(config_file, suffix=None):
             "n_peaks": params[2],
             "peak_amps": params[3],
             "characteristic_distance": params[4],
-            "characteristic_distance_ratio": custom_mults_list,
+            "characteristic_distance_ratio": custom_ratios_list,
             "repeats": params[5],
             "offset": params[6],
             "normalise": params[7],
@@ -112,14 +112,14 @@ def gen_configs(config_file, suffix=None):
         # If multiple characteristic distance types present
         # (e.g. sweeping through both models using multiples of a unit distance
         # and models using independent distances)
-        if multiple_dist_mults:
+        if multiple_dist_ratios:
             # change params_values
             for name, file in zip(
                 ["params_initial", "params_lower", "params_upper"],
                 [params_initial_copy, params_lower_copy, params_upper_copy],
                 strict=True,
             ):
-                idx = dist_mults.index(params[4])
+                idx = dist_ratios.index(params[4])
                 model_config[name]["characteristic_distance_1"] = file[
                     "characteristic_distance_1"
                 ][idx]

@@ -65,7 +65,7 @@ class PERPLModel:
         background=None,
         n_peaks=0,
         peak_amps="indep_amp",
-        characteristic_distance="int_mults",
+        characteristic_distance="int_ratios",
         characteristic_distance_ratio=None,
         repeats=False,
         offset=False,
@@ -85,10 +85,10 @@ class PERPLModel:
             n_peaks: Number of peaks (0, 1, 2, ...)
             peak_amps: "indep_amp" or "lin_decrease" peaks
             characteristic_distance: How to model the characteristic distance.
-                int_mults: Integer multiples of a root characteristic distance.
+                int_ratios: Integer multiples of a root characteristic distance.
                 indep_dists : As many characteristic distances as peaks at
                     user defined distances
-                custom_mults: As many characteristic distances as peaks, at
+                custom_ratios: As many characteristic distances as peaks, at
                     distances calculated by scaling up one characteristic distance
                     by different ratios
             characteristic_distance_ratio: Ratio of characteristic distances
@@ -120,12 +120,16 @@ class PERPLModel:
             raise ValueError("n peaks should be an integer")
         if peak_amps not in ["indep_amp", "lin_decrease"]:
             raise ValueError("Peak type should be indep_amp or lin_decrease")
-        if characteristic_distance not in ["int_mults", "indep_dists", "custom_mults"]:
+        if characteristic_distance not in [
+            "int_ratios",
+            "indep_dists",
+            "custom_ratios",
+        ]:
             raise ValueError(
-                "Characteristic distance should be int_mults,"
-                " indep_dists or custom_mults"
+                "Characteristic distance should be int_ratios,"
+                " indep_dists or custom_ratios"
             )
-        if characteristic_distance == "custom_mults":
+        if characteristic_distance == "custom_ratios":
             if len(characteristic_distance_ratio) < n_peaks:
                 raise ValueError(
                     "Should be a characteristic distance ratio for each peak"
@@ -369,13 +373,13 @@ class PERPLModel:
             elif self.peak_amps == "indep_amp":
                 amp = amps[peak_idx]
 
-            if self.characteristic_distance_type == "int_mults":
+            if self.characteristic_distance_type == "int_ratios":
                 characteristic_distance = characteristic_distances[0] * (peak_idx + 1)
 
             elif self.characteristic_distance_type == "indep_dists":
                 characteristic_distance = characteristic_distances[peak_idx]
 
-            elif self.characteristic_distance_type == "custom_mults":
+            elif self.characteristic_distance_type == "custom_ratios":
                 characteristic_distance = (
                     characteristic_distances[0]
                     * self.characteristic_distances_ratio[peak_idx]
@@ -734,7 +738,7 @@ class PERPLModel:
                 for i, characteristic_distance_term in enumerate(
                     model_characteristic_distance_terms
                 ):
-                    if self.characteristic_distance_type == "int_mults":
+                    if self.characteristic_distance_type == "int_ratios":
                         label = f"Repeat distance {i+1}"
                     else:
                         label = f"Characteristic distance {i+1}"
@@ -822,7 +826,7 @@ class PERPLModel:
             for i, characteristic_distance_term in enumerate(
                 characteristic_distance_terms
             ):
-                if self.characteristic_distance_type == "int_mults":
+                if self.characteristic_distance_type == "int_ratios":
                     label = f"Repeat distance {i+1}"
                 else:
                     label = f"Characteristic distance {i+1}"
