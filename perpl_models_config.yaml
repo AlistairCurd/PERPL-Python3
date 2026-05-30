@@ -1,6 +1,9 @@
-# distance filter for subsetting relative positions
-# I THINK THIS IS ONLY USED FOR FILENAME AND IS NOT NEEDED
-# relpos_filter: 150.0
+############# VALUES FOR MODEL CONFIGURATION ########################################
+# Read comments around the values and set as required
+# Lists of values where indicated generate multiple models for fitting and comparison
+# Optionally generate few models or one model first for testing rough parameter
+# values and ranges
+#####################################################################################
 
 
 # Model direction
@@ -14,8 +17,9 @@ model_direction: xx
 ## 1 for distances along a single direction
 ## 2 for distances across a plane
 ## Not yet implemented for KDE: 3 for distances in a 3D volume
-##
-## Used to calculate different KDE kernels for different dimensionality
+#
+## Used to calculate different KDE kernel shapes
+## appropriate to different dimensionality
 dimension: [1]
 
 
@@ -26,17 +30,18 @@ dimension: [1]
 ##
 ## Use "null" to apply no limits
 limits:
-  x_limit: 200.  # e.g. 10 or null 
+  x_limit: 200.  # e.g. 10 or null
   y_limit: 200.
   z_limit: 200.
 
 
-# FROM HERE, INCLUDE ALL DESIRED VALUES FOR MODELS
-# IN THE PARAMETER SWEEP IN A LIST
+#### FROM HERE, INCLUDE ALL DESIRED VALUES IN A LIST ####
+#### FOR A SWEEP THROUGH MULTIPLE MODEL FORMS ###########
 
-# FITTED RPD PARAMETERS
-# Do not compare information criteria between different
-# bin_size, kde_kernel_size or fitlength values
+
+## EXPERIMENTAL DATA PREPARATION PARAMETERS ###############
+## DO NOT COMPARE INFORMATION CRITERIA BETWEEN DIFFERENT ##
+## bin_size, kde_kernel_size or fitlength values ##########
 
 # Bin size for histogram analysis (not used for KDE)
 bin_sizes: [5]  # e.g. [1, 2, 5]
@@ -49,56 +54,65 @@ bin_sizes: [5]  # e.g. [1, 2, 5]
 ## Smaller values keep more detail, larger values smoothen noise
 kde_kernel_size: [3.2]  # e.g. [5, 6, 7]
 
-  
+
 # Maximum distance for the fit (less than relpos_filter if using a KDE)
-fitlength: [105, 115, 125]  # Can try multiple fit lengths
+fitlength: [105, 115, 125]  # Can try multiple fit lengths, e.g. [90, 100, 110]
 
 
-# MODEL PARAMS
-# Define the form of the model
-# Include all desired values each parameter in a list
+## MODEL FORM PARAMETERS ################################
+## Include all desired values each parameter in a list ##
 
 # Background model options
-# null, flat, linear, linear_flat, trans_bg_0, trans_bg_1, trans_bg_2
+## From:
+## null, flat, linear, linear_flat, trans_bg_0, trans_bg_1, trans_bg_2
+#
 # TODO: Change model names and add more models
-background: [null, flat, linear, linear_flat]  # Can try multiple background models
+background: [null, flat, linear, linear_flat]  # e.g. [flat, linear]
 
 
 # Number of characteristic distance peaks in the model
 n_peaks: [0, 1, 4, 5, 6]  # Can try models with different numbers of peaks
 
 
-# Indepedent ("variable") amplitude for characteristic distance peaks
-# or amplitudes have a "fixed_ratio". Fixed is currently (1, 1 - 1/n, 1 - 2/n, ...), as used for 1D analysis through a finite volume. 
+# Relative amplitudes of peaks
 #
-# So "variable", "fixed_ratio", or both in the list
-peak_type: [variable]  # variable, fixed_ratio
+## Indepedent amplitude ("indep_amp") for characteristic distance peaks
+## or amplitudes decrease linearly ("lin_decrease") (1, 1 - 1/n, 1 - 2/n, ...),
+## as used for 1D analysis through a finite space.
+##
+## So "indep_amp", "lin_decrease", or both in the list
+peak_amps: [indep_amp]  # e.g. [indep_amp, lin_decrease]
 
 
 # Relationship between the characteristic distances:
-## "one": Distances are at integer multiples of the first distance
+#
+## Distance ratios:
+## Multipliers for fixed relationships between distances
+##
+### "int_ratios": Distances are at integer multiples of the first distance
+##
+### "custom_ratios": Distances are at other multiples of the first distance
+#### For custom_ratios, also include these distance ratios
+#### in `custom_ratios_list` below
+##
+### "indep_dists": Distances are at independent (multiple) distances
+dist_ratios: [int_ratios]  # int_ratios, custom_ratios, indep_dists
+#
+#
+## Ratios between characteristic distances
+### null if dist_ratios is not custom_ratios
+### or must be list with length corresponding to max of n_peaks,
+### beginning with 1.
+custom_ratios_list: [null]  # null or e.g. [1.0, 1.414, 2.0] for max n_peaks: 3
 
-## "multiple_ratio": Distances are at other multiples of the first distance
-### For multiple_ratio, also include these distance ratios
-### in `charac_dist_ratio` below
-
-## "multiple_fixed": Distances are at independent (multiple) distances
-
-# TODO: Change these terms
-charac_dists: [one]  # one, multiple_ratio, multiple_fixed
-
-
-# Ratio between characteristic distances
-## null if `charac_dist` is not "multiple_ratio"
-## or must be list with length corresponding to max of n_peaks
-charac_dist_ratio: [null]  # null or e.g. [1.0, 0.7, 0.4] for max n_peaks: 3
 
 # Model repeated localisations of single underlying objects
 ## These localisations have a spread determined by the experimental precision
-repeats: [True, False]  # True, False or try both
-  
+repeats: [True, False]  # True, False or both
+
+
 # Include offset - Not implemented yet
-offset: [False] # True, False
+offset: [False] # True, False (or both)
 
 
 # Normalise the model RPD
@@ -109,7 +123,9 @@ offset: [False] # True, False
 normalise: [False] # True, False
 
 
-# Initial guesses at model parameters for fit
+#### PARAMETER VALUE INITIALISATION AND ALLOWED RANGE FOR FIT ####
+
+# Initial guesses
 params_initial:
   # amplitude of peak 1
   amp_peak_1: 10
@@ -123,10 +139,11 @@ params_initial:
   amp_peak_6: 10
 
   # First characteristic distance
-  ## Can use a list corresponding to a list of different charac_dist relationships used.
+  ## Can use a single value or a list corresponding to
+  ## a list of different charac_dist relationships used.
   ## e.g. [20, 10, 24] would be the distances used for models with
-  ## `charac_dist` of [one, multiple_ratio, multiple_fixed],
-  ## if that was the list specified
+  ## dist_ratios of [int_ratios, custom_ratios, indep_dists],
+  ## if that was the list specified (the lists must have the same length).
   characteristic_distance_1: 20
   # Second characteristic distance
   characteristic_distance_2: 50  # Can be list as for distance_1
@@ -138,13 +155,13 @@ params_initial:
   # Standard deviation of localisation precision
   ## (Spread of repeated localisations)
   loc_prec_sd: 5
-    
+
   # amplitude of peak due to repeated localisations
   loc_prec_amp: 10
 
   # Background slope
   bg_slope: -0.1
-    
+
   # Background offset
   bg_offset: 0
 
@@ -152,7 +169,8 @@ params_initial:
   # trans_bg_quad_coeff: -0.1
   # trans_bg_cubic_coeff: 0.1
 
-# lower bounds for parameters
+
+# Parameter lower bounds
 params_lower:
   amp_peak_1: 0
   amp_peak_2: 0
@@ -166,19 +184,19 @@ params_lower:
   characteristic_distance_1: 5
   # characteristic_distance_2: 5
   # etc.
-    
+
   characteristic_distance_broadening: 0
-  
+
   loc_prec_sd: 0
   loc_prec_amp: 0
-    
+
   bg_slope: -10
   bg_offset: 0
 
   # trans_bg_quad_coeff: -10
   # trans_bg_cubic_coeff: 0
 
-# upper bounds for parameters
+# Parameter upper bounds
 params_upper:
   amp_peak_1: 100
   amp_peak_2: 100
@@ -187,17 +205,17 @@ params_upper:
   amp_peak_5: 100
   amp_peak_6: 100
   # etc...
-    
+
   # Can use lists as for initial guesses
   characteristic_distance_1: 40
   # characteristic_distance_2: 5
   # etc.
-    
+
   characteristic_distance_broadening: 15
 
   loc_prec_sd: 10
   loc_prec_amp: 100
-    
+
   bg_slope: 0
   bg_offset: 10
 
