@@ -100,7 +100,7 @@ def gen_configs(config_file, suffix=None):
             "n_peaks": params[2],
             "peak_amps": params[3],
             "dist_ratios": params[4],
-            "characteristic_distance_ratio": custom_ratios_list,
+            "custom_ratios_list": custom_ratios_list,
             "repeats": params[5],
             "offset": params[6],
             "normalise": params[7],

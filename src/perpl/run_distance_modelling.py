@@ -99,7 +99,7 @@ def model_the_data(
         n_peaks=model_config["n_peaks"],
         peak_amps=model_config["peak_amps"],
         dist_ratios=model_config["dist_ratios"],
-        characteristic_distance_ratio=model_config["characteristic_distance_ratio"],
+        custom_ratios_list=model_config["custom_ratios_list"],
         repeats=model_config["repeats"],
         offset=model_config["offset"],
         normalise=model_config["normalise"],

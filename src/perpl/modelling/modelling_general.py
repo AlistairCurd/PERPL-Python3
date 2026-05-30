@@ -66,7 +66,7 @@ class PERPLModel:
         n_peaks=0,
         peak_amps="indep_amp",
         dist_ratios="int_ratios",
-        characteristic_distance_ratio=None,
+        custom_ratios_list=None,
         repeats=False,
         offset=False,
         normalise=False,
@@ -85,13 +85,14 @@ class PERPLModel:
             n_peaks: Number of peaks (0, 1, 2, ...)
             peak_amps: "indep_amp" or "lin_decrease" peaks
             dist_ratios: Relationship between the characteristic distances.
-                int_ratios: Integer multiples of a root characteristic distance.
-                indep_dists : As many characteristic distances as peaks at
+                "int_ratios": Integer multiples of a root characteristic distance.
+                "indep_dists" : As many characteristic distances as peaks at
                     user defined distances
-                custom_ratios: As many characteristic distances as peaks, at
+                "custom_ratios": As many characteristic distances as peaks, at
                     distances calculated by scaling up one characteristic distance
                     by different ratios
-            characteristic_distance_ratio: Ratio of characteristic distances
+            custom_ratios_list:
+                List of custom ratios when dist_ratios == "custom_ratios"
             repeats: TRUE or FALSE to have repeated localisations
             offset: TRUE or FALSE to include offset
             normalise: TRUE or FALSE to normalise
@@ -130,11 +131,11 @@ class PERPLModel:
                 " indep_dists or custom_ratios"
             )
         if dist_ratios == "custom_ratios":
-            if len(characteristic_distance_ratio) < n_peaks:
+            if len(custom_ratios_list) < n_peaks:
                 raise ValueError(
                     "Should be a characteristic distance ratio for each peak"
                 )
-            if characteristic_distance_ratio[0] != 1.0:
+            if custom_ratios_list[0] != 1.0:
                 raise ValueError("First peak should have ratio 1.0")
         if not isinstance(repeats, bool):
             raise ValueError("Repeats should be True or False")
@@ -243,7 +244,7 @@ class PERPLModel:
 
             # characteristic distances
             self.dist_ratios_type = dist_ratios
-            self.characteristic_distances_ratio = characteristic_distance_ratio
+            self.characteristic_distances_ratio = custom_ratios_list
 
             self.initial_params["characteristic_distance_1"] = params_initial[
                 "characteristic_distance_1"
