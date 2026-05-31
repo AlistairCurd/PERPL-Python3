@@ -56,7 +56,7 @@ def gen_configs(config_file, suffix=None):
         sys.exit(1)
     backgrounds = config["background"]
     n_peaks = config["n_peaks"]
-    peak_ampss = config["peak_amps"]
+    peak_amps = config["peak_amps"]
     dist_ratios = config["dist_ratios"]
     custom_ratios_list = config["custom_ratios_list"]
     repeats = config["repeats"]
@@ -71,13 +71,13 @@ def gen_configs(config_file, suffix=None):
             raise ValueError(
                 "There is a list of distances for the first peak."
                 " There must be the same number of entries in this list"
-                " as in charac_dist in the config file"
+                " as in dist_ratios in the config file"
                 " (types of relationship between characteristic distances)."
             )
         print(
             "Multiple characteristic distances present for first peak"
             ". Therefore, assuming peak distances "
-            "are given respectively for each option given for charac_dist"
+            "are given respectively for each option given for dist_ratios"
             " in the config file (types of relationship between"
             " characteristic distances)."
         )
@@ -90,7 +90,7 @@ def gen_configs(config_file, suffix=None):
         product(
             backgrounds,
             n_peaks,
-            peak_ampss,
+            peak_amps,
             dist_ratios,
             # custom_ratios_lists,
             repeats,
@@ -108,7 +108,7 @@ def gen_configs(config_file, suffix=None):
             "n_peaks": params[1],
             "peak_amps": params[2],
             "dist_ratios": params[3],
-            "custom_ratios_list": custom_ratios_list,
+            # "custom_ratios_list": custom_ratios_list,
             "repeats": params[4],
             "offset": params[5],
             "normalise": params[6],
@@ -116,6 +116,11 @@ def gen_configs(config_file, suffix=None):
             "params_lower": params_lower_copy,
             "params_upper": params_upper_copy,
         }
+
+        if params[3] == "custom_ratios":
+            model_config["custom_ratios_list"] = custom_ratios_list
+        else:
+            model_config["custom_ratios_list"] = None
 
         # If multiple characteristic distance types present
         # (e.g. sweeping through both models using multiples of a unit distance

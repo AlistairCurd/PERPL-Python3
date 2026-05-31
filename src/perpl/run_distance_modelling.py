@@ -412,7 +412,7 @@ def main(argv=None):
                         "Check: bg < 0": fitted_model.bgbelowzero,
                         "Check: params reached limits": fitted_model.popt_at_bound,
                         "Check: large param uncertainty": (
-                            fitted_model.large_uncertainty,
+                            fitted_model.large_uncertainty
                         ),
                     }
                 )
