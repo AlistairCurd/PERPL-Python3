@@ -383,6 +383,16 @@ def main(argv=None):
                     continue
                 x_expt, y_expt, fitted_model = model_out
 
+                if model_config["dist_ratios"] == "custom_ratios":
+                    custom_ratios = model_config["custom_ratios_list"]
+                    dist_ratios_for_table = ""
+                    for i, item in enumerate(custom_ratios):
+                        dist_ratios_for_table += f"{item}"
+                        if (i + 1) < len(custom_ratios):
+                            dist_ratios_for_table += ", "
+                else:
+                    dist_ratios_for_table = model_config["dist_ratios"]
+
                 model_results.append(
                     {
                         "Name": model_file.rstrip(".yaml"),
@@ -390,7 +400,7 @@ def main(argv=None):
                         x_kernel_col: bin_or_kernel,
                         "N Peaks": model_config["n_peaks"],
                         "Peak ratios": model_config["peak_amps"],
-                        "Model distance ratios": model_config["dist_ratios"],
+                        "Model distance ratios": dist_ratios_for_table,
                         "Repeated localisations": model_config["repeats"],
                         "Background model": model_config["background"],
                         "AICc": fitted_model.aic_corrected,
