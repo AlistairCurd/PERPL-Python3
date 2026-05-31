@@ -13,16 +13,6 @@
 model_direction: xx
 
 
-# Dimensionality of the space being modelled
-## 1 for distances along a single direction
-## 2 for distances across a plane
-## Not yet implemented for KDE: 3 for distances in a 3D volume
-#
-## Used to calculate different KDE kernel shapes
-## appropriate to different dimensionality
-dimension: [1]
-
-
 # Limits for distance components in x, y, and z
 ##
 ## One use is to restrict modelling to the use of pairs of points
