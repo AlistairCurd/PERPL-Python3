@@ -1,6 +1,7 @@
 import copy
 import datetime
 import os
+import sys
 from itertools import product
 
 import yaml
@@ -24,7 +25,6 @@ def gen_configs(config_file, suffix=None):
     """
 
     # load in configuration
-    # with open(os.path.join(config_folder, "config.yaml"), "r") as ymlfile:
     with open(config_file, "r") as ymlfile:
         config = yaml.safe_load(ymlfile)
 
@@ -44,7 +44,16 @@ def gen_configs(config_file, suffix=None):
         yaml.dump(config, outfile)
 
     # Load in params list
-    dimension = config["dimension"]
+    model_direction = config["model_direction"]
+    if model_direction == "xyz":
+        dimension = 3
+    elif model_direction in ("xy", "xz", "yz"):
+        dimension = 2
+    elif model_direction in ("xx", "yy", "zz"):
+        dimension = 1
+    else:
+        print(f"model_direction in config file ({model_direction}) is invalid.")
+        sys.exit(1)
     backgrounds = config["background"]
     n_peaks = config["n_peaks"]
     peak_ampss = config["peak_amps"]
@@ -79,7 +88,6 @@ def gen_configs(config_file, suffix=None):
     # generate all possible model configurations
     for index, params in enumerate(
         product(
-            dimension,
             backgrounds,
             n_peaks,
             peak_ampss,
@@ -95,15 +103,15 @@ def gen_configs(config_file, suffix=None):
         params_upper_copy = copy.deepcopy(params_upper)
 
         model_config = {
-            "dimension": params[0],
-            "background": params[1],
-            "n_peaks": params[2],
-            "peak_amps": params[3],
-            "dist_ratios": params[4],
+            "dimension": dimension,
+            "background": params[0],
+            "n_peaks": params[1],
+            "peak_amps": params[2],
+            "dist_ratios": params[3],
             "custom_ratios_list": custom_ratios_list,
-            "repeats": params[5],
-            "offset": params[6],
-            "normalise": params[7],
+            "repeats": params[4],
+            "offset": params[5],
+            "normalise": params[6],
             "params_initial": params_initial_copy,
             "params_lower": params_lower_copy,
             "params_upper": params_upper_copy,
@@ -119,7 +127,7 @@ def gen_configs(config_file, suffix=None):
                 [params_initial_copy, params_lower_copy, params_upper_copy],
                 strict=True,
             ):
-                idx = dist_ratios.index(params[4])
+                idx = dist_ratios.index(params[3])
                 model_config[name]["characteristic_distance_1"] = file[
                     "characteristic_distance_1"
                 ][idx]

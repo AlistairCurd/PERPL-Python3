@@ -247,7 +247,7 @@ def main(argv=None):
     if not (args.fit_histograms or args.fit_kdes or args.no_fitting):
         parser.error("Must specify at least one of" " --fh, --fkde or -nofit")
 
-    print(f"Fit hists: {args.fit_histograms}")
+    print(f"Fit histograms: {args.fit_histograms}")
     print(f"Fit KDEs: {args.fit_kdes}")
 
     config_file = args.config_file
@@ -266,6 +266,10 @@ def main(argv=None):
     with open(config_file, "r") as ymlfile:
         config = yaml.safe_load(ymlfile)
     model_direction = config["model_direction"]
+    if model_direction not in ("xx", "yy", "zz", "xy", "xz", "yz", "xyz"):
+        print(f"model_direction in config file ({model_direction}) is invalid.")
+        print("Exiting.")
+        sys.exit(1)
     limits = config["limits"]
     fitlength_lst = config["fitlength"]
 
