@@ -21,9 +21,10 @@ specific language governing permissions and limitations under the License.
 """
 
 import os
-import sys
 import socket
+import sys
 from sys import platform as _platform
+
 import numpy as np
 
 
@@ -155,12 +156,8 @@ def primary_filename_and_path_setup(info):
             the function as they can be seen in info in other functions.
     """
 
-
-
     # Collect parameters for directory name
-    parameter_str = (
-        "filter" + str(info["filter_dist"]) + "_" + str(info["dims"]) + "D"
-    )
+    parameter_str = "filter" + str(info["filter_dist"]) + "_" + str(info["dims"]) + "D"
 
     # Include histogram bin-size
     parameter_str = parameter_str + "_bin" + repr(info["bin_size"])
@@ -187,25 +184,16 @@ def primary_filename_and_path_setup(info):
     index_of_dot = in_file_no_path.index(".")
     filename_without_extension = in_file_no_path[:index_of_dot]
 
-    results_dir = (
-        path
-        + r"/PERPL"
-        + r"/rel_posns_"
-        + parameter_str
-    )
+    results_dir = path + r"/PERPL" + r"/rel_posns_" + parameter_str
 
     # Include start time
     results_dir = results_dir + "_" + info["start"]
 
     ## Set up short directory name to save space
-    short_filename_without_extension = (
-        filename_without_extension[:6]
-    )
+    short_filename_without_extension = filename_without_extension[:6]
 
     # Include some parameters for short name
-    short_parameter_str = (
-        "f" + str(info["filter_dist"]) + "_" + str(info["dims"]) + "D"
-    )
+    short_parameter_str = "f" + str(info["filter_dist"]) + "_" + str(info["dims"]) + "D"
     short_parameter_str = short_parameter_str + "_b" + repr(info["bin_size"])
 
     if info["colours_analysed"] == 1:
@@ -222,12 +210,7 @@ def primary_filename_and_path_setup(info):
     if info["nns"] > 0:
         short_parameter_str = short_parameter_str + f'_{info["nns"]}n'
 
-    short_results_dir = (
-        path
-        + r"/PERPL"
-        + r"/rel_posns_"
-        + short_parameter_str
-    )
+    short_results_dir = path + r"/PERPL" + r"/rel_posns_" + short_parameter_str
 
     info["results_dir"] = results_dir
     info["in_file_no_extension"] = filename_without_extension
@@ -266,9 +249,7 @@ def secondary_filename_and_path_setup(info):
         path + r"/" + info["prog"] + r"/" + parameter_str + "_" + info["start"]
     )
 
-    short_filename_without_extension = (
-        filename_without_extension[:5] + r"-s-" + filename_without_extension[-5:]
-    )
+    short_filename_without_extension = filename_without_extension[:6]
     short_parameter_str = "f_" + str(info["filter_dist"])
 
     short_results_dir = (
@@ -279,7 +260,8 @@ def secondary_filename_and_path_setup(info):
         + short_filename_without_extension
         + r"/"
         + short_parameter_str
-        + "_" + info["start"]
+        + "_"
+        + info["start"]
     )
 
     info["results_dir"] = results_dir
@@ -297,19 +279,23 @@ def secondary_read_data_in(info):
        Also extracts unful substrings from the input filename that will be used
        to outpur results files and puts them in the
        info dictionary. These are:
-          results_dir (str): All output files are saved in a directory at the same
-                             level in the directory structure as the input data and with the
-                             name that consists of the input file and a date stamp.
-          in_file_no_path (str): The input file name with no path.
-          filename_without_extension (str): Input file name wihtout the path and
-                            file extension. It is used to create a unique name of the output
-                            data file and directory.
+          results_dir (str):
+            All output files are saved in a directory at the same
+            level in the directory structure as the input data and with the
+            name that consists of the input file and a date stamp.
+          in_file_no_path (str):
+            The input file name with no path.
+          filename_without_extension (str):
+            Input file name wihtout the path and
+            file extension. It is used to create a unique name of the output
+            data file and directory.
 
     Args:
-        info (dict): A python dictionary containing a collection of useful parameters
-            such as the filenames and paths.
+        info (dict):
+            A collection of useful parameters such as the filenames and paths.
     Returns:
-               xyz_values (numpy array): A numpy array of the x, y (and z) localisations.
+        xyz_values (numpy array):
+            The x, y (and z) localisations.
     """
 
     in_file = info["in_file_and_path"]

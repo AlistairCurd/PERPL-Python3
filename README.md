@@ -52,7 +52,7 @@ Download or clone this repository and `pip install .`
 
 Tested on Linux and Windows
 
-## Quick start 
+## Quick start
 
 Input data should be a table of 2D or 3D data points in a CSV file, with one row per data point. The first columns must contain the X and Y coordinates (and Z for 3D data).
 
@@ -96,15 +96,15 @@ The following commands are available:
 
 Run `COMMAND -h` to see available command-line options.
 
-The `-s` flag can be used to shorten the output path if this becomes a problem in Windows.
+The `-s` flag may be useful with `relpos` and `rotsym2d` to shorten the output path if this becomes a problem in Windows.
 
-Output is generated in a subdirectory to the directory containing the input data/RPD data.
+Output is generated in the directory containing the input data/RPD data and in subdirectories.
 
 See `src/perpl/` for all modules including structural model implementations.
 
 ## Data
 
-The original test data for this software and examples with which the software can be used, can be found at 
+The original test data for this software and examples with which the software can be used, can be found at
 
  [https://bitbucket.org/apcurd/perpl_test_data](https://bitbucket.org/apcurd/perpl_test_data).
 
