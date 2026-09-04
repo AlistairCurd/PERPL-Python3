@@ -21,6 +21,7 @@ specific language governing permissions and limitations under the License.
 """
 
 import unittest
+
 import perpl.io.utils as ut
 
 
@@ -32,7 +33,6 @@ class TestFindExponent(unittest.TestCase):
     sizes of numbers and from that calulating the precission and relevant number
     of significant figures needed.
     """
-
 
     def test_positve_exponent_float(self):
         """
@@ -80,7 +80,7 @@ class TestFindExponent(unittest.TestCase):
         """
         print("Start TestFindExponent test_positve_exponent_complex", flush=True)
 
-        value = 2.088696E+4
+        value = 2.088696e4
 
         result = ut.find_exponent(str(value))
 
@@ -93,7 +93,7 @@ class TestFindExponent(unittest.TestCase):
         """
         print("Start TestFindExponent test_negative_exponent_complex", flush=True)
 
-        value = 6.0E-2
+        value = 6.0e-2
 
         result = ut.find_exponent(str(value))
 
@@ -106,7 +106,7 @@ class TestFindExponent(unittest.TestCase):
         """
         print("Start TestFindExponent test_zero_exponent_complex", flush=True)
 
-        value = 1.06E0
+        value = 1.06e0
 
         result = ut.find_exponent(str(value))
 
@@ -136,8 +136,13 @@ class TestPlusAndMinus(unittest.TestCase):
         so we just check that the returned strings are in rather than equal to
         each other.
         """
-        print(("Start TestPlusAndMinus test_larger_pos_expo_value_smaller_neg_"
-               "expo_uncertainty_floats"), flush=True)
+        print(
+            (
+                "Start TestPlusAndMinus test_larger_pos_expo_value_smaller_neg_"
+                "expo_uncertainty_floats"
+            ),
+            flush=True,
+        )
 
         value = 86.96
 
@@ -145,11 +150,11 @@ class TestPlusAndMinus(unittest.TestCase):
 
         result1, result2 = ut.plus_and_minus(value, uncertainty)
 
-        #print(result1)
-        #print(value)
+        # print(result1)
+        # print(value)
 
-        #print(result2)
-        #print(uncertainty)
+        # print(result2)
+        # print(uncertainty)
 
         self.assertIn(str(result1).strip(), "86.960".strip())
         self.assertIn(str(result2), "0.01")
@@ -168,8 +173,13 @@ class TestPlusAndMinus(unittest.TestCase):
         so we just check that the returned strings are in rather than equal to
         each other.
         """
-        print(("Start TestPlusAndMinus test_larger_pos_expo_value_smaller_pos_"
-               "expo_uncertainty_floats"), flush=True)
+        print(
+            (
+                "Start TestPlusAndMinus test_larger_pos_expo_value_smaller_pos_"
+                "expo_uncertainty_floats"
+            ),
+            flush=True,
+        )
 
         value = 86.96
 
@@ -177,11 +187,11 @@ class TestPlusAndMinus(unittest.TestCase):
 
         result1, result2 = ut.plus_and_minus(value, uncertainty)
 
-        #print(result1)
-        #print(value)
+        # print(result1)
+        # print(value)
 
-        #print(result2)
-        #print(uncertainty)
+        # print(result2)
+        # print(uncertainty)
 
         self.assertIn(str(result1).strip(), "87.00".strip())
         self.assertIn(str(result2), "10.00")
@@ -199,8 +209,13 @@ class TestPlusAndMinus(unittest.TestCase):
         so we just check that the returned strings are in rather than equal to
         each other.
         """
-        print(("Start TestPlusAndMinus test_smaller_pos_expo_value_larger_pos_"
-               "expo_uncertainty_floats"), flush=True)
+        print(
+            (
+                "Start TestPlusAndMinus test_smaller_pos_expo_value_larger_pos_"
+                "expo_uncertainty_floats"
+            ),
+            flush=True,
+        )
 
         value = 86.96
 
@@ -208,11 +223,11 @@ class TestPlusAndMinus(unittest.TestCase):
 
         result1, result2 = ut.plus_and_minus(value, uncertainty)
 
-        #print(result1)
-        #print(value)
+        # print(result1)
+        # print(value)
 
-        #print(result2)
-        #print(uncertainty)
+        # print(result2)
+        # print(uncertainty)
 
         self.assertIn(str(result1).strip(), "86.96".strip())
         self.assertIn(str(result2), "300.0")
@@ -231,8 +246,13 @@ class TestPlusAndMinus(unittest.TestCase):
         so we just check that the returned strings are in rather than equal to
         each other.
         """
-        print(("Start TestPlusAndMinus test_larger_neg_expo_value_smaller_neg_"
-               "expo_uncertainty_floats"), flush=True)
+        print(
+            (
+                "Start TestPlusAndMinus test_larger_neg_expo_value_smaller_neg_"
+                "expo_uncertainty_floats"
+            ),
+            flush=True,
+        )
 
         value = 0.8696
 
@@ -240,11 +260,11 @@ class TestPlusAndMinus(unittest.TestCase):
 
         result1, result2 = ut.plus_and_minus(value, uncertainty)
 
-        #print(result1)
-        #print(value)
+        # print(result1)
+        # print(value)
 
-        #print(result2)
-        #print(uncertainty)
+        # print(result2)
+        # print(uncertainty)
 
         self.assertIn(str(result1).strip(), "0.870".strip())
         self.assertIn(str(result2), "0.011")
@@ -263,8 +283,13 @@ class TestPlusAndMinus(unittest.TestCase):
         so we just check that the returned strings are in rather than equal to
         each other.
         """
-        print(("Start TestPlusAndMinus test_smaller_neg_expo_value_larger_neg_"
-               "expo_uncertainty_floats"), flush=True)
+        print(
+            (
+                "Start TestPlusAndMinus test_smaller_neg_expo_value_larger_neg_"
+                "expo_uncertainty_floats"
+            ),
+            flush=True,
+        )
 
         value = 0.08696
 
@@ -272,11 +297,11 @@ class TestPlusAndMinus(unittest.TestCase):
 
         result1, result2 = ut.plus_and_minus(value, uncertainty)
 
-        #print(result1)
-        #print(value)
+        # print(result1)
+        # print(value)
 
-        #print(result2)
-        #print(uncertainty)
+        # print(result2)
+        # print(uncertainty)
 
         self.assertIn(str(result1).strip(), "0.09".strip())
         self.assertIn(str(result2), "0.101")
@@ -295,8 +320,13 @@ class TestPlusAndMinus(unittest.TestCase):
         so we just check that the returned strings are in rather than equal to
         each other.
         """
-        print(("Start TestPlusAndMinus test_smaller_neg_expo_value_larger_neg_"
-               "expo_uncertainty_floats1"), flush=True)
+        print(
+            (
+                "Start TestPlusAndMinus test_smaller_neg_expo_value_larger_neg_"
+                "expo_uncertainty_floats1"
+            ),
+            flush=True,
+        )
 
         value = 0.08696
 
@@ -304,15 +334,14 @@ class TestPlusAndMinus(unittest.TestCase):
 
         result1, result2 = ut.plus_and_minus(value, uncertainty)
 
-        #print(result1)
-        #print(value)
+        # print(result1)
+        # print(value)
 
-        #print(result2)
-        #print(uncertainty)
+        # print(result2)
+        # print(uncertainty)
 
         self.assertIn(str(result1).strip(), "0.09".strip())
         self.assertIn(str(result2), "0.330")
-
 
     def test_smaller_neg_expo_value_larger_pos_expo_uncertainty_floats(self):
         """
@@ -328,8 +357,13 @@ class TestPlusAndMinus(unittest.TestCase):
         so we just check that the returned strings are in rather than equal to
         each other.
         """
-        print(("Start TestPlusAndMinus test_smaller_neg_expo_value_larger_pos_"
-               "expo_uncertainty_floats"), flush=True)
+        print(
+            (
+                "Start TestPlusAndMinus test_smaller_neg_expo_value_larger_pos_"
+                "expo_uncertainty_floats"
+            ),
+            flush=True,
+        )
 
         value = 0.08696
 
@@ -337,15 +371,14 @@ class TestPlusAndMinus(unittest.TestCase):
 
         result1, result2 = ut.plus_and_minus(value, uncertainty)
 
-        #print(result1)
-        #print(value)
+        # print(result1)
+        # print(value)
 
-        #print(result2)
-        #print(uncertainty)
+        # print(result2)
+        # print(uncertainty)
 
         self.assertIn(str(result1).strip(), "0.09".strip())
         self.assertIn(str(result2), "33.000")
-
 
     def test_larger_pos_expo_value_smaller_zero_expo_uncertainty_floats(self):
         """
@@ -361,8 +394,13 @@ class TestPlusAndMinus(unittest.TestCase):
         so we just check that the returned strings are in rather than equal to
         each other.
         """
-        print(("Start TestPlusAndMinus test_larger_pos_expo_value_smaller_zero_"
-               "expo_uncertainty_floats"), flush=True)
+        print(
+            (
+                "Start TestPlusAndMinus test_larger_pos_expo_value_smaller_zero_"
+                "expo_uncertainty_floats"
+            ),
+            flush=True,
+        )
 
         value = 86.96
 
@@ -370,11 +408,11 @@ class TestPlusAndMinus(unittest.TestCase):
 
         result1, result2 = ut.plus_and_minus(value, uncertainty)
 
-        #print(result1)
-        #print(value)
+        # print(result1)
+        # print(value)
 
-        #print(result2)
-        #print(uncertainty)
+        # print(result2)
+        # print(uncertainty)
 
         self.assertIn(str(result1).strip(), "87.0".strip())
         self.assertIn(str(result2), "1.10")
@@ -392,8 +430,13 @@ class TestPlusAndMinus(unittest.TestCase):
         so we just check that the returned strings are in rather than equal to
         each other.
         """
-        print(("Start TestPlusAndMinus test_larger_zero_expo_value_smaller_pos_"
-               "expo_uncertainty_floats"), flush=True)
+        print(
+            (
+                "Start TestPlusAndMinus test_larger_zero_expo_value_smaller_pos_"
+                "expo_uncertainty_floats"
+            ),
+            flush=True,
+        )
 
         value = 8.696
 
@@ -401,16 +444,14 @@ class TestPlusAndMinus(unittest.TestCase):
 
         result1, result2 = ut.plus_and_minus(value, uncertainty)
 
-        #print(result1)
-        #print(value)
+        # print(result1)
+        # print(value)
 
-        #print(result2)
-        #print(uncertainty)
+        # print(result2)
+        # print(uncertainty)
 
         self.assertIn(str(result1).strip(), "8.70".strip())
         self.assertIn(str(result2), "1.10")
-
-
 
     def test_larger_pos_expo_value_smaller_neg_expo_uncertainty_complex(self):
         """
@@ -426,20 +467,25 @@ class TestPlusAndMinus(unittest.TestCase):
         so we just check that the returned strings are in rather than equal to
         each other.
         """
-        print(("Start TestPlusAndMinus test_larger_pos_expo_value_smaller_neg_"
-               "expo_uncertainty_complex"), flush=True)
+        print(
+            (
+                "Start TestPlusAndMinus test_larger_pos_expo_value_smaller_neg_"
+                "expo_uncertainty_complex"
+            ),
+            flush=True,
+        )
 
-        value = 8.696E+1
+        value = 8.696e1
 
-        uncertainty = 1.1E-2
+        uncertainty = 1.1e-2
 
         result1, result2 = ut.plus_and_minus(value, uncertainty)
 
-        #print(result1)
-        #print(value)
+        # print(result1)
+        # print(value)
 
-        #print(result2)
-        #print(uncertainty)
+        # print(result2)
+        # print(uncertainty)
 
         self.assertIn(str(result1).strip(), "86.960".strip())
         self.assertIn(str(result2), "0.01")
@@ -458,20 +504,25 @@ class TestPlusAndMinus(unittest.TestCase):
         so we just check that the returned strings are in rather than equal to
         each other.
         """
-        print(("Start TestPlusAndMinus test_larger_pos_expo_value_smaller_pos_"
-               "expo_uncertainty_complex"), flush=True)
+        print(
+            (
+                "Start TestPlusAndMinus test_larger_pos_expo_value_smaller_pos_"
+                "expo_uncertainty_complex"
+            ),
+            flush=True,
+        )
 
-        value = 8.696E+1
+        value = 8.696e1
 
-        uncertainty = 1.00E+1
+        uncertainty = 1.00e1
 
         result1, result2 = ut.plus_and_minus(value, uncertainty)
 
-        #print(result1)
-        #print(value)
+        # print(result1)
+        # print(value)
 
-        #print(result2)
-        #print(uncertainty)
+        # print(result2)
+        # print(uncertainty)
 
         self.assertIn(str(result1).strip(), "87.00".strip())
         self.assertIn(str(result2), "10.00")
@@ -489,20 +540,25 @@ class TestPlusAndMinus(unittest.TestCase):
         so we just check that the returned strings are in rather than equal to
         each other.
         """
-        print(("Start TestPlusAndMinus test_smaller_pos_expo_value_larger_pos_"
-               "expo_uncertainty_complex"), flush=True)
+        print(
+            (
+                "Start TestPlusAndMinus test_smaller_pos_expo_value_larger_pos_"
+                "expo_uncertainty_complex"
+            ),
+            flush=True,
+        )
 
-        value = 8.696E+1
+        value = 8.696e1
 
-        uncertainty = 3.0001E+2
+        uncertainty = 3.0001e2
 
         result1, result2 = ut.plus_and_minus(value, uncertainty)
 
-        #print(result1)
-        #print(value)
+        # print(result1)
+        # print(value)
 
-        #print(result2)
-        #print(uncertainty)
+        # print(result2)
+        # print(uncertainty)
 
         self.assertIn(str(result1).strip(), "86.96".strip())
         self.assertIn(str(result2), "300.0")
@@ -521,20 +577,25 @@ class TestPlusAndMinus(unittest.TestCase):
         so we just check that the returned strings are in rather than equal to
         each other.
         """
-        print(("Start TestPlusAndMinus test_larger_neg_expo_value_smaller_neg_"
-               "expo_uncertainty_complex"), flush=True)
+        print(
+            (
+                "Start TestPlusAndMinus test_larger_neg_expo_value_smaller_neg_"
+                "expo_uncertainty_complex"
+            ),
+            flush=True,
+        )
 
-        value = 8.696E-1
+        value = 8.696e-1
 
-        uncertainty = 1.1E-2
+        uncertainty = 1.1e-2
 
         result1, result2 = ut.plus_and_minus(value, uncertainty)
 
-        #print(result1)
-        #print(value)
+        # print(result1)
+        # print(value)
 
-        #print(result2)
-        #print(uncertainty)
+        # print(result2)
+        # print(uncertainty)
 
         self.assertIn(str(result1).strip(), "0.870".strip())
         self.assertIn(str(result2), "0.011")
@@ -553,20 +614,25 @@ class TestPlusAndMinus(unittest.TestCase):
         so we just check that the returned strings are in rather than equal to
         each other.
         """
-        print(("Start TestPlusAndMinus test_smaller_neg_expo_value_larger_neg_"
-               "expo_uncertainty_complex"), flush=True)
+        print(
+            (
+                "Start TestPlusAndMinus test_smaller_neg_expo_value_larger_neg_"
+                "expo_uncertainty_complex"
+            ),
+            flush=True,
+        )
 
-        value = 8.696E-3
+        value = 8.696e-3
 
-        uncertainty = 1.01E-1
+        uncertainty = 1.01e-1
 
         result1, result2 = ut.plus_and_minus(value, uncertainty)
 
-        #print(result1)
-        #print(value)
+        # print(result1)
+        # print(value)
 
-        #print(result2)
-        #print(uncertainty)
+        # print(result2)
+        # print(uncertainty)
 
         self.assertIn(str(result1).strip(), "0.01".strip())
         self.assertIn(str(result2), "0.1010")
@@ -585,24 +651,28 @@ class TestPlusAndMinus(unittest.TestCase):
         so we just check that the returned strings are in rather than equal to
         each other.
         """
-        print(("Start TestPlusAndMinus test_smaller_neg_expo_value_larger_neg_"
-               "expo_uncertainty_complex1"), flush=True)
+        print(
+            (
+                "Start TestPlusAndMinus test_smaller_neg_expo_value_larger_neg_"
+                "expo_uncertainty_complex1"
+            ),
+            flush=True,
+        )
 
-        value = 8.696E-2
+        value = 8.696e-2
 
-        uncertainty = 3.30001E-1
+        uncertainty = 3.30001e-1
 
         result1, result2 = ut.plus_and_minus(value, uncertainty)
 
-        #print(result1)
-        #print(value)
+        # print(result1)
+        # print(value)
 
-        #print(result2)
-        #print(uncertainty)
+        # print(result2)
+        # print(uncertainty)
 
         self.assertIn(str(result1).strip(), "0.09".strip())
         self.assertIn(str(result2), "0.330")
-
 
     def test_smaller_neg_expo_value_larger_pos_expo_uncertainty_complex(self):
         """
@@ -618,24 +688,28 @@ class TestPlusAndMinus(unittest.TestCase):
         so we just check that the returned strings are in rather than equal to
         each other.
         """
-        print(("Start TestPlusAndMinus test_smaller_neg_expo_value_larger_pos_"
-               "expo_uncertainty_complex"), flush=True)
+        print(
+            (
+                "Start TestPlusAndMinus test_smaller_neg_expo_value_larger_pos_"
+                "expo_uncertainty_complex"
+            ),
+            flush=True,
+        )
 
-        value = 8.696E-2
+        value = 8.696e-2
 
-        uncertainty = 3.30001E+1
+        uncertainty = 3.30001e1
 
         result1, result2 = ut.plus_and_minus(value, uncertainty)
 
-        #print(result1)
-        #print(value)
+        # print(result1)
+        # print(value)
 
-        #print(result2)
-        #print(uncertainty)
+        # print(result2)
+        # print(uncertainty)
 
         self.assertIn(str(result1).strip(), "0.09".strip())
         self.assertIn(str(result2), "33.000")
-
 
     def test_larger_pos_expo_value_smaller_zero_expo_uncertainty_complex(self):
         """
@@ -651,20 +725,25 @@ class TestPlusAndMinus(unittest.TestCase):
         so we just check that the returned strings are in rather than equal to
         each other.
         """
-        print(("Start TestPlusAndMinus test_larger_pos_expo_value_smaller_zero_"
-               "expo_uncertainty_complex"), flush=True)
+        print(
+            (
+                "Start TestPlusAndMinus test_larger_pos_expo_value_smaller_zero_"
+                "expo_uncertainty_complex"
+            ),
+            flush=True,
+        )
 
-        value = 8.696E+1
+        value = 8.696e1
 
-        uncertainty = 1.1E-0
+        uncertainty = 1.1e-0
 
         result1, result2 = ut.plus_and_minus(value, uncertainty)
 
-        #print(result1)
-        #print(value)
+        # print(result1)
+        # print(value)
 
-        #print(result2)
-        #print(uncertainty)
+        # print(result2)
+        # print(uncertainty)
 
         self.assertIn(str(result1).strip(), "87.0".strip())
         self.assertIn(str(result2), "1.10")
@@ -682,20 +761,25 @@ class TestPlusAndMinus(unittest.TestCase):
         so we just check that the returned strings are in rather than equal to
         each other.
         """
-        print(("Start TestPlusAndMinus test_larger_zero_expo_value_smaller_pos_"
-               "expo_uncertainty_complex"), flush=True)
+        print(
+            (
+                "Start TestPlusAndMinus test_larger_zero_expo_value_smaller_pos_"
+                "expo_uncertainty_complex"
+            ),
+            flush=True,
+        )
 
-        value = 8.696E+0
+        value = 8.696e0
 
-        uncertainty = 1.1E-0
+        uncertainty = 1.1e-0
 
         result1, result2 = ut.plus_and_minus(value, uncertainty)
 
-        #print(result1)
-        #print(value)
+        # print(result1)
+        # print(value)
 
-        #print(result2)
-        #print(uncertainty)
+        # print(result2)
+        # print(uncertainty)
 
         self.assertIn(str(result1).strip(), "8.70".strip())
         self.assertIn(str(result2), "1.10")
@@ -714,41 +798,45 @@ class TestPrimaryFilenameAndPathSetup(unittest.TestCase):
         """
         print("Start TestPrimaryFilenameAndPathSetup test_linux_filename", flush=True)
 
-        prog = 'relative_positions'
-        prog_short_name = 'rp'
-        description = 'Calculating the relative positions of points as vectors.'
-        info = {'prog':prog, 'prog_short_name':prog_short_name, 'description':description}
-        info['start'] = '2019-11-07_15-49-55'
-        info['dims'] = 2
-        info['filter_dist'] = 200
-        info['zoom'] = 10
-        info['verbose'] = True
-        info['in_file_and_path'] = ("/localhome/joanna/PERPL_data/Nup107_SNAP_3D"
-                                    "_GRROUPED_10nmZprec.csv")
-        info['colours_analysed'] = None
-        info['nns'] = 0
-        info['bin_size'] = 1
+        prog = "relative_positions"
+        prog_short_name = "rp"
+        description = "Calculating the relative positions of points as vectors."
+        info = {
+            "prog": prog,
+            "prog_short_name": prog_short_name,
+            "description": description,
+        }
+        info["start"] = "2019-11-07_15-49-55"
+        info["dims"] = 2
+        info["filter_dist"] = 200
+        info["zoom"] = 10
+        info["verbose"] = True
+        info["in_file_and_path"] = (
+            "/localhome/joanna/PERPL_data/Nup107_SNAP_3D" "_GRROUPED_10nmZprec.csv"
+        )
+        info["colours_analysed"] = None
+        info["nns"] = 0
+        info["bin_size"] = 1
 
         ut.primary_filename_and_path_setup(info)
 
-        result1 = info['results_dir']
-        result2 = info['in_file_no_extension']
-        result3 = info['in_file_no_path']
-        result4 = info['short_results_dir']
-        result5 = info['short_filename_without_extension']
+        result1 = info["results_dir"]
+        result2 = info["in_file_no_extension"]
+        result3 = info["in_file_no_path"]
+        result4 = info["short_results_dir"]
+        result5 = info["short_filename_without_extension"]
 
         self.assertIn(
             result1,
-            '/localhome/joanna/PERPL_data/PERPL/'
-            'rel_posns_filter200_2D_bin1_2019-11-07_15-49-55'
+            "/localhome/joanna/PERPL_data/PERPL/"
+            "rel_posns_filter200_2D_bin1_2019-11-07_15-49-55",
         )
-        self.assertIn(result2, 'Nup107_SNAP_3D_GRROUPED_10nmZprec')
-        self.assertIn(result3, 'Nup107_SNAP_3D_GRROUPED_10nmZprec.csv')
+        self.assertIn(result2, "Nup107_SNAP_3D_GRROUPED_10nmZprec")
+        self.assertIn(result3, "Nup107_SNAP_3D_GRROUPED_10nmZprec.csv")
         self.assertIn(
-            result4,
-            '/localhome/joanna/PERPL_data/PERPL/rel_posns_f200_2D_b1'
+            result4, "/localhome/joanna/PERPL_data/PERPL/rel_posns_f200_2D_b1"
         )
-        self.assertIn(result5, 'Nup107')
+        self.assertIn(result5, "Nup107")
 
 
 class TestSecondaryFilenameAndPathSetup(unittest.TestCase):
@@ -758,35 +846,40 @@ class TestSecondaryFilenameAndPathSetup(unittest.TestCase):
     rot_2d_symm script that analyses experimental data.
     """
 
-
     def test_linux_filenames(self):
         """
         Test the input expected from a Linux system.
         """
         print("Start TestSecondaryFilenameAndPathSetup test_linux_filename", flush=True)
 
-        prog = 'relative_positions'
-        prog_short_name = 'rp'
-        description = 'Calculating the relative positions of points as vectors.'
-        info = {'prog':prog, 'prog_short_name':prog_short_name, 'description':description}
-        info['start'] = '2019-11-07_16-49-55'
-        info['dims'] = 2
-        info['filter_dist'] = 200
-        info['zoom'] = 10
-        info['verbose'] = True
-        info['in_file_and_path'] = ('/localhome/joanna/PERPL_data/PERPL_relative'
-                                    '_positions/Nup107_SNAP_3D_GRROUPED_10nmZprec/'
-                                    'filter_200_2019-11-07_15-49-55'
-                                    '/Nup107_SNAP_3D_GRROUPED_10nmZprec_PERPL'
-                                    '-relpos_200.0filter.csv')
+        prog = "relative_positions"
+        prog_short_name = "rp"
+        description = "Calculating the relative positions of points as vectors."
+        info = {
+            "prog": prog,
+            "prog_short_name": prog_short_name,
+            "description": description,
+        }
+        info["start"] = "2019-11-07_16-49-55"
+        info["dims"] = 2
+        info["filter_dist"] = 200
+        info["zoom"] = 10
+        info["verbose"] = True
+        info["in_file_and_path"] = (
+            "/localhome/joanna/PERPL_data/PERPL_relative"
+            "_positions/Nup107_SNAP_3D_GRROUPED_10nmZprec/"
+            "filter_200_2019-11-07_15-49-55"
+            "/Nup107_SNAP_3D_GRROUPED_10nmZprec_PERPL"
+            "-relpos_200.0filter.csv"
+        )
 
         ut.secondary_filename_and_path_setup(info)
 
-        result1 = info['results_dir']
-        result2 = info['in_file_no_extension']
-        result3 = info['in_file_no_path']
-        result4 = info['short_results_dir']
-        result5 = info['short_filename_without_extension']
+        result1 = info["results_dir"]
+        result2 = info["in_file_no_extension"]
+        result3 = info["in_file_no_path"]
+        result4 = info["short_results_dir"]
+        result5 = info["short_filename_without_extension"]
 
         print("result1: ", result1)
         print("result2: ", result2)
@@ -794,20 +887,26 @@ class TestSecondaryFilenameAndPathSetup(unittest.TestCase):
         print("result4: ", result4)
         print("result5: ", result5)
 
-        self.assertIn(result1, '/localhome/joanna/PERPL_data/PERPL_relative_'
-                      'positions/Nup107_SNAP_3D_GRROUPED_10nmZprec/filter_200'
-                      '_2019-11-07_15-49-55/relative_positions/filter_200_'
-                      '2019-11-07_16-49-55')
-        self.assertIn(result2, 'Nup107_SNAP_3D_GRROUPED_10nmZprec_PERPL-relpos_200')
-        self.assertIn(result3, 'Nup107_SNAP_3D_GRROUPED_10nmZprec_PERPL-relpos_200.0filter.csv')
-        self.assertIn(result4, '/localhome/joanna/PERPL_data/PERPL_relative'
-                      '_positions/Nup107_SNAP_3D_GRROUPED_10nmZprec/'
-                      'filter_200_2019-11-07_15-49-55'
-                      '/rp/Nup10-s-s_200/f_200_2019-11-07_16-49-55')
-        self.assertIn(result5, 'Nup10-s-s_200')
+        self.assertIn(
+            result1,
+            "/localhome/joanna/PERPL_data/PERPL_relative_"
+            "positions/Nup107_SNAP_3D_GRROUPED_10nmZprec/filter_200"
+            "_2019-11-07_15-49-55/relative_positions/filter_200_"
+            "2019-11-07_16-49-55",
+        )
+        self.assertIn(result2, "Nup107_SNAP_3D_GRROUPED_10nmZprec_PERPL-relpos_200")
+        self.assertIn(
+            result3, "Nup107_SNAP_3D_GRROUPED_10nmZprec_PERPL-relpos_200.0filter.csv"
+        )
+        self.assertIn(
+            result4,
+            "/localhome/joanna/PERPL_data/PERPL_relative"
+            "_positions/Nup107_SNAP_3D_GRROUPED_10nmZprec/"
+            "filter_200_2019-11-07_15-49-55"
+            "/rp/Nup107/f_200_2019-11-07_16-49-55",
+        )
+        self.assertIn(result5, "Nup107")
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
-    

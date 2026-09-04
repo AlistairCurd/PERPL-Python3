@@ -32,14 +32,17 @@ specific language governing permissions and limitations under the License.
 
 """
 
-from scipy.optimize import curve_fit
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+from scipy.optimize import curve_fit
+
+import perpl.modelling.modelling_general as models
 import perpl.modelling.polyhedramodelling as poly
 import perpl.statistics.modelstats as stats
-import perpl.modelling.modelling_general as models
-from perpl.modelling.modelling_general import ModelWithFitSettings
-from perpl.modelling.modelling_general import stdev_of_model
+from perpl.modelling.modelling_general import (
+    ModelWithFitSettings,
+    stdev_of_model,
+)
 
 
 def create_default_fitting_params_dicts():
@@ -937,7 +940,7 @@ def plot_model_components_tri_prism(
     """
     distance_values = np.arange(0, fitlength + 1, 1)
 
-    fig = plt.figure()
+    fig = plt.figure()  # noqa: F841  # Prefer OO style, but not worth changing atm.
     axes = plt.subplot(111)
     axes.set_xlim([0, fitlength])
     axes.set_xlabel(r"$\Delta$XYZ (nm)")

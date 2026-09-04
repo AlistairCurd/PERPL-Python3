@@ -31,20 +31,19 @@ CONDITIONS OF ANY KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
 """
 
-import os
-import sys
 import argparse
 import datetime
-import timeit
+import os
+import sys
 import time
+import timeit
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 
 import numpy as np
 from scipy import spatial
 
-from perpl.io import utils
-from perpl.io import plotting, reports
+from perpl.io import plotting, reports, utils
 
 
 def get_inputs(info):
@@ -452,7 +451,8 @@ def getdistances(xyz_values, filterdist, nns=0, verbose=False):
     """Calculates relative positions from positions in a scipy KDTree object,
     up to a maximum distance.
 
-    The relative positions do not contain duplicates (for calculating both ways) between a pair.
+    The relative positions do not contain duplicates (for calculating both ways)
+    between a pair of localisations.
 
     Args:
         xyz_values (numpy array):
@@ -637,7 +637,8 @@ def save_relative_positions(d_values, filterdist, dims, info, nns=0):
 
     Args:
         d_values (numpy array):
-            Array of relative positions between localisations, one relative position per row.
+            Array of relative positions between localisations,
+            one relative position per row.
         filterdist (float): distance (in all three dimensions) between points within
             which relative positions are calculated. This can be chosen by user
             input as the function runs, or by specifying when calling the
@@ -826,9 +827,7 @@ def main(argv=None):
         "directories. While this makes the results less easy to"
         " navigate it can be particularly useful on Windows"
         " systems that do not allow long names and paths. "
-        "The input file name is used for the results filename"
-        " and this shortened names has the first and last 5"
-        " characters with -s- is the middle.",
+        "Uses the first 6 characters of the input filename.",
         action="store_true",
     )
 

@@ -27,24 +27,23 @@ CONDITIONS OF ANY KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
 """
 
-import os
-import sys
 import argparse
 import datetime
+import os
+import sys
 import timeit
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
-import numpy as np
-import matplotlib.pyplot as plt
 
-from perpl.io import plotting, reports
-from perpl.modelling.background_models import zero_to_constant_gradient
+import matplotlib.pyplot as plt
+import numpy as np
+
 import perpl.modelling.modelling_general as models
-from perpl.modelling.modelling_general import ModelWithFitSettings
-from perpl.modelling.modelling_general import stdev_of_model
 import perpl.statistics.modelstats as stats
+from perpl.io import plotting, reports, utils
+from perpl.modelling.background_models import zero_to_constant_gradient
+from perpl.modelling.modelling_general import ModelWithFitSettings, stdev_of_model
 from perpl.relative_positions import getdistances
-from perpl.io import utils
 
 
 class Number:
@@ -60,9 +59,12 @@ def get_inputs(info):
     """Creates a file browser to reads the filename and then reads the other
        inputs as text from the command line. Puts inputs into the doctionary.
        These are:
-           in_file_and_path (string): The input filename and path.
-           filterdist (int): The distance within which relative positions were calculated.
-           verbose (Boolean): If True prints outputs to screen as program executes.
+           in_file_and_path (string):
+                The input filename and path.
+           filterdist (int):
+                The distance within which relative positions were calculated.
+           verbose (Boolean):
+                If True prints outputs to screen as program executes.
     Args:
         info (dict): A python dictionary containing a collection of useful parameters
             such as the filenames and paths.
@@ -1399,9 +1401,7 @@ def main():
         "directories. While this makes the results less easy to"
         " navigate it can be particularly useful on Windows"
         " systems that do not allow long names and paths. "
-        "The input file name is used for the results filename"
-        " and this shortened names has the first and last 5"
-        " characters with -s- is the middle.",
+        "Uses the first 6 characters of the input filename.",
         action="store_true",
     )
 

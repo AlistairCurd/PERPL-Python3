@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.17.1
+#       jupytext_version: 1.19.3
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -27,7 +27,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from perpl.modelling import modelling_general, zdisk_modelling, zdisk_plots
+from perpl.modelling import zdisk_modelling, zdisk_plots
 from perpl.io import plotting
 # -
 

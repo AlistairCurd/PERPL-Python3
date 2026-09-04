@@ -1,29 +1,29 @@
 import argparse
 import datetime
-from itertools import product
 import os
 import sys
+from itertools import product
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
 import yaml
 
-from perpl.io import plotting
+# from perpl.io import plotting
+from perpl.io.plotting import estimate_rpd_churchman_kernel
 from perpl.modelling.gen_distance_model_configs import gen_configs
 from perpl.modelling.modelling_general import PERPLModel
 
 
-
-def get_experimental_rpd(distances, rpd_type, fitlength,
-                          bin_size, kde_kernel_size, model_config):
+def get_experimental_rpd(
+    distances, rpd_type, fitlength, bin_size, kde_kernel_size, model_config
+):
     """
     Args:
         ...
         rpd_type (str):
             "distance_histogram" or "distance_kde"
-    
+
     Returns:
         x_expt, y_expt (1D numpy arrays):
             Values of the distance histogram or KDE (y_expt)
@@ -40,22 +40,10 @@ def get_experimental_rpd(distances, rpd_type, fitlength,
     elif rpd_type == "distance_kde":
         increment = max(1, round(fitlength / len(distances)))
         x_expt = np.arange(0, fitlength + 1.0, increment)
-
-        if model_config["dimension"] == 3:
-            raise ValueError(
-                "dimension: 3 (from config file) is not implemented"
-                " for KDE generation"
-            )
-
-        churchman_map = {
-            1: plotting.estimate_rpd_churchman_1d,
-            2: plotting.estimate_rpd_churchman_2d,
-        }
-        fn = churchman_map.get(model_config["dimension"])
-
-        y_expt = fn(
+        y_expt = estimate_rpd_churchman_kernel(
             input_distances=distances,
             calculation_points=x_expt,
+            dim=model_config["dimension"],
             combined_precision=kde_kernel_size,
         )
 
@@ -86,17 +74,21 @@ def model_the_data(
     model_name = model_file.rstrip(".yaml")
 
     x_expt, y_expt = get_experimental_rpd(
-        distances, rpd_type, fitlength,
-        bin_size, kde_kernel_size, model_config,
+        distances,
+        rpd_type,
+        fitlength,
+        bin_size,
+        kde_kernel_size,
+        model_config,
     )
 
     perpl_model = PERPLModel(
         dimension=model_config["dimension"],
         background=model_config["background"],
         n_peaks=model_config["n_peaks"],
-        peak_type=model_config["peak_type"],
-        characteristic_distance=model_config["characteristic_distance"],
-        characteristic_distance_ratio=model_config["characteristic_distance_ratio"],
+        peak_amps=model_config["peak_amps"],
+        dist_ratios=model_config["dist_ratios"],
+        custom_ratios_list=model_config["custom_ratios_list"],
         repeats=model_config["repeats"],
         offset=model_config["offset"],
         normalise=model_config["normalise"],
@@ -111,9 +103,10 @@ def model_the_data(
         and model_config["n_peaks"] == 0
         and model_config["repeats"] is False
     ):
-        print(f"Skipping {model_name}:"
-                " contains no characteristic distances,"
-                " repeated localisations or background"
+        print(
+            f"Skipping {model_name}:"
+            " contains no characteristic distances,"
+            " repeated localisations or background"
         )
         return None
 
@@ -137,9 +130,7 @@ def model_the_data(
         )
         figname = os.path.join(
             output_folder,
-            (
-                f"{model_name}_fitlength_{fitlength}_binsize_{bin_size}_histandfit.svg"
-            ),
+            (f"{model_name}_fitlength_{fitlength}_binsize_{bin_size}_histandfit.svg"),
         )
 
     elif rpd_type == "distance_kde":
@@ -147,9 +138,7 @@ def model_the_data(
         fig = perpl_model.plot_distance_kde_and_fit(x_expt, y_expt, fitlength)
         figname = os.path.join(
             output_folder,
-            (
-                f"{model_name}_fitlength_{fitlength}_kdeandfit.svg"
-            ),
+            (f"{model_name}_fitlength_{fitlength}_kdeandfit.svg"),
         )
 
     if fig is not None:
@@ -168,9 +157,7 @@ def model_the_data(
     elif rpd_type == "distance_kde":
         figname = os.path.join(
             output_folder,
-            (
-                f"{model_name}_fitlength_{fitlength}_modelcomponents.svg"
-            ),
+            (f"{model_name}_fitlength_{fitlength}_modelcomponents.svg"),
         )
     if fig2 is not None:
         fig2.savefig(figname)
@@ -197,6 +184,7 @@ def model_the_data(
                 perpl_model.param_names,
                 perpl_model.params_optimised,
                 perpl_model.params_err,
+                strict=True,
             ):
                 f.write(f"{row[0]}: {row[1]} +- {row[2]}\n")
 
@@ -257,11 +245,9 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     if not (args.fit_histograms or args.fit_kdes or args.no_fitting):
-        parser.error("Must specify at least one of"
-                     " --fh, --fkde or -nofit"
-        )
-    
-    print(f"Fit hists: {args.fit_histograms}")
+        parser.error("Must specify at least one of" " --fh, --fkde or -nofit")
+
+    print(f"Fit histograms: {args.fit_histograms}")
     print(f"Fit KDEs: {args.fit_kdes}")
 
     config_file = args.config_file
@@ -270,7 +256,7 @@ def main(argv=None):
 
     # Collect RPD types to run
     run_modes = []
-    
+
     if args.fit_histograms:
         run_modes.append("distance_histogram")
     if args.fit_kdes:
@@ -280,6 +266,10 @@ def main(argv=None):
     with open(config_file, "r") as ymlfile:
         config = yaml.safe_load(ymlfile)
     model_direction = config["model_direction"]
+    if model_direction not in ("xx", "yy", "zz", "xy", "xz", "yz", "xyz"):
+        print(f"model_direction in config file ({model_direction}) is invalid.")
+        print("Exiting.")
+        sys.exit(1)
     limits = config["limits"]
     fitlength_lst = config["fitlength"]
 
@@ -316,9 +306,7 @@ def main(argv=None):
 
     model_configs = []
     for model_file in model_files:
-        with open(
-            os.path.join(models_folder, model_file), "r"
-        ) as ymlfile:
+        with open(os.path.join(models_folder, model_file), "r") as ymlfile:
             config = yaml.safe_load(ymlfile)
             model_configs.append(config)
 
@@ -327,7 +315,7 @@ def main(argv=None):
         return
 
     # Set up output parent folder
-    ## Contains table of results and subdirector(ies) for fits 
+    ## Contains table of results and subdirectory(ies) for fits
     parent, _ = os.path.split(args.rel_posns_file)
 
     output_modelling_folder = os.path.join(
@@ -337,7 +325,6 @@ def main(argv=None):
 
     # For histoagrmmed and kde data separately
     for rpd_type in run_modes:
-
         # Create output locations;
         if rpd_type == "distance_histogram":
             out_folder = "histogram_fits"
@@ -345,13 +332,9 @@ def main(argv=None):
         elif rpd_type == "distance_kde":
             out_folder = "kde_fits"
             results_file = "results_kde.csv"
-        out_folder_path = os.path.join(
-            output_modelling_folder, out_folder
-        )
+        out_folder_path = os.path.join(output_modelling_folder, out_folder)
         os.makedirs(out_folder_path)
-        results_path = os.path.join(
-            output_modelling_folder, results_file
-        )
+        results_path = os.path.join(output_modelling_folder, results_file)
 
         print(f"Output folder: {out_folder_path}")
 
@@ -373,8 +356,8 @@ def main(argv=None):
         count = 0
 
         for bin_or_kernel, fitlength in product(
-                bin_or_kernel_list,
-                fitlength_lst,
+            bin_or_kernel_list,
+            fitlength_lst,
         ):
             if rpd_type == "distance_histogram":
                 bin_size = bin_or_kernel
@@ -382,9 +365,9 @@ def main(argv=None):
             else:
                 bin_size = None
                 kde_kernel_size = bin_or_kernel
-            
+
             for model_file, model_config in zip(
-                model_files, model_configs
+                model_files, model_configs, strict=True
             ):
                 model_out = model_the_data(
                     distances,
@@ -394,31 +377,45 @@ def main(argv=None):
                     kde_kernel_size,
                     bin_size,
                     fitlength,
-                    out_folder_path
+                    out_folder_path,
                 )
                 if model_out is None:
                     continue
                 x_expt, y_expt, fitted_model = model_out
-            
-                model_results.append({
-                    "Name": model_file.rstrip(".yaml"),
-                    "Fit length": fitlength,
-                    x_kernel_col: bin_or_kernel,
-                    "N Peaks": model_config["n_peaks"],
-                    "Peak ratios": model_config["peak_type"],
-                    "Model distance ratios": model_config["characteristic_distance"],
-                    "Repeated localisations": model_config["repeats"],
-                    "Background model": model_config["background"],
-                    "AICc": fitted_model.aic_corrected,
-                    "AIC": fitted_model.aic,
-                    "SSR": fitted_model.sum_of_squares_error,
-                    "N params": fitted_model.n_params,
-                    "N calculation points": len(x_expt),
-                    "N measured distances": len(distances),
-                    "Check: bg < 0": fitted_model.bgbelowzero, 
-                    "Check: params reached limits": fitted_model.popt_at_bound,
-                    "Check: large param uncertainty": fitted_model.large_uncertainty
-                })
+
+                if model_config["dist_ratios"] == "custom_ratios":
+                    custom_ratios = model_config["custom_ratios_list"]
+                    dist_ratios_for_table = ""
+                    for i, item in enumerate(custom_ratios):
+                        dist_ratios_for_table += f"{item}"
+                        if (i + 1) < len(custom_ratios):
+                            dist_ratios_for_table += ", "
+                else:
+                    dist_ratios_for_table = model_config["dist_ratios"]
+
+                model_results.append(
+                    {
+                        "Name": model_file.rstrip(".yaml"),
+                        "Fit length": fitlength,
+                        x_kernel_col: bin_or_kernel,
+                        "N Peaks": model_config["n_peaks"],
+                        "Peak ratios": model_config["peak_amps"],
+                        "Model distance ratios": dist_ratios_for_table,
+                        "Repeated localisations": model_config["repeats"],
+                        "Background model": model_config["background"],
+                        "AICc": fitted_model.aic_corrected,
+                        "AIC": fitted_model.aic,
+                        "SSR": fitted_model.sum_of_squares_error,
+                        "N params": fitted_model.n_params,
+                        "N calculation points": len(x_expt),
+                        "N measured distances": len(distances),
+                        "Check: bg < 0": fitted_model.bgbelowzero,
+                        "Check: params reached limits": fitted_model.popt_at_bound,
+                        "Check: large param uncertainty": (
+                            fitted_model.large_uncertainty
+                        ),
+                    }
+                )
 
                 if (count + 1) % 10 == 0 and count > 0:
                     print(f"{count + 1} models run out of {len(model_files)}...")

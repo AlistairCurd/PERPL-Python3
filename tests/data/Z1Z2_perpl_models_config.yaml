@@ -10,7 +10,17 @@
 ## xx, yy or zz (distances in 1D);
 ## xy, xz or yz (distances across 2D plane);
 ### or xyz (3D Euclidean distances)
-model_direction: xx
+model_direction: xz
+
+
+# Dimensionality of the space being modelled
+## 1 for distances along a single direction
+## 2 for distances across a plane
+## Not yet implemented for KDE: 3 for distances in a 3D volume
+#
+## Used to calculate different KDE kernel shapes
+## appropriate to different dimensionality
+#dimension: [2]
 
 
 # Limits for distance components in x, y, and z
@@ -42,14 +52,15 @@ bin_sizes: [5]  # e.g. [1, 2, 5]
 ## are reasonable to try and several values can be tried
 ##
 ## Smaller values keep more detail, larger values smoothen noise
-kde_kernel_size: [3.2]  # e.g. [5, 6, 7]
+kde_kernel_size: [6.693]  # e.g. [5, 6, 7]
 
 
 # Maximum distance for the fit (less than relpos_filter if using a KDE)
-fitlength: [105, 115, 125]  # Can try multiple fit lengths, e.g. [90, 100, 110]
+fitlength: [60]  # Can try multiple fit lengths, e.g. [90, 100, 110]
 
 
-## MODEL FORM PARAMETERS ################################
+## MODEL PARAMETERS #####################################
+## Define the form of the model #########################
 ## Include all desired values each parameter in a list ##
 
 # Background model options
@@ -57,11 +68,11 @@ fitlength: [105, 115, 125]  # Can try multiple fit lengths, e.g. [90, 100, 110]
 ## null, flat, linear, linear_flat, trans_bg_0, trans_bg_1, trans_bg_2
 #
 # TODO: Change model names and add more models
-background: [null, flat, linear, linear_flat]  # e.g. [flat, linear]
+background: [null, flat, linear, trans_bg_0, trans_bg_1, trans_bg_2]  # e.g. [flat, linear]
 
 
 # Number of characteristic distance peaks in the model
-n_peaks: [0, 1, 4, 5, 6]  # Can try models with different numbers of peaks
+n_peaks: [0, 2, 3]  # Can try models with different numbers of peaks
 
 
 # Relative amplitudes of peaks
@@ -86,14 +97,13 @@ peak_amps: [indep_amp]  # e.g. [indep_amp, lin_decrease]
 #### in `custom_ratios_list` below
 ##
 ### "indep_dists": Distances are at independent (multiple) distances
-dist_ratios: [int_ratios]  # int_ratios, custom_ratios, indep_dists
+dist_ratios: [int_ratios, indep_dists, custom_ratios]  # int_ratios, custom_ratios, indep_dists
 #
 #
 ## Ratios between characteristic distances
 ### null if dist_ratios is not custom_ratios
-### or must be list with length corresponding to max of n_peaks,
-### beginning with 1.
-custom_ratios_list: [null]  # null or e.g. [1.0, 1.414, 2.0] for max n_peaks: 3
+### or must be list with length corresponding to max of n_peaks
+custom_ratios_list: [1, 1.4142, 2]  # null or e.g. [1.0, 0.7, 0.4] for max n_peaks: 3
 
 
 # Model repeated localisations of single underlying objects
@@ -110,7 +120,7 @@ offset: [False] # True, False (or both)
 ## e.g. divides counts by distance for 2D distances
 ## Use this if you normalised (sometimes called standardised)
 ## the experimental RPD
-normalise: [False] # True, False
+normalise: [True] # True, False
 
 
 #### PARAMETER VALUE INITIALISATION AND ALLOWED RANGE FOR FIT ####
@@ -134,9 +144,10 @@ params_initial:
   ## e.g. [20, 10, 24] would be the distances used for models with
   ## dist_ratios of [int_ratios, custom_ratios, indep_dists],
   ## if that was the list specified (the lists must have the same length).
-  characteristic_distance_1: 20
+  characteristic_distance_1: [20, 15, 20]
   # Second characteristic distance
-  characteristic_distance_2: 50  # Can be list as for distance_1
+  characteristic_distance_2: 40  # Can be list as for distance_1
+  characteristic_distance_3: 55
   # etc.
 
   # Sigma for characteristic distances
@@ -150,14 +161,14 @@ params_initial:
   loc_prec_amp: 10
 
   # Background slope
-  bg_slope: -0.1
+  bg_slope: 0.1
 
   # Background offset
   bg_offset: 0
 
   # Quadratic and cubic background model coefficients
-  # trans_bg_quad_coeff: -0.1
-  # trans_bg_cubic_coeff: 0.1
+  trans_bg_quad_coeff: -0.1
+  trans_bg_cubic_coeff: 0.1
 
 
 # Parameter lower bounds
@@ -171,8 +182,9 @@ params_lower:
   # etc...
 
   # Can use lists as for initial guesses
-  characteristic_distance_1: 5
-  # characteristic_distance_2: 5
+  characteristic_distance_1: [5, 5, 5]
+  characteristic_distance_2: 20
+  characteristic_distance_3: 50
   # etc.
 
   characteristic_distance_broadening: 0
@@ -180,13 +192,13 @@ params_lower:
   loc_prec_sd: 0
   loc_prec_amp: 0
 
-  bg_slope: -10
+  bg_slope: 0
   bg_offset: 0
 
-  # trans_bg_quad_coeff: -10
-  # trans_bg_cubic_coeff: 0
+  trans_bg_quad_coeff: -10
+  trans_bg_cubic_coeff: 0
 
-# Parameter upper bounds
+# upper bounds for parameters
 params_upper:
   amp_peak_1: 100
   amp_peak_2: 100
@@ -197,8 +209,9 @@ params_upper:
   # etc...
 
   # Can use lists as for initial guesses
-  characteristic_distance_1: 40
-  # characteristic_distance_2: 5
+  characteristic_distance_1: [40, 20, 40]
+  characteristic_distance_2: 50
+  characteristic_distance_3: 60
   # etc.
 
   characteristic_distance_broadening: 15
@@ -206,8 +219,8 @@ params_upper:
   loc_prec_sd: 10
   loc_prec_amp: 100
 
-  bg_slope: 0
+  bg_slope: 10
   bg_offset: 10
 
-  # trans_bg_quad_coeff: 0
-  # trans_bg_cubic_coeff: 10
+  trans_bg_quad_coeff: 0
+  trans_bg_cubic_coeff: 10
