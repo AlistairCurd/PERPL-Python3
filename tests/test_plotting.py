@@ -19,6 +19,7 @@ under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
 CONDITIONS OF ANY KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
 """
+
 import unittest
 from unittest import mock
 
@@ -27,18 +28,24 @@ import numpy as np
 import perpl.io.plotting as plots
 
 
-
 class TestDraw2dScatterPlot(unittest.TestCase):
     """
     Test the draw_2col_2d_scatter_plot function from the plotting library
     """
+
     @mock.patch.object(matplotlib.figure.Figure, "savefig")
     @mock.patch.object(matplotlib.axes.Axes, "set_ylabel")
     @mock.patch.object(matplotlib.axes.Axes, "set_xlabel")
     @mock.patch.object(matplotlib.axes.Axes, "set_title")
     @mock.patch.object(matplotlib.axes.Axes, "scatter")
-    def test_mock_inputs(self, mock_scatter, mock_set_title,
-                         mock_set_xlabel, mock_set_ylabel, mock_savefig):
+    def test_mock_inputs(
+        self,
+        mock_scatter,
+        mock_set_title,
+        mock_set_xlabel,
+        mock_set_ylabel,
+        mock_savefig,
+    ):
         """
         Tests the getdistances function with an array representing 2
         localisations in 2d space (x and y coordinates) with values that are
@@ -53,10 +60,14 @@ class TestDraw2dScatterPlot(unittest.TestCase):
         x_label = "X Label"
         y_label = "Y Label"
 
-        plots.draw_2col_2d_scatter_plot(np.column_stack((x_values, y_values)),
-                                        title, filename, x_label, y_label,
-                                        info={'colours_analysed': None}
-                                        )
+        plots.draw_2col_2d_scatter_plot(
+            np.column_stack((x_values, y_values)),
+            title,
+            filename,
+            x_label,
+            y_label,
+            info={"channels_analysed": None},
+        )
 
         x_values_dash = mock_scatter.call_args_list[0][0][0]
         y_values_dash = mock_scatter.call_args_list[0][0][1]
@@ -86,6 +97,5 @@ class TestDraw2dScatterPlot(unittest.TestCase):
         assert mock_savefig.called
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
-    

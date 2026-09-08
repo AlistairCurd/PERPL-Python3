@@ -162,10 +162,10 @@ def primary_filename_and_path_setup(info):
     # Include histogram bin-size
     parameter_str = parameter_str + "_bin" + repr(info["bin_size"])
 
-    # Include colour channel information, if used
-    if info["colours_analysed"] == 1:
+    # Include acquisition channel information, if used
+    if info["channels_analysed"] == 1:
         parameter_str = parameter_str + "_col" + repr(info["start_channel"])
-    if info["colours_analysed"] == 2:
+    if info["channels_analysed"] == 2:
         parameter_str = (
             parameter_str
             + "_cols"
@@ -195,9 +195,9 @@ def primary_filename_and_path_setup(info):
     short_parameter_str = "f" + str(info["filter_dist"]) + "_" + str(info["dims"]) + "D"
     short_parameter_str = short_parameter_str + "_b" + repr(info["bin_size"])
 
-    if info["colours_analysed"] == 1:
+    if info["channels_analysed"] == 1:
         short_parameter_str = short_parameter_str + "_c" + repr(info["start_channel"])
-    if info["colours_analysed"] == 2:
+    if info["channels_analysed"] == 2:
         short_parameter_str = (
             short_parameter_str
             + "_c"

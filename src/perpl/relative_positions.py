@@ -42,6 +42,7 @@ from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 
 import numpy as np
+import pandas as pd
 from scipy import spatial
 
 from perpl.io import plotting, reports, utils
@@ -109,25 +110,25 @@ def get_inputs(info):
 
     info["dims"] = data_dims
 
-    ### Include colour information if applicable.
-    print("Do localisations also have colour-channel information (yes/no)?")
-    colour_answer = input(
-        "The colour channel information should be the last column of your "
+    ### Include channel information if applicable.
+    print("Do localisations also have acquisition channel information (yes/no)?")
+    channel_answer = input(
+        "The acquisition channel information should be the last column of your "
         "input file: "
     ).lower()
     # Stop if not answered well enough.
-    if colour_answer.startswith("y") or colour_answer.startswith("n"):
+    if channel_answer.startswith("y") or channel_answer.startswith("n"):
         pass
     else:
         sys.exit("\nYou must answer yes or no.\n")
 
-    # Set colour channel info to 'None' or not None.
-    if colour_answer.startswith("n"):
-        info["colours_analysed"] = None
-    if colour_answer.startswith("y"):
-        info["colours_analysed"] = "Some"
+    # Set channel info to 'None' or not None.
+    if channel_answer.startswith("n"):
+        info["channels_analysed"] = None
+    if channel_answer.startswith("y"):
+        info["channels_analysed"] = "Some"
 
-    # print(info['colours_analysed']) # Debug
+    # print(info['channels_analysed']) # Debug
 
     # Set filter distance to use for relative position calculations.
     print(
@@ -224,7 +225,7 @@ def read_data_in(info):
             This dictionary is modified to contain information about the data read
             during the function.
     Returns:
-        xyz_values (numpy array): A numpy array of the x, y (and z) localisations.
+        xyzc_values (numpy array): A numpy array of the x, y (and z) localisations.
     """
 
     in_file = info["in_file_and_path"]
@@ -234,65 +235,95 @@ def read_data_in(info):
 
     if in_file.name[-4:] == ".npy":
         try:
-            xyzcolour_values = np.load(in_file)
+            xyzc_values = np.load(in_file)
         except (EOFError, IOError, OSError) as exception:
             print("\n\nCould not read file: ", in_file)
             print("\n\n", type(exception))
             sys.exit("Could not read the input file " + in_file + ".\n")
     elif in_file.name[-4:] == ".csv" or in_file[-4:] == ".txt":
         try:
-            skip = 0
+            # Check whether a text header is present and set up for pandas reading
             with open(in_file, encoding="utf-8") as f:
                 line = f.readline()
             for cell in line.split(","):
                 try:
                     float(cell)
+                    header_mode = None
                 except ValueError:
-                    # print("Not a float")
-                    skip = 1
-            xyzcolour_values = np.loadtxt(
-                in_file,
-                delimiter=",",
-                skiprows=skip,
-                # Remove to allow colours at end
-                # of many columns
-                # usecols=range(info['dims'])
-            )
+                    if isinstance(cell, str):
+                        header_mode = "infer"
+                        break
+                    else:
+                        sys.exit(
+                            "The first line of the table cannot be read as "
+                            "numbers or strings."
+                        )
+
+            # Read!
+            xyzc_df = pd.read_csv(in_file, header=header_mode, index_col=False)
+
+            # Convert to numpy array with columns in expected places (channel last)
+            if info["xcol"] is None:
+                xyzc_values = xyzc_df.iloc[:, 0 : info["dims"]].to_numpy()
+            elif info["dims"] == 2:
+                xyzc_values = xyzc_df[[info["xcol"], info["ycol"]]].to_numpy()
+            elif info["dims"] == 3:
+                xyzc_values = xyzc_df[
+                    [info["xcol"], info["ycol"], info["zcol"]]
+                ].to_numpy()
+            else:
+                sys.exit(
+                    "Column labels were given and dimensions (dims) was not 2 or 3."
+                )
+
+            # Added channel column
+            if info["ccol"] is None:
+                col_values = xyzc_df.iloc[:, -1].to_numpy()[:, np.newaxis]
+            else:
+                col_values = xyzc_df[[info["ccol"]]].to_numpy()
+            # Stop if channels are not all numbers
+            if isinstance(col_values[0][0], str):
+                sys.exit(
+                    "\nChannel values contain strings, which are currently unsupported."
+                )
+
+            # Combine position and channel columns
+            xyzc_values = np.hstack((xyzc_values, col_values))
+
         except (EOFError, IOError, OSError) as exception:
             print("\n\nCould not read file: ", in_file)
             print("\n\n", type(exception))
             sys.exit("Could not read the input file " + in_file + ".\n")
     else:
-        xyzcolour_values = "Ouch"
-        print("Sorry, wrong format!\n")
+        xyzc_values = "Ouch"
         sys.exit("The input file " + in_file + " has the wrong format.\n")
 
-    info["values"] = xyzcolour_values.shape[0]
-    info["columns"] = xyzcolour_values.shape[1]
-    info["total_values"] = xyzcolour_values.shape[0]
-    info["total_columns"] = xyzcolour_values.shape[1]
+    info["values"] = xyzc_values.shape[0]
+    info["columns"] = xyzc_values.shape[1]
+    info["total_values"] = xyzc_values.shape[0]
+    info["total_columns"] = xyzc_values.shape[1]
     # Get the unique channel numbers in use
-    if info["colours_analysed"] is not None:
-        info["unique_colour_values"] = np.unique(xyzcolour_values[:, -1])
-        if len(info["unique_colour_values"]) > 100:
+    if info["channels_analysed"] is not None:
+        info["unique_channel_values"] = np.unique(xyzc_values[:, -1])
+        if len(info["unique_channel_values"]) > 100:
             sys.exit(
                 "\nThere are "
-                + repr(len(info["unique_colour_values"]))
-                + " unique values (channel values) in the final column of you data.\n"
+                + repr(len(info["unique_channel_values"]))
+                + " unique values (channel values) in the final column of your data.\n"
                 "\nExiting because these are unlikely to be the correct channel values."
             )
         # Print channel options if not specified in shell command arguments.
         if info["start_channel"] is None:
             print(
-                "\nThe colour channels present are: "
-                + repr(info["unique_colour_values"].tolist())
+                "\nThe channels present are: "
+                + repr(info["unique_channel_values"].tolist())
             )
 
-    return xyzcolour_values
+    return xyzc_values
 
 
 def choose_channels(info):
-    """Choose 'from' and 'to' colour channels for between colour relative
+    """Choose 'from' and 'to' channels for inter-channel relative
     positions.
 
     Args:
@@ -303,54 +334,50 @@ def choose_channels(info):
 
     Returns:
         start_channel (float):
-            The value of the colour channel for 'from' locs.
+            The value of the channel for 'from' locs.
         end_channel (float):
-            The value of the colour channel for 'to' locs.
+            The value of the channel for 'to' locs.
             'None' if analysis is of a single specific channel.
     """
     # User input for the number of channels.
-    if len(info["unique_colour_values"]) == 1:
-        start_channel = info["unique_colour_values"][0]
+    if len(info["unique_channel_values"]) == 1:
+        start_channel = info["unique_channel_values"][0]
         end_channel = None
-        print("Using the only colour channel: " + repr(start_channel))
+        print("Using the only acquisition channel: " + repr(start_channel))
         return start_channel, end_channel
 
     # If > 1 channel - won't get this far if only 1.
     try:
-        print("\nHow many colour channels would you like to use in the analysis?")
-        colour_number = int(input("You can currently choose 1 or 2: "))
+        print("\nHow many acquisition channels would you like to use in the analysis?")
+        channel_number = int(input("You can currently choose 1 or 2: "))
     except ValueError:
-        sys.exit("\nThe number of colour channels to use must be an integer.\n")
-    if colour_number == 0 or colour_number > 2:
+        sys.exit("\nThe number of channels to use must be an integer.\n")
+    if channel_number == 0 or channel_number > 2:
         sys.exit("\nSorry, only 1 or 2.\n")
     else:
-        print("\n" + str(colour_number) + " colour channels were selected.\n")
-        info["colours_analysed"] = colour_number
+        print("\n" + str(channel_number) + " channels were selected.\n")
+        info["channels_analysed"] = channel_number
 
-    # Get the colour channel values.
-    if info["colours_analysed"] == 1:
-        start_channel = float(input("Which colour channel do you want to analyse? "))
+    # Get the acquisition channel values.
+    if info["channels_analysed"] == 1:
+        start_channel = float(input("Which channel do you want to analyse? "))
         end_channel = None
 
-    if info["colours_analysed"] == 2:
-        start_channel = float(
-            input("Which colour channel do you want to measure FROM? ")
-        )
-        end_channel = float(input("Which colour channel do you want to measure TO? "))
+    if info["channels_analysed"] == 2:
+        start_channel = float(input("Which channel do you want to measure FROM? "))
+        end_channel = float(input("Which channel do you want to measure TO? "))
 
     print("")
 
     # Check the input values match channel values in the data
     # For 'from' channel
-    valid_colour = False
-    for colour in info["unique_colour_values"]:
-        if start_channel == colour:
-            valid_colour = True
-    if valid_colour is False:
-        print(repr(start_channel) + " is not one of your colour channel values.")
-        retry = input(
-            "Do you want to select a different colour channel value (yes/no)?"
-        )
+    valid_channel = False
+    for channel in info["unique_channel_values"]:
+        if start_channel == channel:
+            valid_channel = True
+    if valid_channel is False:
+        print(repr(start_channel) + " is not one of your channel values.")
+        retry = input("Do you want to select a different channel value (yes/no)?")
         if retry.lower()[0] == "y":
             # info['start_channel'] == 'Incorrect input' # Debug option
             start_channel, end_channel = choose_channels(info)
@@ -359,15 +386,13 @@ def choose_channels(info):
 
     # For 'to' channel
     if end_channel is not None:
-        valid_colour = False
-        for colour in info["unique_colour_values"]:
-            if end_channel == colour:
-                valid_colour = True
-        if valid_colour is False:
-            print(repr(end_channel) + " is not one of your colour channel values.")
-            retry = input(
-                "Do you want to select a different colour channel value (yes/no)?"
-            )
+        valid_channel = False
+        for channel in info["unique_channel_values"]:
+            if end_channel == channel:
+                valid_channel = True
+        if valid_channel is False:
+            print(repr(end_channel) + " is not one of your channel values.")
+            retry = input("Do you want to select a different channel value (yes/no)?")
             if retry.lower()[0] == "y":
                 # info['end_channel'] == 'Incorrect input' # Debug option
                 start_channel, end_channel = choose_channels(info)
@@ -492,15 +517,17 @@ def getdistances(xyz_values, filterdist, nns=0, verbose=False):
     separation_values = kdtree.data[loc_pairs[:, 1]] - kdtree.data[loc_pairs[:, 0]]
 
     if verbose:
-        print(f"Found {len(separation_values)} vectors between all localisations")
-        print(f"in {int(time.time() - start_time):d} seconds.")
+        print(
+            f"Found {len(separation_values)} vectors between localisations "
+            f"in {int(time.time() - start_time):d} seconds."
+        )
 
     # breakpoint()
 
     return loc_pairs, separation_values
 
 
-def getdistances_two_colours(
+def getdistances_two_channels(
     xyz_values_start, filterdist, xyz_values_end, nns=0, verbose=False
 ):
     """Store all vectors (relative positions) between points within a chosen
@@ -737,7 +764,6 @@ def main(argv=None):
     parser.add_argument(
         "-i",
         "--input_file",
-        dest="input_file",
         type=str,
         help="Path to localisations file which is a .csv (or .txt "
         "with comma delimiters) or .npy and containing N "
@@ -747,7 +773,6 @@ def main(argv=None):
     parser.add_argument(
         "-d",
         "--dims",
-        dest="dims",
         type=int,
         default=3,
         help="Dimensions of the data. It can be 2 or 3.",
@@ -755,31 +780,66 @@ def main(argv=None):
 
     parser.add_argument(
         "-c",
-        "--colours",
-        dest="colours",
+        "--channels",
         type=int,
         default=None,
-        help="Number of colour channels. It can be 1 or 2.",
+        help="Number of acquisition channels. It can be set to 1 or 2 or unused. "
+        "If 1, one of the acquisition channels should be specified. "
+        "If unused, all localisations are assumed to be from the same channel.",
     )
 
     parser.add_argument(
-        "--from",
+        "-xcol",
+        type=str,
+        default=None,
+        help="Name of the column for x position in the localisation table, "
+        "if it has column names. If not provided, the first column (0) is used.",
+    )
+
+    parser.add_argument(
+        "-ycol",
+        type=str,
+        default=None,
+        help="Name of the column for y position in the localisation table, "
+        "if it has column names. If not provided, the second column (1) is used. "
+        "Must also give --xcol.",
+    )
+
+    parser.add_argument(
+        "-zcol",
+        type=str,
+        default=None,
+        help="Name of the column for z position in the localisation table, "
+        "if it has column names. If not provided, the third column (z) is used. "
+        "Must also give --xcol and --ycol.",
+    )
+
+    parser.add_argument(
+        "-ccol",
+        type=str,
+        default=None,
+        help="Name of the column for acquisition channel in the localisation table, "
+        "if it has column names. If not provided, the last column is used.",
+    )
+
+    parser.add_argument(
+        "-from",
         dest="start_channel",
         type=int,
         default=None,
-        help="Colour channel to measure FROM. "
-        "Use to specify channel for 1-colour data, "
-        "as well as localisations to measure FROM in 2-colour data.",
+        help="Acquisition channel to measure FROM. "
+        "Use to specify channel for single-channel data, "
+        "as well as localisations to measure FROM, e.g. in 2-colour data.",
     )
 
     parser.add_argument(
-        "--to",
+        "-to",
         dest="end_channel",
         type=int,
         default=None,
-        help="Colour channel to measure TO. "
+        help="Acquisition channel to measure TO. "
         "Use to specify channel for localisations to measure TO "
-        "in 2-colour data.",
+        ", e.g. in 2-colour data.",
     )
 
     parser.add_argument(
@@ -792,8 +852,7 @@ def main(argv=None):
     )
 
     parser.add_argument(
-        "--nns",
-        dest="nns",
+        "-nns",
         type=int,
         default=0,
         help="Number of nearest neighbours to find within the filter distance, "
@@ -804,7 +863,6 @@ def main(argv=None):
     parser.add_argument(
         "-b",
         "--bin_size",
-        dest="bin_size",
         type=int,
         default=1,
         help="Bin size in distance histograms (nm).",
@@ -813,7 +871,6 @@ def main(argv=None):
     parser.add_argument(
         "-z",
         "--zoom",
-        dest="zoom",
         type=int,
         default=3,
         help="Magnification applied to the scatter plot of the "
@@ -845,11 +902,25 @@ def main(argv=None):
 
     info["dims"] = args.dims
     info["bin_size"] = args.bin_size
-    info["colours_analysed"] = args.colours
+    info["channels_analysed"] = args.channels
     info["start_channel"] = args.start_channel
     info["end_channel"] = args.end_channel
     info["filter_dist"] = args.filter_dist
     info["nns"] = args.nns
+
+    info["xcol"] = args.xcol
+    info["ycol"] = args.ycol
+    info["zcol"] = args.zcol
+    info["ccol"] = args.ccol
+    if info["xcol"] is not None:
+        if info["ycol"] is None:
+            sys.exit("Cannot supply --xcol without --ycol.")
+    if info["ycol"] is not None:
+        if info["xcol"] is None:
+            sys.exit("Cannot supply --ycol without --xcol.")
+    if info["zcol"] is not None:
+        if info["xcol"] is None or info["ycol"] is None:
+            sys.exit("Cannot supply --zcol without --xcol and --ycol.")
 
     info["zoom"] = args.zoom
     info["verbose"] = args.verbose
@@ -858,7 +929,7 @@ def main(argv=None):
     if args.input_file is None:
         # print("Get the data from the command line as the program executes.")
         get_inputs(info)
-        # print('Colours: ' + repr(info['colours_analysed'])) # Debug
+        # print('Channels: ' + repr(info['channels_analysed'])) # Debug
     else:
         info["in_file_and_path"] = Path(args.input_file).resolve()
 
@@ -866,9 +937,9 @@ def main(argv=None):
         utils.find_hostname_and_ip()
     )
 
-    # GET THE INPUT LOCALISATIONS with possible colour channels
+    # GET THE INPUT LOCALISATIONS with possible colour/other channels
     read_start = timeit.default_timer()
-    xyzcolour_values = read_data_in(info)
+    xyzc_values = read_data_in(info)
     read_end = timeit.default_timer()
     reading_time = (read_end - read_start) / 60
 
@@ -888,9 +959,9 @@ def main(argv=None):
             + " columns per localisation."
         )
 
-    # For colour channel information, choose channel(s) to analyse,
+    # For acquisition channel information, choose channel(s) to analyse,
     # if not given as arguments in the shell command
-    if info["colours_analysed"] is not None and info["start_channel"] is None:
+    if info["channels_analysed"] is not None and info["start_channel"] is None:
         info["start_channel"], info["end_channel"] = choose_channels(info)
 
     utils.primary_filename_and_path_setup(info)
@@ -927,29 +998,29 @@ def main(argv=None):
     # GET RELATIVE POSITIONS!
     d_values = []
     # For single channel
-    if info["colours_analysed"] is None:
-        xyz_values = xyzcolour_values[:, 0 : info["dims"]]
+    if info["channels_analysed"] is None:
+        xyz_values = xyzc_values[:, 0 : info["dims"]]
         d_values = getdistances(
             xyz_values, info["filter_dist"], info["nns"], verbose=info["verbose"]
         )[1]
 
-    if info["colours_analysed"] == 1:
-        xyz_values = xyzcolour_values[:, 0 : info["dims"]][
-            xyzcolour_values[:, -1] == info["start_channel"]
+    if info["channels_analysed"] == 1:
+        xyz_values = xyzc_values[:, 0 : info["dims"]][
+            xyzc_values[:, -1] == info["start_channel"]
         ]
         d_values = getdistances(
             xyz_values, info["filter_dist"], info["nns"], verbose=info["verbose"]
         )[1]
 
     # For two channels
-    if info["colours_analysed"] == 2:
-        xyz_values_start = xyzcolour_values[:, 0 : info["dims"]][
-            xyzcolour_values[:, -1] == info["start_channel"]
+    if info["channels_analysed"] == 2:
+        xyz_values_start = xyzc_values[:, 0 : info["dims"]][
+            xyzc_values[:, -1] == info["start_channel"]
         ]
-        xyz_values_end = xyzcolour_values[:, 0 : info["dims"]][
-            xyzcolour_values[:, -1] == info["end_channel"]
+        xyz_values_end = xyzc_values[:, 0 : info["dims"]][
+            xyzc_values[:, -1] == info["end_channel"]
         ]
-        d_values = getdistances_two_colours(
+        d_values = getdistances_two_channels(
             xyz_values_start,
             info["filter_dist"],
             xyz_values_end,
@@ -958,8 +1029,8 @@ def main(argv=None):
         )[1]
 
     # Draw scatterplot and zoomed region
-    plotting.draw_2d_scatter_plots(xyzcolour_values, info["dims"], info, 0)
-    plotting.draw_2d_scatter_plots(xyzcolour_values, info["dims"], info, info["zoom"])
+    plotting.draw_2d_scatter_plots(xyzc_values, info["dims"], info, 0)
+    plotting.draw_2d_scatter_plots(xyzc_values, info["dims"], info, info["zoom"])
 
     # Get distances in 2D and 3D for relative positions.
     # Note, get_vectors() is an unhelpful name as it takes the vectors we already have
@@ -970,7 +1041,6 @@ def main(argv=None):
             d_values = np.column_stack((d_values, np.zeros(d_values.shape[0])))
         d_values = get_vectors(d_values, info["dims"])
     else:
-        print("No data found so we are exiting.")
         sys.exit("No data found so we are exiting.")
 
     # Summarise
