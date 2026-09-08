@@ -178,16 +178,15 @@ def primary_filename_and_path_setup(info):
     if info["nns"] > 0:
         parameter_str = parameter_str + f'_{info["nns"]}nns_'
 
-    # Set results directory
-    path, in_file_no_path = os.path.split(info["in_file_and_path"])
+    # Set results path
+    filename_without_extension = info["in_file_and_path"].stem
 
-    index_of_dot = in_file_no_path.index(".")
-    filename_without_extension = in_file_no_path[:index_of_dot]
-
-    results_dir = path + r"/PERPL" + r"/rel_posns_" + parameter_str
+    results_dir = (
+        info["in_file_and_path"].parent / "PERPL" / ("rel_posns_" + parameter_str)
+    )
 
     # Include start time
-    results_dir = results_dir + "_" + info["start"]
+    results_dir = results_dir.with_name(results_dir.name + f"_{info['start']}")
 
     ## Set up short directory name to save space
     short_filename_without_extension = filename_without_extension[:6]
@@ -210,16 +209,18 @@ def primary_filename_and_path_setup(info):
     if info["nns"] > 0:
         short_parameter_str = short_parameter_str + f'_{info["nns"]}n'
 
-    short_results_dir = path + r"/PERPL" + r"/rel_posns_" + short_parameter_str
+    short_results_dir = (
+        info["in_file_and_path"].parent / "PERPL" / ("rel_posns_" + short_parameter_str)
+    )
 
     info["results_dir"] = results_dir
     info["in_file_no_extension"] = filename_without_extension
-    info["relpos_plots_report_dir"] = results_dir + "/histograms_and_report"
+    info["relpos_plots_report_dir"] = results_dir / "histograms_and_report"
 
-    info["in_file_no_path"] = in_file_no_path
+    info["in_file_no_path"] = info["in_file_and_path"].stem
     info["short_results_dir"] = short_results_dir
     info["short_filename_without_extension"] = short_filename_without_extension
-    info["short_relpos_plots_report_dir"] = short_results_dir + "/histograms_and_report"
+    info["short_relpos_plots_report_dir"] = short_results_dir / "histograms_and_report"
 
 
 def secondary_filename_and_path_setup(info):

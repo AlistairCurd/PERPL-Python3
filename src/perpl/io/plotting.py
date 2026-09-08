@@ -83,30 +83,30 @@ def draw_2d_scatter_plots(xyzcolour_values, dims, info, zoom):  # xyz_values
     if zoom == 0:
         title = "Scatter plot of localisations in XY"
         fig_name = r"scatter_plot_xy_localisations.png"
-        filename = info["relpos_plots_report_dir"] + r"/" + fig_name
+        outpath = info["relpos_plots_report_dir"] / fig_name
         if info["short_names"] is True:
-            filename = info["short_relpos_plots_report_dir"] + r"/" + fig_name
+            outpath = info["short_relpos_plots_report_dir"] / fig_name
         draw_2col_2d_scatter_plot(
-            xyzcolour_values, title, filename, "X (nm)", "Y (nm)", info
+            xyzcolour_values, title, outpath, "X (nm)", "Y (nm)", info
         )
 
         if dims == 3:
             title = "Scatter plot of localisations in XZ"
             fig_name = r"scatter_plot_xz_localisations.png"
-            filename = info["relpos_plots_report_dir"] + r"/" + fig_name
+            outpath = info["relpos_plots_report_dir"] / fig_name
             if info["short_names"] is True:
-                filename = info["short_relpos_plots_report_dir"] + r"/" + fig_name
+                outpath = info["short_relpos_plots_report_dir"] / fig_name
             draw_2col_2d_scatter_plot(
-                xyzcolour_values, title, filename, "X (nm)", "Z (nm)", info, axes=(0, 2)
+                xyzcolour_values, title, outpath, "X (nm)", "Z (nm)", info, axes=(0, 2)
             )
 
             title = "Scatter plot of localisations in YZ"
             fig_name = r"scatter_plot_yz_localisations.png"
-            filename = info["relpos_plots_report_dir"] + r"/" + fig_name
+            outpath = info["relpos_plots_report_dir"] / fig_name
             if info["short_names"] is True:
-                filename = info["short_relpos_plots_report_dir"] + r"/" + fig_name
+                outpath = info["short_relpos_plots_report_dir"] / fig_name
             draw_2col_2d_scatter_plot(
-                xyzcolour_values, title, filename, "X (nm)", "Z (nm)", info, axes=(1, 2)
+                xyzcolour_values, title, outpath, "X (nm)", "Z (nm)", info, axes=(1, 2)
             )
 
     # Zoomed-in xy-plot
@@ -134,29 +134,27 @@ def draw_2d_scatter_plots(xyzcolour_values, dims, info, zoom):  # xyz_values
             )
         )
         fig_name = r"scatter_plot_xy_localisations_x" + str(zoom) + ".png"
-        filename = info["relpos_plots_report_dir"] + r"/" + fig_name
+        outpath = info["relpos_plots_report_dir"] / fig_name
         if info["short_names"] is True:
-            filename = info["short_relpos_plots_report_dir"] + r"/" + fig_name
-        draw_2col_2d_scatter_plot(
-            zoomed_xyzc, title, filename, "X (nm)", "Y (nm)", info
-        )
+            outpath = info["short_relpos_plots_report_dir"] / fig_name
+        draw_2col_2d_scatter_plot(zoomed_xyzc, title, outpath, "X (nm)", "Y (nm)", info)
 
         # if dims == 3:
         # title = "Scatter Plot of XZ Locations: Center with Zoom of x{:d}".format(zoom)
         # fig_name = r'scatter_plot_xz_locations_x'+str(zoom)+'.png'
-        # filename = info['results_dir']+r'/'+fig_name
+        # outpath = info['results_dir']+r'/'+fig_name
         # draw_2d_scatter_plot(x_values_masked, z_values_masked,
-        #                    title, filename, 'x (nm)', 'z (nm)')
+        #                    title, outpath, 'x (nm)', 'z (nm)')
 
         # title = "Scatter Plot of YZ Locations: Center with Zoom of x{:d}".format(zoom)
         # fig_name = r'scatter_plot_yz_locations_x'+str(zoom)+'.png'
-        # filename = info['results_dir']+r'/'+fig_name
+        # outpath = info['results_dir']+r'/'+fig_name
         # draw_2d_scatter_plot(y_values_masked, z_values_masked,
-        #                     title, filename, 'y (nm)', 'z (nm)')
+        #                     title, outpath, 'y (nm)', 'z (nm)')
 
 
 def draw_2col_2d_scatter_plot(
-    xyzcolour_values, title, filename, x_label, y_label, info, axes=(0, 1)
+    xyzcolour_values, title, outpath, x_label, y_label, info, axes=(0, 1)
 ):
     """Creates a scatter plot and saves it to a .png file.
 
@@ -165,7 +163,7 @@ def draw_2col_2d_scatter_plot(
             localizations (first 2 or 3 columns)
             and their colour channels (final column).
         title (str): the text string that has the title for the plot.
-        filename (str): The output file has all the text of the input
+        outpath (pathlib.Path): The output filename has all the text of the input
             file plus some more information so it is easy to recognise which
             it has been derived from.
         info (dict): A python dictionary containing a collection of useful parameters
@@ -195,7 +193,7 @@ def draw_2col_2d_scatter_plot(
     # options on scaling are here
     # https://matplotlib.org/devdocs/api/_as_gen/matplotlib.axes.Axes.set_aspect.html
     ax.axis("scaled")
-    fig.savefig(filename, bbox_inches="tight")
+    fig.savefig(outpath, bbox_inches="tight")
 
 
 def find_thresholds(arr, zoom):
@@ -380,7 +378,7 @@ def plot_histogram(
     )
     axes = fig_hist.add_subplot(111)
 
-    # Set up filename
+    # Set up output path
     fig_name_base = (
         r"histogram_" + data_description.replace(" ", "_") + r"_separation_in_nm"
     )
@@ -388,9 +386,9 @@ def plot_histogram(
     if standardise is not None:
         fig_name_base = fig_name_base + "_" + standardise + "_standardised"
     fig_name = fig_name_base + ".png"
-    filename = info["relpos_plots_report_dir"] + r"/" + fig_name
+    outpath = info["relpos_plots_report_dir"] / fig_name
     if info["short_names"] is True:
-        filename = info["short_relpos_plots_report_dir"] + r"/" + fig_name
+        outpath = info["short_relpos_plots_report_dir"] / fig_name
 
     # Title and axis labels
     title = r"Distance histogram of " + data_description.upper() + r" separations"
@@ -433,7 +431,7 @@ def plot_histogram(
         color="lightgrey",
     )
 
-    fig_hist.savefig(filename, bbox_inches="tight")
+    fig_hist.savefig(outpath, bbox_inches="tight")
     # fig_hist.show()
 
     # Save histogram data
@@ -442,9 +440,9 @@ def plot_histogram(
     if standardise is not None:
         histo_name_base = histo_name_base + "_" + standardise + "_standardised"
     histo_name = histo_name_base + r".csv"
-    filename1 = info["relpos_plots_report_dir"] + r"/" + histo_name
+    outpath1 = info["relpos_plots_report_dir"] / histo_name
     if info["short_names"] is True:
-        filename1 = info["short_relpos_plots_report_dir"] + r"/" + histo_name
+        outpath1 = info["short_relpos_plots_report_dir"] / histo_name
 
     data_values = pd.concat(
         [pd.DataFrame(bin_heights), pd.DataFrame(bin_edges)], axis=1
@@ -453,10 +451,13 @@ def plot_histogram(
     head = "normalised probability density,bin edges"
 
     try:
-        np.savetxt(filename1, data_values, delimiter=",", header=head, comments="")
+        np.savetxt(outpath1, data_values, delimiter=",", header=head, comments="")
     except (EOFError, IOError, OSError):
         print("Unexpected error:", sys.exc_info()[0])
-        sys.exit("Could not create and open the output data file.")
+        sys.exit(
+            "Could not create and open the output data file for saving the "
+            f"histogram data:\n{outpath1}"
+        )
 
     return bin_heights
 
