@@ -27,8 +27,9 @@ CONDITIONS OF ANY KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
 """
 
-import numpy as np
 import sys
+
+import numpy as np
 
 
 def write_html_report_start(fout, info):
@@ -359,21 +360,14 @@ def write_rel_pos_html_report(info):
 
     html_outfile_name = (
         info["relpos_plots_report_dir"]
-        + r"/"
-        + info["in_file_no_extension"]
-        + r"_"
-        + info["prog"]
-        + r"_report.html"
+        / f"{info['in_file_no_extension']}_{info['prog']}_report.html"
     )
 
     if info["short_names"] is True:
         html_outfile_name = (
             info["short_relpos_plots_report_dir"]
-            + r"/"
-            + info["short_filename_without_extension"]
-            + r"_"
-            + info["prog_short_name"]
-            + r"_report.html"
+            / f"{info['short_filename_without_extension']}_{info['prog_short_name']}"
+            "_report.html"
         )
 
     try:
@@ -389,17 +383,10 @@ def write_rel_pos_html_report(info):
     fout = write_html_report_start(fout, info)
 
     report_info = (
-        r"<p>This program ran at "
-        + info["start"]
-        + r" on the "
-        + info["host"]
-        + r" host system and the data file analysed was "
-        + info["in_file_and_path"]
-        + r" which read in "
-        + str(info["values"])
-        + " localisations with "
-        + str(info["columns"])
-        + " columns. "
+        f"<p>This program ran at {info['start']} on the {info['host']} "
+        f"host system and the data file analysed was {info['in_file_and_path']} "
+        f" which read in {str(info['values'])} localisations with "
+        f"{str(info['columns'])} columns. "
     )
     if info["colours_analysed"] is not None:
         report_info = report_info[0:-2] + (

@@ -37,6 +37,7 @@ import os
 import sys
 import time
 import timeit
+from pathlib import Path
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 
@@ -83,7 +84,7 @@ def get_inputs(info):
         "(and Z, if 3D is chosen later), will be used for analysis.\n"
     )
 
-    in_file = askopenfilename()
+    in_file = Path(askopenfilename())
 
     # root.destroy()
 
@@ -173,7 +174,10 @@ def get_inputs(info):
 
     # Set histogram bin values for distance histograms.
     print("\nWhat bin size (integer) do you want for the distance histograms (nm)?")
-    print("...Choose 1 for model curve fitting functions...")
+    print(
+        "...Choose 1 for old model curve fitting functions, "
+        "e.g. still used in rot_2d_symm_fit.py..."
+    )
     info["bin_size"] = int(
         input(
             "...Choose a factor of the filter distance to histogram "
@@ -228,14 +232,14 @@ def read_data_in(info):
     if not os.path.exists(in_file):
         sys.exit("ERROR; The input file does not exist.")
 
-    if in_file[-4:] == ".npy":
+    if in_file.name[-4:] == ".npy":
         try:
             xyzcolour_values = np.load(in_file)
         except (EOFError, IOError, OSError) as exception:
             print("\n\nCould not read file: ", in_file)
             print("\n\n", type(exception))
             sys.exit("Could not read the input file " + in_file + ".\n")
-    elif in_file[-4:] == ".csv" or in_file[-4:] == ".txt":
+    elif in_file.name[-4:] == ".csv" or in_file[-4:] == ".txt":
         try:
             skip = 0
             with open(in_file, encoding="utf-8") as f:
@@ -652,30 +656,24 @@ def save_relative_positions(d_values, filterdist, dims, info, nns=0):
             0 means no fixed number was used (e.g. all within filterdist).
 
     Returns:
-        outfilename: The path and filename of the output data file. This is
+        outpath: The path to the output data file. This is
            recorded in the log file.
     """
     if nns == 0:
-        out_file_name = (
+        outpath = (
             info["results_dir"]
-            + r"/"
-            + info["in_file_no_extension"]
-            + f"_PERPL-relpos_{filterdist:.1f}filter.csv"
+            / f"{info['in_file_no_extension']}_PERPL-relpos_{filterdist:.1f}filter.csv"
         )
     else:
-        out_file_name = (
-            info["results_dir"]
-            + r"/"
-            + info["in_file_no_extension"]
-            + f"_PERPL-relpos_{filterdist:.1f}filter_{nns}nn.csv"
+        outpath = (
+            info["results_dir"] / f"{info['in_file_no_extension']}_"
+            f"PERPL-relpos_{filterdist:.1f}filter_{nns}nn.csv"
         )
 
     if info["short_names"]:
-        out_file_name = (
-            info["short_results_dir"]
-            + r"/"
-            + info["short_filename_without_extension"]
-            + f"_PERPL-relpos_{filterdist:.1f}filter.csv"
+        outpath = (
+            info["short_results_dir"] / f"{info['short_filename_without_extension']}"
+            f"_PERPL-relpos_{filterdist:.1f}filter.csv"
         )
 
     head = None
@@ -688,12 +686,15 @@ def save_relative_positions(d_values, filterdist, dims, info, nns=0):
         )
 
     try:
-        np.savetxt(out_file_name, d_values, delimiter=",", header=head, comments="")
+        np.savetxt(outpath, d_values, delimiter=",", header=head, comments="")
     except (EOFError, IOError, OSError):
         print("Unexpected error:", sys.exc_info()[0])
-        sys.exit("Could not create and open the output data file.")
+        sys.exit(
+            "Could not create and open the output data file "
+            f"for saving relative positions:\n{outpath}"
+        )
 
-    return out_file_name
+    return outpath
 
 
 def main(argv=None):
@@ -737,11 +738,10 @@ def main(argv=None):
         "-i",
         "--input_file",
         dest="input_file",
-        type=argparse.FileType("r"),
-        help="File of localisations which is a .csv (or .txt "
+        type=str,
+        help="Path to localisations file which is a .csv (or .txt "
         "with comma delimiters) or .npy and containing N "
         "localisations in N rows.",
-        metavar="FILE",
     )
 
     parser.add_argument(
@@ -860,7 +860,7 @@ def main(argv=None):
         get_inputs(info)
         # print('Colours: ' + repr(info['colours_analysed'])) # Debug
     else:
-        info["in_file_and_path"] = args.input_file.name
+        info["in_file_and_path"] = Path(args.input_file).resolve()
 
     info["host"], info["ip_address"], info["operating_system"] = (
         utils.find_hostname_and_ip()
@@ -897,26 +897,32 @@ def main(argv=None):
 
     if info["short_names"] is True:
         try:
-            os.makedirs(info["short_results_dir"])
-        except OSError:
-            print("Unexpected error:", sys.exc_info()[0])
-            sys.exit("Could not create directory for the results.")
+            info["short_results_dir"].mkdir()
+        except FileExistsError:
+            sys.exit(
+                "\nShort-name directory for the results already exists:\n"
+                f"{info['short_results_dir']}\n"
+                "Please rename it or move it elsewhere."
+            )
         try:
             os.makedirs(info["short_relpos_plots_report_dir"])
         except OSError:
             print("Unexpected error:", sys.exc_info()[0])
-            sys.exit("Could not create directory for the results.")
+            sys.exit(
+                "\nCould not create short-name directory for the plots and report:\n"
+                f"{info['short_relpos_plots_report_dir']}"
+            )
     else:
         try:
             os.makedirs(info["results_dir"])
         except OSError:
             print("Unexpected error:", sys.exc_info()[0])
-            sys.exit("Could not create directory for the results.")
+            sys.exit("\nCould not create directory for the results.")
         try:
             os.makedirs(info["relpos_plots_report_dir"])
         except OSError:
             print("Unexpected error:", sys.exc_info()[0])
-            sys.exit("Could not create directory for the results.")
+            sys.exit("\nCould not create directory for the plots and reports.")
 
     # GET RELATIVE POSITIONS!
     d_values = []
@@ -973,7 +979,7 @@ def main(argv=None):
             "\n"
             f"{len(d_values)} relative positions within the "
             "filter distance in all dimensions for all localisations. "
-            " Symmetric duplicates removed for single-channel analysis if "
+            "Symmetric duplicates removed for single-channel analysis if "
             "# nearest neighbours was unrestricted."
         )
 
@@ -991,7 +997,7 @@ def main(argv=None):
         )
 
     # Save relative positions and vector components.
-    xyz_filename = save_relative_positions(
+    xyz_outpath = save_relative_positions(
         d_values, info["filter_dist"], info["dims"], info, info["nns"]
     )
 
@@ -1009,7 +1015,7 @@ def main(argv=None):
 
     # Direct user to the location of the output.
     if info["verbose"]:
-        print("\nRelative positions are saved in the file:\n" + xyz_filename)
+        print(f"\nRelative positions are saved in the file:\n{xyz_outpath}")
 
 
 if __name__ == "__main__":
