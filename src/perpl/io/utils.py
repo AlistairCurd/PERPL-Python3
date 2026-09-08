@@ -304,7 +304,7 @@ def secondary_read_data_in(info):
     if not os.path.exists(in_file):
         sys.exit("ERROR; The input file does not exist.")
 
-    if in_file[-4:] == ".csv":
+    if in_file.name[-4:] == ".csv":
         try:
             line = open(in_file).readline()
         except (EOFError, IOError, OSError) as exception:
@@ -327,24 +327,13 @@ def secondary_read_data_in(info):
                 sys.exit("Could not read the input file " + in_file + ".\n")
         else:
             xyz_values = "Ouch"
-            print(
-                "Sorry, wrong format! This program needs a file output from "
-                "relative_positions.py\n"
-            )
             sys.exit(
-                "The input file " + in_file + " has the wrong format. It needs "
-                "a file output form relative_positions\n"
+                f"The input CSV file {in_file} has the wrong format. It needs "
+                "a file as output from relative_positions.py\n"
             )
     else:
         xyz_values = "Ouch"
-        print(
-            "Sorry, wrong format! This program needs a file output from "
-            "relative_positions.py\n"
-        )
-        sys.exit(
-            "The input file " + in_file + " has the wrong format. It needs "
-            "a file output form relative_positions\n"
-        )
+        sys.exit("The input file must be a .csv file.\n")
 
     info["values"] = xyz_values.shape[0]
     info["columns"] = xyz_values.shape[1]

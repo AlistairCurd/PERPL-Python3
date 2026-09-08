@@ -130,26 +130,18 @@ def write_rot_2d_html_report(info, symmetries, aiccs, weights, table_values):
     fout = write_html_report_start(fout, info)
 
     fout.write(
-        r"<p>This program ran at "
-        + info["start"]
-        + r" on the "
-        + info["host"]
-        + r" host system and the data file analysed was "
-        + info["in_file_and_path"]
-        + r" which read in "
-        + str(info["values"])
-        + " relative positions with "
-        + str(info["columns"])
-        + " columns. "
-        "This report provides images and information on simulated "
-        "models of experimental fluorescence super-resolution light "
-        "microscopy data and their comparison to experimental data.</p>\n"
-        "The model " + info["model_name"] + " is fitted to the relative "
-        "positions, up to a maximum of " + str(info["filter_dist"]) + " nm. "
-        "The initial guesses for the parameter values were "
-        + str(info["p0"])
-        + " and the bounds on them during optimisation "
-        "were " + str(info["optimisation_bounds"]) + " .</p>\n"
+        f'<p>This program ran at {info["start"]} on the {info["host"]} '
+        f' host system and the data file analysed was {info["in_file_and_path"]} '
+        f' which read in {info["values"]} relative positions with {info["columns"]} '
+        'columns. '
+        'This report provides images and information on simulated '
+        'models of experimental fluorescence super-resolution light '
+        'microscopy data and their comparison to experimental data.</p>\n'
+        f'The model {info["model_name"]} was fitted to the relative '
+        f'positions, up to a maximum of {info["filter_dist"]} nm. '
+        f'The initial guesses for the parameter values were {info["p0"]} '
+        ' and the bounds on them during optimisation '
+        f'were {info["optimisation_bounds"]}.</p>\n'
     )
 
     fout.write("<p></p>\n")
