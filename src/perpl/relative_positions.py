@@ -780,7 +780,7 @@ def main(argv=None):
 
     parser.add_argument(
         "-c",
-        "--channels",
+        "--num_channels",
         type=int,
         default=None,
         help="Number of acquisition channels. It can be set to 1 or 2 or unused. "
@@ -902,7 +902,7 @@ def main(argv=None):
 
     info["dims"] = args.dims
     info["bin_size"] = args.bin_size
-    info["channels_analysed"] = args.channels
+    info["channels_analysed"] = args.num_channels
     info["start_channel"] = args.start_channel
     info["end_channel"] = args.end_channel
     info["filter_dist"] = args.filter_dist
@@ -1048,7 +1048,8 @@ def main(argv=None):
         print(
             "\n"
             f"{len(d_values)} relative positions within the "
-            "filter distance in all dimensions for all localisations. "
+            "filter distance in the chosen dimensions between localisations "
+            "in the selected channels."
             "Symmetric duplicates removed for single-channel analysis if "
             "# nearest neighbours was unrestricted."
         )
