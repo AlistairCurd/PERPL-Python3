@@ -104,6 +104,18 @@ def set_up_info(info: dict, args: argparse.Namespace) -> None:
             or info["end_channel"] is not None
         ):
             sys.exit("Missing channel argument -c to go with other channel arguments.")
+    if info["start_channel"] == info["end_channel"]:
+        sys.exit(
+            'You chose two-channel analysis '
+            f'with identical -from and -to channels ({info["start_channel"]}).\n'
+            'If you want relative positions with a single channel, '
+            'choose one-channel analysis, and only the -from channel is needed.'
+        )
+    if info["channels_analysed"] == 1 and info["end_channel"] is not None:
+        print(
+            'You chose an end_channel (-to) for single-channel analysis, '
+            f'which will not be used (you selected {info["end_channel"]})'
+        )
 
     info["zoom"] = args.zoom
     info["short_names"] = args.short_names
