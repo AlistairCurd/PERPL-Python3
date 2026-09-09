@@ -264,6 +264,132 @@ class TestGetdistances(unittest.TestCase):
         np.testing.assert_array_almost_equal(separation_values, result)
 
 
+class TestGetdistances_AllChanOptions(unittest.TestCase):
+    """
+    Test the getdistances_allchanoptions function from the relative_positions library.
+    """
+
+    def test_1_chan_selected_from_2(self):
+        """
+        Test getdistances_allchanoptions() when data has two different channel values
+        and relative positions are requested within one channel.
+        """
+        input_data = make_test_grid_2chan_2d()
+        info = {
+            "channels_analysed": 1,
+            "dims": 2,
+            "filter_dist": 10,
+            "nns": 0,
+            "start_channel": 0,
+            "verbose": False,
+        }
+        expected_result = np.array(
+            [
+                [0.0, 4.0],
+                [2.0, 2.0],
+                [4.0, 0.0],
+                [4.0, 4.0],
+                [2.0, -2.0],
+                [4.0, -4.0],
+                [4.0, 0.0],
+                [2.0, -2.0],
+                [2.0, 2.0],
+                [0.0, 4.0],
+            ]
+        )
+        result = rp.getdistances_allchanoptions(input_data, info)
+        np.testing.assert_array_equal(expected_result, result)
+
+    def test_2_chan_between_channels(self):
+        """
+        Test getdistances_allchanoptions() when data has two different channel values
+        and relative positions are requested between the channels.
+        """
+        input_data = make_test_grid_2chan_2d()
+        info = {
+            "channels_analysed": 2,
+            "dims": 2,
+            "filter_dist": 10,
+            "nns": 0,
+            "start_channel": 0,
+            "end_channel": 1,
+            "verbose": False,
+        }
+        expected_result = np.array(
+            [
+                [1.0, 1.0],
+                [1.0, 2.0],
+                [1.0, 3.0],
+                [2.0, 1.0],
+                [2.0, 2.0],
+                [2.0, 3.0],
+                [3.0, 1.0],
+                [3.0, 2.0],
+                [3.0, 3.0],
+                [1.0, -3.0],
+                [1.0, -2.0],
+                [1.0, -1.0],
+                [2.0, -3.0],
+                [2.0, -2.0],
+                [2.0, -1.0],
+                [3.0, -3.0],
+                [3.0, -2.0],
+                [3.0, -1.0],
+                [-1.0, -1.0],
+                [-1.0, 0.0],
+                [-1.0, 1.0],
+                [0.0, -1.0],
+                [0.0, 0.0],
+                [0.0, 1.0],
+                [1.0, -1.0],
+                [1.0, 0.0],
+                [1.0, 1.0],
+                [-3.0, 1.0],
+                [-3.0, 2.0],
+                [-3.0, 3.0],
+                [-2.0, 1.0],
+                [-2.0, 2.0],
+                [-2.0, 3.0],
+                [-1.0, 1.0],
+                [-1.0, 2.0],
+                [-1.0, 3.0],
+                [-3.0, -3.0],
+                [-3.0, -2.0],
+                [-3.0, -1.0],
+                [-2.0, -3.0],
+                [-2.0, -2.0],
+                [-2.0, -1.0],
+                [-1.0, -3.0],
+                [-1.0, -2.0],
+                [-1.0, -1.0],
+            ]
+        )
+        result = rp.getdistances_allchanoptions(input_data, info)
+        np.testing.assert_array_equal(expected_result, result)
+
+    def test_2_chan_between_channels_1nn(self):
+        """
+        Test getdistances_allchanoptions() when data has two different channel values
+        and relative positions to the nearest neighbour
+        are requested between the channels.
+        """
+        input_data = make_test_grid_2chan_2d()
+        info = {
+            "channels_analysed": 2,
+            "dims": 2,
+            "filter_dist": 10,
+            "nns": 1,
+            "start_channel": 0,
+            "end_channel": 1,
+            "verbose": False,
+        }
+        expected_result = np.array(
+            [[1.0, 1.0], [1.0, -1.0], [0.0, 0.0], [-1.0, 1.0], [-1.0, -1.0]]
+        )
+        result = rp.getdistances_allchanoptions(input_data, info)
+        np.testing.assert_array_equal(expected_result, result)
+
+
 class TestGetVectors(unittest.TestCase):
     """
     Test the get_vectors function from the relative_positions library
