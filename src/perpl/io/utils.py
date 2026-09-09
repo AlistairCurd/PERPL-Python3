@@ -20,6 +20,7 @@ CONDITIONS OF ANY KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
 """
 
+import argparse
 import os
 import socket
 import sys
@@ -341,3 +342,152 @@ def secondary_read_data_in(info):
     info["total_columns"] = xyz_values.shape[1]
 
     return xyz_values
+
+
+def parse_relpos_cli_inputs(prog: str, description: str):
+    """
+    Parser command line inputs for running relative_positions.py (relpos).
+
+    Args:
+        prog:
+            Program name to print
+        description (str):
+            Program description to print
+
+    Returns:
+        args (argparse.ArgumentParser object)
+    """
+    parser = argparse.ArgumentParser(prog, description)
+
+    parser.add_argument(
+        "-i",
+        "--input_file",
+        type=str,
+        help="Path to localisations file which is a .csv (or .txt "
+        "with comma delimiters) or .npy and containing N "
+        "localisations in N rows.",
+    )
+
+    parser.add_argument(
+        "-d",
+        "--dims",
+        type=int,
+        default=3,
+        help="Dimensions of the data. It can be 2 or 3.",
+    )
+
+    parser.add_argument(
+        "-c",
+        "--num_channels",
+        type=int,
+        default=None,
+        help="Number of acquisition channels. It can be set to 1 or 2 or unused. "
+        "If 1, one of the acquisition channels should be specified. "
+        "If unused, all localisations are assumed to be from the same channel.",
+    )
+
+    parser.add_argument(
+        "-xcol",
+        type=str,
+        default=None,
+        help="Name of the column for x position in the localisation table, "
+        "if it has column names. If not provided, the first column (0) is used.",
+    )
+
+    parser.add_argument(
+        "-ycol",
+        type=str,
+        default=None,
+        help="Name of the column for y position in the localisation table, "
+        "if it has column names. If not provided, the second column (1) is used. "
+        "Must also give --xcol.",
+    )
+
+    parser.add_argument(
+        "-zcol",
+        type=str,
+        default=None,
+        help="Name of the column for z position in the localisation table, "
+        "if it has column names. If not provided, the third column (z) is used. "
+        "Must also give --xcol and --ycol.",
+    )
+
+    parser.add_argument(
+        "-ccol",
+        type=str,
+        default=None,
+        help="Name of the column for acquisition channel in the localisation table, "
+        "if it has column names. If not provided, the last column is used.",
+    )
+
+    parser.add_argument(
+        "-from",
+        dest="start_channel",
+        type=int,
+        default=None,
+        help="Acquisition channel to measure FROM. "
+        "Use to specify channel for single-channel data, "
+        "as well as localisations to measure FROM, e.g. in 2-colour data.",
+    )
+
+    parser.add_argument(
+        "-to",
+        dest="end_channel",
+        type=int,
+        default=None,
+        help="Acquisition channel to measure TO. "
+        "Use to specify channel for localisations to measure TO "
+        ", e.g. in 2-colour data.",
+    )
+
+    parser.add_argument(
+        "-f",
+        "--filter_distance",
+        dest="filter_dist",
+        type=int,
+        default=150,
+        help="Filter distance.",
+    )
+
+    parser.add_argument(
+        "-nns",
+        type=int,
+        default=0,
+        help="Number of nearest neighbours to find within the filter distance, "
+        "if desired. O (default) means no limit on the number of "
+        "neighbours used within the filter distance.",
+    )
+
+    parser.add_argument(
+        "-b",
+        "--bin_size",
+        type=int,
+        default=1,
+        help="Bin size in distance histograms (nm).",
+    )
+
+    parser.add_argument(
+        "-z",
+        "--zoom",
+        type=int,
+        default=3,
+        help="Magnification applied to the scatter plot of the "
+        "principal view of the data.",
+    )
+
+    parser.add_argument(
+        "-s",
+        "--short_names",
+        help="Uses shortened names for the results files and "
+        "directories. While this makes the results less easy to"
+        " navigate it can be particularly useful on Windows"
+        " systems that do not allow long names and paths. "
+        "Uses the first 6 characters of the input filename.",
+        action="store_true",
+    )
+
+    parser.add_argument(
+        "-v", "--verbose", help="Increase output verbosity", action="store_true"
+    )
+
+    return parser.parse_args()

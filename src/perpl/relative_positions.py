@@ -48,20 +48,90 @@ from scipy import spatial
 from perpl.io import plotting, reports, utils
 
 
+def set_up_info(info: dict, args: argparse.Namespace) -> None:
+    """
+    Update the PERPL info dictionary for this data and analysis
+    based on CLI arguments.
+
+    Parameters
+    ----------
+    info : dict
+        Dictionary containing parameters for data reading, analysis and output.
+    args: argparse.Namespace
+        Arguments for setting up the dictionary.
+
+    Returns
+    -------
+    None
+        The info dict is modified in place.
+    """
+
+    if args.input_file is not None:
+        # When input file is supplied in the CLI command.
+        info["in_file_and_path"] = Path(args.input_file).resolve()
+        info["dims"] = args.dims
+        info["bin_size"] = args.bin_size
+        info["channels_analysed"] = args.num_channels
+        info["start_channel"] = args.start_channel
+        info["end_channel"] = args.end_channel
+        info["filter_dist"] = args.filter_dist
+        info["nns"] = args.nns
+        info["verbose"] = args.verbose
+
+    else:
+        # When input file not supplied in the CLI command.
+        # Supplies the info fields updated above.
+        get_inputs(info)
+
+    # Add these in both file input methods
+    info["xcol"] = args.xcol
+    info["ycol"] = args.ycol
+    info["zcol"] = args.zcol
+    info["ccol"] = args.ccol
+    if info["xcol"] is not None:
+        if info["ycol"] is None:
+            sys.exit("Cannot supply -xcol without -ycol.")
+    if info["ycol"] is not None:
+        if info["xcol"] is None:
+            sys.exit("Cannot supply -ycol without -xcol.")
+    if info["zcol"] is not None:
+        if info["xcol"] is None or info["ycol"] is None:
+            sys.exit("Cannot supply -zcol without -xcol and -ycol.")
+    if info["channels_analysed"] is None:
+        if (
+            info["ccol"] is not None
+            or info["start_channel"] is not None
+            or info["end_channel"] is not None
+        ):
+            sys.exit("Missing channel argument -c to go with other channel arguments.")
+
+    info["zoom"] = args.zoom
+    info["short_names"] = args.short_names
+    info["host"], info["ip_address"], info["operating_system"] = (
+        utils.find_hostname_and_ip()
+    )
+
+
 def get_inputs(info):
     """Creates a file browser to read the filename of the input data. Then asks
     for takes other inputs as text from the command line. Puts these inputs
     parameters into the dictionary that is easy to pass to many functions.
     These are:
-        in_file_and_path (string):
+        in_file_and_path (str):
             The input filename and path.
         dims (int):
             The dimensions of the data ie 2D or 3D.
+        channel_analysed (str):
+            Whether acquisition channel information is to be used or not.
         filterdist (int):
             The distance within which relative positions were calculated.
-        zoom (int):
+        nns (int):
+            The number of nearest neighbour for which to calculate relative positions.
+        bin_size (int):
+            The width of the bins to use in output distance histograms.
+        zoom (int): *Currently removed*
             Magnification factor for the centre of the data in a scatter plot.
-        verbose (Boolean):
+        verbose (Bool):
             If True prints outputs to screen as program executes.
     Args:
         info (dict):
@@ -276,20 +346,22 @@ def read_data_in(info):
                     "Column labels were given and dimensions (dims) was not 2 or 3."
                 )
 
-            # Add channel column
-            if info["ccol"] is None:
-                col_values = xyzc_df.iloc[:, -1].to_numpy()[:, np.newaxis]
-            else:
-                col_values = xyzc_df[[info["ccol"]]].to_numpy()
+            # Add channel column if required
+            if info["channels_analysed"] is not None:
+                if info["ccol"] is None:
+                    col_values = xyzc_df.iloc[:, -1].to_numpy()[:, np.newaxis]
+                else:
+                    col_values = xyzc_df[[info["ccol"]]].to_numpy()
 
-            # Stop if channels are not all numbers
-            if isinstance(col_values[0][0], str):
-                sys.exit(
-                    "\nChannel values contain strings, which are currently unsupported."
-                )
+                # Stop if channels are not all numbers
+                if isinstance(col_values[0][0], str):
+                    sys.exit(
+                        "\nChannel values contain strings, "
+                        "which are currently unsupported."
+                    )
 
-            # Combine position and channel columns
-            xyzc_values = np.hstack((xyzc_values, col_values))
+                # Combine position and channel columns
+                xyzc_values = np.hstack((xyzc_values, col_values))
 
         except (EOFError, IOError, OSError) as exception:
             print("\n\nCould not read file: ", in_file)
@@ -612,6 +684,63 @@ def getdistances_two_channels(
     return loc_pairs, separation_values
 
 
+def getdistances_allchanoptions(xyzc_values: np.ndarray, info: dict) -> np.ndarray:
+    """
+    Calculate the relative positions between points in the selected channels.
+    Will use the single- or two-channel calculation according to the input selection.
+
+    Parameters
+    ----------
+    xyzc_values : Numpy array
+        Point data table, one row per data, including spatial coordinates in first
+        columns (x, y and possibly z) and channel values in final column if present.
+    info : dict
+        Dictionary of parameters for data selection, analysis and output.
+
+    Returns
+    -------
+    d_values : Numpy array
+        Relative position table between localisations according to the filter distance,
+        number of nearest neighbours and channels selected.
+        One relative position per row.
+    """
+    # Single-channel, all localisations
+    if info["channels_analysed"] is None:
+        xyz_values = xyzc_values[:, 0 : info["dims"]]
+        d_values = getdistances(
+            xyz_values, info["filter_dist"], info["nns"], verbose=info["verbose"]
+        )[1]
+
+    elif info["channels_analysed"] == 1:
+        xyz_values = xyzc_values[:, 0 : info["dims"]][
+            xyzc_values[:, -1] == info["start_channel"]
+        ]
+        d_values = getdistances(
+            xyz_values, info["filter_dist"], info["nns"], verbose=info["verbose"]
+        )[1]
+
+    # For two channels
+    elif info["channels_analysed"] == 2:
+        xyz_values_start = xyzc_values[:, 0 : info["dims"]][
+            xyzc_values[:, -1] == info["start_channel"]
+        ]
+        xyz_values_end = xyzc_values[:, 0 : info["dims"]][
+            xyzc_values[:, -1] == info["end_channel"]
+        ]
+        d_values = getdistances_two_channels(
+            xyz_values_start,
+            info["filter_dist"],
+            xyz_values_end,
+            info["nns"],
+            verbose=info["verbose"],
+        )[1]
+
+    else:
+        sys.exit(f'Number of channels chosen is invalid: {info["channels_analysed"]}')
+
+    return d_values
+
+
 def get_vectors(d_values, dims):
     """Calculates the distances in 2D and 3D for relative position vectors.
     This function saves both 2D and 3D data.
@@ -662,6 +791,53 @@ def get_vectors(d_values, dims):
         d_values.view("f8,f8,f8,f8,f8,f8,f8").sort(order=["f6"], axis=0)
 
     return d_values
+
+
+def set_up_output_paths(info: dict) -> None:
+    """
+    Set up paths for saving the output data, including creating output folders.
+    Will exit if the folders already exist.
+
+    Parameters
+    ----------
+    info : dict
+        Dictionary containing information about the data and analysis choices.
+
+    Returns
+    -------
+    None
+        Just creates new directories as storage locations.
+    """
+    utils.primary_filename_and_path_setup(info)
+
+    if info["short_names"] is True:
+        try:
+            info["short_results_dir"].mkdir()
+        except FileExistsError:
+            sys.exit(
+                "\nShort-name directory for the results already exists:\n"
+                f"{info['short_results_dir']}\n"
+                "Please rename it or move it elsewhere."
+            )
+        try:
+            os.makedirs(info["short_relpos_plots_report_dir"])
+        except OSError:
+            print("Unexpected error:", sys.exc_info()[0])
+            sys.exit(
+                "\nCould not create short-name directory for the plots and report:\n"
+                f"{info['short_relpos_plots_report_dir']}"
+            )
+    else:
+        try:
+            os.makedirs(info["results_dir"])
+        except OSError:
+            print("Unexpected error:", sys.exc_info()[0])
+            sys.exit("\nCould not create directory for the results.")
+        try:
+            os.makedirs(info["relpos_plots_report_dir"])
+        except OSError:
+            print("Unexpected error:", sys.exc_info()[0])
+            sys.exit("\nCould not create directory for the plots and reports.")
 
 
 def save_relative_positions(d_values, filterdist, dims, info, nns=0):
@@ -726,7 +902,7 @@ def save_relative_positions(d_values, filterdist, dims, info, nns=0):
     return outpath
 
 
-def main(argv=None):
+def main():
     """Reads input data of point density locations and calculates relative
         poasitions as vectors. Outputs are writen to a file in a directory
         with the name of the inputfile and a time stamp above the directory of
@@ -753,148 +929,7 @@ def main(argv=None):
     prog_short_name = "rp"
     description = "Calculating the relative positions of points as vectors."
 
-    info = {
-        "prog": prog,
-        "prog_short_name": prog_short_name,
-        "description": description,
-    }
-
-    info["start"] = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-    parser = argparse.ArgumentParser(prog, description)
-
-    parser.add_argument(
-        "-i",
-        "--input_file",
-        type=str,
-        help="Path to localisations file which is a .csv (or .txt "
-        "with comma delimiters) or .npy and containing N "
-        "localisations in N rows.",
-    )
-
-    parser.add_argument(
-        "-d",
-        "--dims",
-        type=int,
-        default=3,
-        help="Dimensions of the data. It can be 2 or 3.",
-    )
-
-    parser.add_argument(
-        "-c",
-        "--num_channels",
-        type=int,
-        default=None,
-        help="Number of acquisition channels. It can be set to 1 or 2 or unused. "
-        "If 1, one of the acquisition channels should be specified. "
-        "If unused, all localisations are assumed to be from the same channel.",
-    )
-
-    parser.add_argument(
-        "-xcol",
-        type=str,
-        default=None,
-        help="Name of the column for x position in the localisation table, "
-        "if it has column names. If not provided, the first column (0) is used.",
-    )
-
-    parser.add_argument(
-        "-ycol",
-        type=str,
-        default=None,
-        help="Name of the column for y position in the localisation table, "
-        "if it has column names. If not provided, the second column (1) is used. "
-        "Must also give --xcol.",
-    )
-
-    parser.add_argument(
-        "-zcol",
-        type=str,
-        default=None,
-        help="Name of the column for z position in the localisation table, "
-        "if it has column names. If not provided, the third column (z) is used. "
-        "Must also give --xcol and --ycol.",
-    )
-
-    parser.add_argument(
-        "-ccol",
-        type=str,
-        default=None,
-        help="Name of the column for acquisition channel in the localisation table, "
-        "if it has column names. If not provided, the last column is used.",
-    )
-
-    parser.add_argument(
-        "-from",
-        dest="start_channel",
-        type=int,
-        default=None,
-        help="Acquisition channel to measure FROM. "
-        "Use to specify channel for single-channel data, "
-        "as well as localisations to measure FROM, e.g. in 2-colour data.",
-    )
-
-    parser.add_argument(
-        "-to",
-        dest="end_channel",
-        type=int,
-        default=None,
-        help="Acquisition channel to measure TO. "
-        "Use to specify channel for localisations to measure TO "
-        ", e.g. in 2-colour data.",
-    )
-
-    parser.add_argument(
-        "-f",
-        "--filter_distance",
-        dest="filter_dist",
-        type=int,
-        default=150,
-        help="Filter distance.",
-    )
-
-    parser.add_argument(
-        "-nns",
-        type=int,
-        default=0,
-        help="Number of nearest neighbours to find within the filter distance, "
-        "if desired. O (default) means no limit on the number of "
-        "neighbours used within the filter distance.",
-    )
-
-    parser.add_argument(
-        "-b",
-        "--bin_size",
-        type=int,
-        default=1,
-        help="Bin size in distance histograms (nm).",
-    )
-
-    parser.add_argument(
-        "-z",
-        "--zoom",
-        type=int,
-        default=3,
-        help="Magnification applied to the scatter plot of the "
-        "principal view of the data.",
-    )
-
-    parser.add_argument(
-        "-s",
-        "--short_names",
-        help="Uses shortened names for the results files and "
-        "directories. While this makes the results less easy to"
-        " navigate it can be particularly useful on Windows"
-        " systems that do not allow long names and paths. "
-        "Uses the first 6 characters of the input filename.",
-        action="store_true",
-    )
-
-    parser.add_argument(
-        "-v", "--verbose", help="Increase output verbosity", action="store_true"
-    )
-
-    args = parser.parse_args()
+    args = utils.parse_relpos_cli_inputs(prog, description)
 
     if args.verbose:
         print("Verbosity is turned on.\n")
@@ -902,42 +937,14 @@ def main(argv=None):
     if args.dims < 2 or args.dims > 3:
         sys.exit("ERROR; The data can only have 2 or 3 dimensions.")
 
-    info["dims"] = args.dims
-    info["bin_size"] = args.bin_size
-    info["channels_analysed"] = args.num_channels
-    info["start_channel"] = args.start_channel
-    info["end_channel"] = args.end_channel
-    info["filter_dist"] = args.filter_dist
-    info["nns"] = args.nns
+    info = {
+        "prog": prog,
+        "prog_short_name": prog_short_name,
+        "description": description,
+        "start": datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+    }
 
-    info["xcol"] = args.xcol
-    info["ycol"] = args.ycol
-    info["zcol"] = args.zcol
-    info["ccol"] = args.ccol
-    if info["xcol"] is not None:
-        if info["ycol"] is None:
-            sys.exit("Cannot supply --xcol without --ycol.")
-    if info["ycol"] is not None:
-        if info["xcol"] is None:
-            sys.exit("Cannot supply --ycol without --xcol.")
-    if info["zcol"] is not None:
-        if info["xcol"] is None or info["ycol"] is None:
-            sys.exit("Cannot supply --zcol without --xcol and --ycol.")
-
-    info["zoom"] = args.zoom
-    info["verbose"] = args.verbose
-    info["short_names"] = args.short_names
-
-    if args.input_file is None:
-        # print("Get the data from the command line as the program executes.")
-        get_inputs(info)
-        # print('Channels: ' + repr(info['channels_analysed'])) # Debug
-    else:
-        info["in_file_and_path"] = Path(args.input_file).resolve()
-
-    info["host"], info["ip_address"], info["operating_system"] = (
-        utils.find_hostname_and_ip()
-    )
+    set_up_info(info, args)
 
     # GET THE INPUT LOCALISATIONS with possible colour/other channels
     read_start = timeit.default_timer()
@@ -948,17 +955,10 @@ def main(argv=None):
     if info["verbose"]:
         print("\nInput file:")
         print(info["in_file_and_path"])
+        print(f"\nTime to read the input file was: {round(reading_time, 3)} minutes.\n")
         print(
-            "\nTime to read the input file was: "
-            + str(round(reading_time, 3))
-            + " minutes.\n"
-        )
-        print(
-            "This file contains "
-            + str(info["values"])
-            + " localisations with "
-            + str(info["columns"])
-            + " columns per localisation."
+            f'This file contains {info["values"]} localisations '
+            f'with {info["columns"]} columns per localisation.'
         )
 
     # For acquisition channel information, choose channel(s) to analyse,
@@ -966,69 +966,10 @@ def main(argv=None):
     if info["channels_analysed"] is not None and info["start_channel"] is None:
         info["start_channel"], info["end_channel"] = choose_channels(info)
 
-    utils.primary_filename_and_path_setup(info)
-
-    if info["short_names"] is True:
-        try:
-            info["short_results_dir"].mkdir()
-        except FileExistsError:
-            sys.exit(
-                "\nShort-name directory for the results already exists:\n"
-                f"{info['short_results_dir']}\n"
-                "Please rename it or move it elsewhere."
-            )
-        try:
-            os.makedirs(info["short_relpos_plots_report_dir"])
-        except OSError:
-            print("Unexpected error:", sys.exc_info()[0])
-            sys.exit(
-                "\nCould not create short-name directory for the plots and report:\n"
-                f"{info['short_relpos_plots_report_dir']}"
-            )
-    else:
-        try:
-            os.makedirs(info["results_dir"])
-        except OSError:
-            print("Unexpected error:", sys.exc_info()[0])
-            sys.exit("\nCould not create directory for the results.")
-        try:
-            os.makedirs(info["relpos_plots_report_dir"])
-        except OSError:
-            print("Unexpected error:", sys.exc_info()[0])
-            sys.exit("\nCould not create directory for the plots and reports.")
+    set_up_output_paths(info)
 
     # GET RELATIVE POSITIONS!
-    d_values = []
-    # For single channel
-    if info["channels_analysed"] is None:
-        xyz_values = xyzc_values[:, 0 : info["dims"]]
-        d_values = getdistances(
-            xyz_values, info["filter_dist"], info["nns"], verbose=info["verbose"]
-        )[1]
-
-    if info["channels_analysed"] == 1:
-        xyz_values = xyzc_values[:, 0 : info["dims"]][
-            xyzc_values[:, -1] == info["start_channel"]
-        ]
-        d_values = getdistances(
-            xyz_values, info["filter_dist"], info["nns"], verbose=info["verbose"]
-        )[1]
-
-    # For two channels
-    if info["channels_analysed"] == 2:
-        xyz_values_start = xyzc_values[:, 0 : info["dims"]][
-            xyzc_values[:, -1] == info["start_channel"]
-        ]
-        xyz_values_end = xyzc_values[:, 0 : info["dims"]][
-            xyzc_values[:, -1] == info["end_channel"]
-        ]
-        d_values = getdistances_two_channels(
-            xyz_values_start,
-            info["filter_dist"],
-            xyz_values_end,
-            info["nns"],
-            verbose=info["verbose"],
-        )[1]
+    d_values = getdistances_allchanoptions(xyzc_values, info)
 
     # Draw scatterplot and zoomed region
     plotting.draw_2d_scatter_plots(xyzc_values, info["dims"], info, 0)

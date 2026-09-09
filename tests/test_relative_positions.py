@@ -19,11 +19,37 @@ under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
 CONDITIONS OF ANY KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
 """
-#import tempfile
+
+# import tempfile
 import unittest
+
 import numpy as np
+
 import perpl.relative_positions as rp
 
+
+def make_test_grid_2chan_2d():
+    """
+    Create a simple grid for testing calculations on two-channel, 2D data (xyc).
+    """
+    return np.array(
+        [
+            [0.0, 0.0, 0],
+            [0.0, 4.0, 0],
+            [2.0, 2.0, 0],
+            [4.0, 0.0, 0],
+            [4.0, 4.0, 0],
+            [1.0, 1.0, 1],
+            [1.0, 2.0, 1],
+            [1.0, 3.0, 1],
+            [2.0, 1.0, 1],
+            [2.0, 2.0, 1],
+            [2.0, 3.0, 1],
+            [3.0, 1.0, 1],
+            [3.0, 2.0, 1],
+            [3.0, 3.0, 1],
+        ]
+    )
 
 
 class TestGetdistances(unittest.TestCase):
@@ -38,19 +64,13 @@ class TestGetdistances(unittest.TestCase):
         relative close ie with a separation of less than 10nm.
         """
         print("Start TestGetdistances test_2d_array_of_2", flush=True)
-        xyz_values = np.array([[20886.96, 30248.96],
-                               [20891.08, 30246.26]])
+        xyz_values = np.array([[20886.96, 30248.96], [20891.08, 30246.26]])
         filterdist = 150
         separation_values = np.array([[4.12, -2.7]])
 
         result = rp.getdistances(xyz_values, filterdist)[1]
-        try:
-            np.testing.assert_array_almost_equal(separation_values, result)
-            res = True
-        except AssertionError as err:
-            res = False
-            print(err)
-        self.assertTrue(res)
+
+        np.testing.assert_array_almost_equal(separation_values, result)
 
     def test_2d_array_of_4_with_2_close_pairs(self):
         """
@@ -59,23 +79,23 @@ class TestGetdistances(unittest.TestCase):
         that are relative close ie with each pair having a separation of less
         than 10nm but each pair being further than the 150 filterdistance.
         """
-        print("Start TestGetdistances test_2d_array_of_4_with_2_close_pairs", flush=True)
-        xyz_values = np.array([[21740.77, 26400.65],
-                               [21734.15, 26386.16],
-                               [20886.96, 30248.96],
-                               [20891.08, 30346.26]])
+        print(
+            "Start TestGetdistances test_2d_array_of_4_with_2_close_pairs", flush=True
+        )
+        xyz_values = np.array(
+            [
+                [21740.77, 26400.65],
+                [21734.15, 26386.16],
+                [20886.96, 30248.96],
+                [20891.08, 30346.26],
+            ]
+        )
         filterdist = 150
-        separation_values = np.array([[-6.62, -14.49],
-                                      [4.12, 97.3]])
+        separation_values = np.array([[-6.62, -14.49], [4.12, 97.3]])
 
         result = rp.getdistances(xyz_values, filterdist)[1]
-        try:
-            np.testing.assert_array_almost_equal(separation_values, result)
-            res = True
-        except AssertionError as err:
-            res = False
-            print(err)
-        self.assertTrue(res)
+
+        np.testing.assert_array_almost_equal(separation_values, result)
 
     def test_2d_array_of_4_with_1_close_pair_y_altered(self):
         """
@@ -84,23 +104,27 @@ class TestGetdistances(unittest.TestCase):
         of localisations only 1 pair has a separation of less than 10nm. The
         other pair of localisation are further than the 150 filterdistance.
         """
-        print(("Start TestGetdistances test_2d_array_of_4_with_1_close_pair_y_"
-               "altered"), flush=True)
-        xyz_values = np.array([[21740.77, 26400.65],
-                               [21734.15, 26386.16],
-                               [20886.96, 30248.96],
-                               [20891.08, 30446.26]])
+        print(
+            (
+                "Start TestGetdistances test_2d_array_of_4_with_1_close_pair_y_"
+                "altered"
+            ),
+            flush=True,
+        )
+        xyz_values = np.array(
+            [
+                [21740.77, 26400.65],
+                [21734.15, 26386.16],
+                [20886.96, 30248.96],
+                [20891.08, 30446.26],
+            ]
+        )
         filterdist = 150
         separation_values = np.array([[-6.62, -14.49]])
 
         result = rp.getdistances(xyz_values, filterdist)[1]
-        try:
-            np.testing.assert_array_almost_equal(separation_values, result)
-            res = True
-        except AssertionError as err:
-            res = False
-            print(err)
-        self.assertTrue(res)
+
+        np.testing.assert_array_almost_equal(separation_values, result)
 
     def test_2d_array_of_4_1_close_pair_filterdist_altered(self):
         """
@@ -110,24 +134,27 @@ class TestGetdistances(unittest.TestCase):
         other pair of localisation are further than the 150 filterdistance but
         this time a filterdistance of 200 is used.
         """
-        print(("Start TestGetdistances test_2d_array_of_4_1_close_pair_"
-               "filterdist_altered"), flush=True)
-        xyz_values = np.array([[21740.77, 26400.65],
-                               [21734.15, 26386.16],
-                               [20886.96, 30248.96],
-                               [20891.08, 30446.26]])
+        print(
+            (
+                "Start TestGetdistances test_2d_array_of_4_1_close_pair_"
+                "filterdist_altered"
+            ),
+            flush=True,
+        )
+        xyz_values = np.array(
+            [
+                [21740.77, 26400.65],
+                [21734.15, 26386.16],
+                [20886.96, 30248.96],
+                [20891.08, 30446.26],
+            ]
+        )
         filterdist = 200
-        separation_values = np.array([[-6.62, -14.49],
-                                      [4.12, 197.3]])
+        separation_values = np.array([[-6.62, -14.49], [4.12, 197.3]])
 
         result = rp.getdistances(xyz_values, filterdist)[1]
-        try:
-            np.testing.assert_array_almost_equal(separation_values, result)
-            res = True
-        except AssertionError as err:
-            res = False
-            print(err)
-        self.assertTrue(res)
+
+        np.testing.assert_array_almost_equal(separation_values, result)
 
     def test_2d_array_of_4_1_close_pair_x_altered(self):
         """
@@ -136,23 +163,24 @@ class TestGetdistances(unittest.TestCase):
         of localisations only 1 pair has a separation of less than 10nm. The
         other pair of localisation are further than the 150 filterdistance.
         """
-        print("Start TestGetdistances test_2d_array_of_4_1_close_pair_x_altered", flush=True)
-        xyz_values = np.array([[21740.77, 26400.65],
-                               [21734.15, 26386.16],
-                               [20886.96, 30248.96],
-                               [20791.08, 30446.26]])
+        print(
+            "Start TestGetdistances test_2d_array_of_4_1_close_pair_x_altered",
+            flush=True,
+        )
+        xyz_values = np.array(
+            [
+                [21740.77, 26400.65],
+                [21734.15, 26386.16],
+                [20886.96, 30248.96],
+                [20791.08, 30446.26],
+            ]
+        )
         filterdist = 150
         separation_values = np.array([[-6.62, -14.49]])
 
         result = rp.getdistances(xyz_values, filterdist)[1]
-        try:
-            np.testing.assert_array_almost_equal(separation_values, result)
-            res = True
-        except AssertionError as err:
-            res = False
-            print(err)
-        self.assertTrue(res)
 
+        np.testing.assert_array_almost_equal(separation_values, result)
 
     def test_2d_array_of_5_with_1_close_pair(self):
         """
@@ -162,23 +190,21 @@ class TestGetdistances(unittest.TestCase):
         than the 150 filterdistance.
         """
         print("Start TestGetdistances test_2d_array_of_5_with_1_close_pair", flush=True)
-        xyz_values = np.array([[20886.96, 30248.96],
-                               [35950.99, 41226.77],
-                               [22019.19, 36913.71],
-                               [21740.77, 26400.65],
-                               [20891.08, 30246.26]])
+        xyz_values = np.array(
+            [
+                [20886.96, 30248.96],
+                [35950.99, 41226.77],
+                [22019.19, 36913.71],
+                [21740.77, 26400.65],
+                [20891.08, 30246.26],
+            ]
+        )
         filterdist = 150
         separation_values = np.array([[4.12, -2.7]])
 
         result = rp.getdistances(xyz_values, filterdist)[1]
-        try:
-            np.testing.assert_array_almost_equal(separation_values, result)
-            res = True
-        except AssertionError as err:
-            res = False
-            print(err)
-        self.assertTrue(res)
 
+        np.testing.assert_array_almost_equal(separation_values, result)
 
     def test_2d_array_of_6_with_2_pairs_2_same_place(self):
         """
@@ -187,27 +213,26 @@ class TestGetdistances(unittest.TestCase):
         in the same place. The other localisations are further than the
         150 filterdistance.
         """
-        print("Start TestGetdistances test_2d_array_of_6_with_2_pairs_2_same_place", flush=True)
-        xyz_values = np.array([[20886.96, 30248.96],
-                               [35950.99, 41226.77],
-                               [22019.19, 36913.71],
-                               [21740.77, 26400.65],
-                               [20891.08, 30246.26],
-                               [20891.08, 30246.26]])
+        print(
+            "Start TestGetdistances test_2d_array_of_6_with_2_pairs_2_same_place",
+            flush=True,
+        )
+        xyz_values = np.array(
+            [
+                [20886.96, 30248.96],
+                [35950.99, 41226.77],
+                [22019.19, 36913.71],
+                [21740.77, 26400.65],
+                [20891.08, 30246.26],
+                [20891.08, 30246.26],
+            ]
+        )
         filterdist = 150
-        separation_values = np.array([[4.12, -2.7],
-                                      [4.12, -2.7],
-                                      [0., 0.]])
+        separation_values = np.array([[4.12, -2.7], [4.12, -2.7], [0.0, 0.0]])
 
         result = rp.getdistances(xyz_values, filterdist)[1]
-        try:
-            np.testing.assert_array_almost_equal(separation_values, result)
-            res = True
-        except AssertionError as err:
-            res = False
-            print(err)
-        self.assertTrue(res)
 
+        np.testing.assert_array_almost_equal(separation_values, result)
 
     def test_getdistances_2d_array_of_10(self):
         """
@@ -216,37 +241,159 @@ class TestGetdistances(unittest.TestCase):
         """
         print("Start TestGetDistances test_getdistances_2d_array_of_10", flush=True)
 
-        xyz_values = np.array([[20886.96, 30248.96],
-                               [35950.99, 41226.77],
-                               [22019.19, 36913.71],
-                               [21740.77, 26400.65],
-                               [20891.08, 30246.26],
-                               [21769.1, 32955.15],
-                               [23850.47, 28568.08],
-                               [32170.57, 39171.85],
-                               [30441.26, 45623.22],
-                               [21734.15, 26386.16]])
+        xyz_values = np.array(
+            [
+                [20886.96, 30248.96],
+                [35950.99, 41226.77],
+                [22019.19, 36913.71],
+                [21740.77, 26400.65],
+                [20891.08, 30246.26],
+                [21769.1, 32955.15],
+                [23850.47, 28568.08],
+                [32170.57, 39171.85],
+                [30441.26, 45623.22],
+                [21734.15, 26386.16],
+            ]
+        )
 
         filterdist = 150
-        separation_values = np.array([[4.12, -2.7],
-                                      [-6.62, -14.49]])
+        separation_values = np.array([[4.12, -2.7], [-6.62, -14.49]])
 
         result = rp.getdistances(xyz_values, filterdist)[1]
 
-        try:
-            np.testing.assert_array_almost_equal(separation_values, result)
-            res = True
-        except AssertionError as err:
-            res = False
-            print(err)
-        self.assertTrue(res)
+        np.testing.assert_array_almost_equal(separation_values, result)
+
+
+class TestGetdistances_AllChanOptions(unittest.TestCase):
+    """
+    Test the getdistances_allchanoptions function from the relative_positions library.
+    """
+
+    def test_1_chan_selected_from_2(self):
+        """
+        Test getdistances_allchanoptions() when data has two different channel values
+        and relative positions are requested within one channel.
+        """
+        input_data = make_test_grid_2chan_2d()
+        info = {
+            "channels_analysed": 1,
+            "dims": 2,
+            "filter_dist": 10,
+            "nns": 0,
+            "start_channel": 0,
+            "verbose": False,
+        }
+        expected_result = np.array(
+            [
+                [0.0, 4.0],
+                [2.0, 2.0],
+                [4.0, 0.0],
+                [4.0, 4.0],
+                [2.0, -2.0],
+                [4.0, -4.0],
+                [4.0, 0.0],
+                [2.0, -2.0],
+                [2.0, 2.0],
+                [0.0, 4.0],
+            ]
+        )
+        result = rp.getdistances_allchanoptions(input_data, info)
+        np.testing.assert_array_equal(expected_result, result)
+
+    def test_2_chan_between_channels(self):
+        """
+        Test getdistances_allchanoptions() when data has two different channel values
+        and relative positions are requested between the channels.
+        """
+        input_data = make_test_grid_2chan_2d()
+        info = {
+            "channels_analysed": 2,
+            "dims": 2,
+            "filter_dist": 10,
+            "nns": 0,
+            "start_channel": 0,
+            "end_channel": 1,
+            "verbose": False,
+        }
+        expected_result = np.array(
+            [
+                [1.0, 1.0],
+                [1.0, 2.0],
+                [1.0, 3.0],
+                [2.0, 1.0],
+                [2.0, 2.0],
+                [2.0, 3.0],
+                [3.0, 1.0],
+                [3.0, 2.0],
+                [3.0, 3.0],
+                [1.0, -3.0],
+                [1.0, -2.0],
+                [1.0, -1.0],
+                [2.0, -3.0],
+                [2.0, -2.0],
+                [2.0, -1.0],
+                [3.0, -3.0],
+                [3.0, -2.0],
+                [3.0, -1.0],
+                [-1.0, -1.0],
+                [-1.0, 0.0],
+                [-1.0, 1.0],
+                [0.0, -1.0],
+                [0.0, 0.0],
+                [0.0, 1.0],
+                [1.0, -1.0],
+                [1.0, 0.0],
+                [1.0, 1.0],
+                [-3.0, 1.0],
+                [-3.0, 2.0],
+                [-3.0, 3.0],
+                [-2.0, 1.0],
+                [-2.0, 2.0],
+                [-2.0, 3.0],
+                [-1.0, 1.0],
+                [-1.0, 2.0],
+                [-1.0, 3.0],
+                [-3.0, -3.0],
+                [-3.0, -2.0],
+                [-3.0, -1.0],
+                [-2.0, -3.0],
+                [-2.0, -2.0],
+                [-2.0, -1.0],
+                [-1.0, -3.0],
+                [-1.0, -2.0],
+                [-1.0, -1.0],
+            ]
+        )
+        result = rp.getdistances_allchanoptions(input_data, info)
+        np.testing.assert_array_equal(expected_result, result)
+
+    def test_2_chan_between_channels_1nn(self):
+        """
+        Test getdistances_allchanoptions() when data has two different channel values
+        and relative positions to the nearest neighbour
+        are requested between the channels.
+        """
+        input_data = make_test_grid_2chan_2d()
+        info = {
+            "channels_analysed": 2,
+            "dims": 2,
+            "filter_dist": 10,
+            "nns": 1,
+            "start_channel": 0,
+            "end_channel": 1,
+            "verbose": False,
+        }
+        expected_result = np.array(
+            [[1.0, 1.0], [1.0, -1.0], [0.0, 0.0], [-1.0, 1.0], [-1.0, -1.0]]
+        )
+        result = rp.getdistances_allchanoptions(input_data, info)
+        np.testing.assert_array_equal(expected_result, result)
 
 
 class TestGetVectors(unittest.TestCase):
     """
     Test the get_vectors function from the relative_positions library
     """
-
 
     def test_2d_array_of_1(self):
         """
@@ -256,22 +403,15 @@ class TestGetVectors(unittest.TestCase):
         """
         print("Start TestGetVectors test_2d_array_of_1", flush=True)
 
-        d_values = np.array([[20886.96, 30248.96, 0.]])
+        d_values = np.array([[20886.96, 30248.96, 0.0]])
 
         dims = 2
 
-        v_values = np.array([[20886.96, 30248.96, 0., 36759.55221603]])
+        v_values = np.array([[20886.96, 30248.96, 0.0, 36759.55221603]])
 
         result = rp.get_vectors(d_values, dims)
 
-        try:
-            np.testing.assert_array_almost_equal(v_values, result)
-            res = True
-        except AssertionError as err:
-            res = False
-            print(err)
-        self.assertTrue(res)
-
+        np.testing.assert_array_almost_equal(v_values, result)
 
     def test_2d_array_of_1_negative(self):
         """
@@ -281,22 +421,15 @@ class TestGetVectors(unittest.TestCase):
         """
         print("Start TestGetVectors test_2d_array_of_1_negative", flush=True)
 
-        d_values = np.array([[-20886.96, -30248.96, 0.]])
+        d_values = np.array([[-20886.96, -30248.96, 0.0]])
 
         dims = 2
 
-        v_values = np.array([[-20886.96, -30248.96, 0., 36759.55221603]])
+        v_values = np.array([[-20886.96, -30248.96, 0.0, 36759.55221603]])
 
         result = rp.get_vectors(d_values, dims)
 
-        try:
-            np.testing.assert_array_almost_equal(v_values, result)
-            res = True
-        except AssertionError as err:
-            res = False
-            print(err)
-        self.assertTrue(res)
-
+        np.testing.assert_array_almost_equal(v_values, result)
 
     def test_2d_array_of_2(self):
         """
@@ -306,23 +439,20 @@ class TestGetVectors(unittest.TestCase):
         """
         print("Start TestGetVectors test_2d_array_of_2", flush=True)
 
-        d_values = np.array([[20886.96, 30248.96, 0.],
-                             [20886.97, 30248.95, 0.]])
+        d_values = np.array([[20886.96, 30248.96, 0.0], [20886.97, 30248.95, 0.0]])
 
         dims = 2
 
-        v_values = np.array([[20886.97, 30248.95, 0., 36759.549669],
-                             [20886.96, 30248.96, 0., 36759.552216]])
+        v_values = np.array(
+            [
+                [20886.97, 30248.95, 0.0, 36759.549669],
+                [20886.96, 30248.96, 0.0, 36759.552216],
+            ]
+        )
 
         result = rp.get_vectors(d_values, dims)
 
-        try:
-            np.testing.assert_array_almost_equal(v_values, result)
-            res = True
-        except AssertionError as err:
-            res = False
-            print(err)
-        self.assertTrue(res)
+        np.testing.assert_array_almost_equal(v_values, result)
 
     def test_2d_array_of_2_with_negatives(self):
         """
@@ -332,23 +462,20 @@ class TestGetVectors(unittest.TestCase):
         """
         print("Start TestGetVectors test_2d_array_of_2_with_negatives", flush=True)
 
-        d_values = np.array([[-20886.96, 30248.96, 0.],
-                             [20886.97, -30248.95, 0.]])
+        d_values = np.array([[-20886.96, 30248.96, 0.0], [20886.97, -30248.95, 0.0]])
 
         dims = 2
 
-        v_values = np.array([[20886.97, -30248.95, 0., 36759.549669],
-                             [-20886.96, 30248.96, 0., 36759.552216]])
+        v_values = np.array(
+            [
+                [20886.97, -30248.95, 0.0, 36759.549669],
+                [-20886.96, 30248.96, 0.0, 36759.552216],
+            ]
+        )
 
         result = rp.get_vectors(d_values, dims)
 
-        try:
-            np.testing.assert_array_almost_equal(v_values, result)
-            res = True
-        except AssertionError as err:
-            res = False
-            print(err)
-        self.assertTrue(res)
+        np.testing.assert_array_almost_equal(v_values, result)
 
     def test_2d_array_of_10(self):
         """
@@ -358,40 +485,41 @@ class TestGetVectors(unittest.TestCase):
         """
         print("Start TestGetVectors test_2d_array_of_10", flush=True)
 
-        d_values = np.array([[20886.96, 30248.96, 0.],
-                             [35950.99, 41226.77, 0.],
-                             [22019.19, 36913.71, 0.],
-                             [21740.77, 26400.65, 0.],
-                             [20891.08, 30246.26, 0.],
-                             [21769.1, 32955.15, 0.],
-                             [23850.47, 28568.08, 0.],
-                             [32170.57, 39171.85, 0.],
-                             [30441.26, 45623.22, 0.],
-                             [21734.15, 26386.16, 0.]])
+        d_values = np.array(
+            [
+                [20886.96, 30248.96, 0.0],
+                [35950.99, 41226.77, 0.0],
+                [22019.19, 36913.71, 0.0],
+                [21740.77, 26400.65, 0.0],
+                [20891.08, 30246.26, 0.0],
+                [21769.1, 32955.15, 0.0],
+                [23850.47, 28568.08, 0.0],
+                [32170.57, 39171.85, 0.0],
+                [30441.26, 45623.22, 0.0],
+                [21734.15, 26386.16, 0.0],
+            ]
+        )
 
         dims = 2
 
-        v_values = np.array([[21734.15, 26386.16, 0., 34184.83166213],
-                             [21740.77, 26400.65, 0., 34200.22515445],
-                             [20886.96, 30248.96, 0., 36759.55221603],
-                             [20891.08, 30246.26, 0., 36759.67175525],
-                             [23850.47, 28568.08, 0., 37215.32095935],
-                             [21769.1, 32955.15, 0., 39496.02038601],
-                             [22019.19, 36913.71, 0., 42982.16739789],
-                             [32170.57, 39171.85, 0., 50689.04621856],
-                             [35950.99, 41226.77, 0., 54700.27647657],
-                             [30441.26, 45623.22, 0., 54846.59071953]])
+        v_values = np.array(
+            [
+                [21734.15, 26386.16, 0.0, 34184.83166213],
+                [21740.77, 26400.65, 0.0, 34200.22515445],
+                [20886.96, 30248.96, 0.0, 36759.55221603],
+                [20891.08, 30246.26, 0.0, 36759.67175525],
+                [23850.47, 28568.08, 0.0, 37215.32095935],
+                [21769.1, 32955.15, 0.0, 39496.02038601],
+                [22019.19, 36913.71, 0.0, 42982.16739789],
+                [32170.57, 39171.85, 0.0, 50689.04621856],
+                [35950.99, 41226.77, 0.0, 54700.27647657],
+                [30441.26, 45623.22, 0.0, 54846.59071953],
+            ]
+        )
 
         result = rp.get_vectors(d_values, dims)
 
-        try:
-            np.testing.assert_array_almost_equal(v_values, result)
-            res = True
-        except AssertionError as err:
-            res = False
-            print(err)
-        self.assertTrue(res)
-
+        np.testing.assert_array_almost_equal(v_values, result)
 
     def test_3d_array_of_10_with_negative_floats_and_complex(self):
         """
@@ -399,53 +527,130 @@ class TestGetVectors(unittest.TestCase):
         2d localisation with x and y coordinates. The vector is
         calculated as the sqrt(x**2+y**2+z**2).
         """
-        print(("Start TestGetVectors test_3d_array_of_10_with_negative_floats_"
-               "and_complex"), flush=True)
+        print(
+            (
+                "Start TestGetVectors test_3d_array_of_10_with_negative_floats_"
+                "and_complex"
+            ),
+            flush=True,
+        )
 
-        d_values = np.array([[0.,         2.41,    -193.],
-                             [0.,         2.64,      40.],
-                             [0.,         3.36,       9.],
-                             [1.000e-02, -3.942e+01, -1.820e+02],
-                             [1.00e-02,  -7.42e+00,  -1.32e+02],
-                             [1.00e-02,   1.42e+00,  -1.64e+02],
-                             [1.00e-02,   3.81e+00,  -1.38e+02],
-                             [2.00e-02,   1.43e+00,  -2.10e+01],
-                             [2.0e-02,   -2.3e+00,    9.1e+01],
-                             [0.02,      -0.66,     -12.]])
+        d_values = np.array(
+            [
+                [0.0, 2.41, -193.0],
+                [0.0, 2.64, 40.0],
+                [0.0, 3.36, 9.0],
+                [1.000e-02, -3.942e01, -1.820e02],
+                [1.00e-02, -7.42e00, -1.32e02],
+                [1.00e-02, 1.42e00, -1.64e02],
+                [1.00e-02, 3.81e00, -1.38e02],
+                [2.00e-02, 1.43e00, -2.10e01],
+                [2.0e-02, -2.3e00, 9.1e01],
+                [0.02, -0.66, -12.0],
+            ]
+        )
 
         dims = 3
 
-        v_values = np.array([[0.00000000e+00, 3.36000000e+00, 9.00000000e+00, 3.36000000e+00,
-                              9.00000000e+00, 9.60674763e+00, 9.60674763e+00],
-                             [2.00000000e-02, -6.60000000e-01, -1.20000000e+01, 6.60302961e-01,
-                              1.20000167e+01, 1.20181363e+01, 1.20181529e+01],
-                             [2.00000000e-02, 1.43000000e+00, -2.10000000e+01, 1.43013985e+00,
-                              2.10000095e+01, 2.10486318e+01, 2.10486413e+01],
-                             [0.00000000e+00, 2.64000000e+00, 4.00000000e+01, 2.64000000e+00,
-                              4.00000000e+01, 4.00870253e+01, 4.00870253e+01],
-                             [2.00000000e-02, -2.30000000e+00, 9.10000000e+01, 2.30008695e+00,
-                              9.10000022e+01, 9.10290613e+01, 9.10290635e+01],
-                             [1.00000000e-02, -7.42000000e+00, -1.32000000e+02, 7.42000674e+00,
-                              1.32000000e+02, 1.32208382e+02, 1.32208383e+02],
-                             [1.00000000e-02, 3.81000000e+00, -1.38000000e+02, 3.81001312e+00,
-                              1.38000000e+02, 1.38052585e+02, 1.38052585e+02],
-                             [1.00000000e-02, 1.42000000e+00, -1.64000000e+02, 1.42003521e+00,
-                              1.64000000e+02, 1.64006147e+02, 1.64006148e+02],
-                             [1.00000000e-02, -3.94200000e+01, -1.82000000e+02, 3.94200013e+01,
-                              1.82000000e+02, 1.86220129e+02, 1.86220129e+02],
-                             [0.00000000e+00, 2.41000000e+00, -1.93000000e+02, 2.41000000e+00,
-                              1.93000000e+02, 1.93015046e+02, 1.93015046e+02]])
+        v_values = np.array(
+            [
+                [
+                    0.00000000e00,
+                    3.36000000e00,
+                    9.00000000e00,
+                    3.36000000e00,
+                    9.00000000e00,
+                    9.60674763e00,
+                    9.60674763e00,
+                ],
+                [
+                    2.00000000e-02,
+                    -6.60000000e-01,
+                    -1.20000000e01,
+                    6.60302961e-01,
+                    1.20000167e01,
+                    1.20181363e01,
+                    1.20181529e01,
+                ],
+                [
+                    2.00000000e-02,
+                    1.43000000e00,
+                    -2.10000000e01,
+                    1.43013985e00,
+                    2.10000095e01,
+                    2.10486318e01,
+                    2.10486413e01,
+                ],
+                [
+                    0.00000000e00,
+                    2.64000000e00,
+                    4.00000000e01,
+                    2.64000000e00,
+                    4.00000000e01,
+                    4.00870253e01,
+                    4.00870253e01,
+                ],
+                [
+                    2.00000000e-02,
+                    -2.30000000e00,
+                    9.10000000e01,
+                    2.30008695e00,
+                    9.10000022e01,
+                    9.10290613e01,
+                    9.10290635e01,
+                ],
+                [
+                    1.00000000e-02,
+                    -7.42000000e00,
+                    -1.32000000e02,
+                    7.42000674e00,
+                    1.32000000e02,
+                    1.32208382e02,
+                    1.32208383e02,
+                ],
+                [
+                    1.00000000e-02,
+                    3.81000000e00,
+                    -1.38000000e02,
+                    3.81001312e00,
+                    1.38000000e02,
+                    1.38052585e02,
+                    1.38052585e02,
+                ],
+                [
+                    1.00000000e-02,
+                    1.42000000e00,
+                    -1.64000000e02,
+                    1.42003521e00,
+                    1.64000000e02,
+                    1.64006147e02,
+                    1.64006148e02,
+                ],
+                [
+                    1.00000000e-02,
+                    -3.94200000e01,
+                    -1.82000000e02,
+                    3.94200013e01,
+                    1.82000000e02,
+                    1.86220129e02,
+                    1.86220129e02,
+                ],
+                [
+                    0.00000000e00,
+                    2.41000000e00,
+                    -1.93000000e02,
+                    2.41000000e00,
+                    1.93000000e02,
+                    1.93015046e02,
+                    1.93015046e02,
+                ],
+            ]
+        )
 
         result = rp.get_vectors(d_values, dims)
 
-        try:
-            np.testing.assert_array_almost_equal(v_values, result)
-            res = True
-        except AssertionError as err:
-            res = False
-            print(err)
-        self.assertTrue(res)
+        np.testing.assert_array_almost_equal(v_values, result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
