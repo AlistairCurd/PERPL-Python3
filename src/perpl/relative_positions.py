@@ -276,11 +276,12 @@ def read_data_in(info):
                     "Column labels were given and dimensions (dims) was not 2 or 3."
                 )
 
-            # Added channel column
+            # Add channel column
             if info["ccol"] is None:
                 col_values = xyzc_df.iloc[:, -1].to_numpy()[:, np.newaxis]
             else:
                 col_values = xyzc_df[[info["ccol"]]].to_numpy()
+
             # Stop if channels are not all numbers
             if isinstance(col_values[0][0], str):
                 sys.exit(
@@ -302,6 +303,7 @@ def read_data_in(info):
     info["columns"] = xyzc_values.shape[1]
     info["total_values"] = xyzc_values.shape[0]
     info["total_columns"] = xyzc_values.shape[1]
+
     # Get the unique channel numbers in use
     if info["channels_analysed"] is not None:
         info["unique_channel_values"] = np.unique(xyzc_values[:, -1])
@@ -1049,7 +1051,7 @@ def main(argv=None):
             "\n"
             f"{len(d_values)} relative positions within the "
             "filter distance in the chosen dimensions between localisations "
-            "in the selected channels."
+            "in the selected channels. "
             "Symmetric duplicates removed for single-channel analysis if "
             "# nearest neighbours was unrestricted."
         )
