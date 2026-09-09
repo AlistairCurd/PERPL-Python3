@@ -90,13 +90,20 @@ def set_up_info(info: dict, args: argparse.Namespace) -> None:
     info["ccol"] = args.ccol
     if info["xcol"] is not None:
         if info["ycol"] is None:
-            sys.exit("Cannot supply --xcol without --ycol.")
+            sys.exit("Cannot supply -xcol without -ycol.")
     if info["ycol"] is not None:
         if info["xcol"] is None:
-            sys.exit("Cannot supply --ycol without --xcol.")
+            sys.exit("Cannot supply -ycol without -xcol.")
     if info["zcol"] is not None:
         if info["xcol"] is None or info["ycol"] is None:
-            sys.exit("Cannot supply --zcol without --xcol and --ycol.")
+            sys.exit("Cannot supply -zcol without -xcol and -ycol.")
+    if info["channels_analysed"] is None:
+        if (
+            info["ccol"] is not None
+            or info["start_channel"] is not None
+            or info["end_channel"] is not None
+        ):
+            sys.exit("Missing channel argument -c to go with other channel arguments.")
 
     info["zoom"] = args.zoom
     info["short_names"] = args.short_names
@@ -339,20 +346,22 @@ def read_data_in(info):
                     "Column labels were given and dimensions (dims) was not 2 or 3."
                 )
 
-            # Add channel column
-            if info["ccol"] is None:
-                col_values = xyzc_df.iloc[:, -1].to_numpy()[:, np.newaxis]
-            else:
-                col_values = xyzc_df[[info["ccol"]]].to_numpy()
+            # Add channel column if required
+            if info["channels_analysed"] is not None:
+                if info["ccol"] is None:
+                    col_values = xyzc_df.iloc[:, -1].to_numpy()[:, np.newaxis]
+                else:
+                    col_values = xyzc_df[[info["ccol"]]].to_numpy()
 
-            # Stop if channels are not all numbers
-            if isinstance(col_values[0][0], str):
-                sys.exit(
-                    "\nChannel values contain strings, which are currently unsupported."
-                )
+                # Stop if channels are not all numbers
+                if isinstance(col_values[0][0], str):
+                    sys.exit(
+                        "\nChannel values contain strings, "
+                        "which are currently unsupported."
+                    )
 
-            # Combine position and channel columns
-            xyzc_values = np.hstack((xyzc_values, col_values))
+                # Combine position and channel columns
+                xyzc_values = np.hstack((xyzc_values, col_values))
 
         except (EOFError, IOError, OSError) as exception:
             print("\n\nCould not read file: ", in_file)
@@ -675,6 +684,63 @@ def getdistances_two_channels(
     return loc_pairs, separation_values
 
 
+def getdistances_allchanoptions(xyzc_values: np.ndarray, info: dict) -> np.ndarray:
+    """
+    Calculate the relative positions between points in the selected channels.
+    Will use the single- or two-channel calculation according to the input selection.
+
+    Parameters
+    ----------
+    xyzc_values : Numpy array
+        Point data table, one row per data, including spatial coordinates in first
+        columns (x, y and possibly z) and channel values in final column if present.
+    info : dict
+        Dictionary of parameters for data selection, analysis and output.
+
+    Returns
+    -------
+    d_values : Numpy array
+        Relative position table between localisations according to the filter distance,
+        number of nearest neighbours and channels selected.
+        One relative position per row.
+    """
+    # Single-channel, all localisations
+    if info["channels_analysed"] is None:
+        xyz_values = xyzc_values[:, 0 : info["dims"]]
+        d_values = getdistances(
+            xyz_values, info["filter_dist"], info["nns"], verbose=info["verbose"]
+        )[1]
+
+    elif info["channels_analysed"] == 1:
+        xyz_values = xyzc_values[:, 0 : info["dims"]][
+            xyzc_values[:, -1] == info["start_channel"]
+        ]
+        d_values = getdistances(
+            xyz_values, info["filter_dist"], info["nns"], verbose=info["verbose"]
+        )[1]
+
+    # For two channels
+    elif info["channels_analysed"] == 2:
+        xyz_values_start = xyzc_values[:, 0 : info["dims"]][
+            xyzc_values[:, -1] == info["start_channel"]
+        ]
+        xyz_values_end = xyzc_values[:, 0 : info["dims"]][
+            xyzc_values[:, -1] == info["end_channel"]
+        ]
+        d_values = getdistances_two_channels(
+            xyz_values_start,
+            info["filter_dist"],
+            xyz_values_end,
+            info["nns"],
+            verbose=info["verbose"],
+        )[1]
+
+    else:
+        sys.exit(f'Number of channels chosen is invalid: {info["channels_analysed"]}')
+
+    return d_values
+
+
 def get_vectors(d_values, dims):
     """Calculates the distances in 2D and 3D for relative position vectors.
     This function saves both 2D and 3D data.
@@ -836,7 +902,7 @@ def save_relative_positions(d_values, filterdist, dims, info, nns=0):
     return outpath
 
 
-def main(argv=None):
+def main():
     """Reads input data of point density locations and calculates relative
         poasitions as vectors. Outputs are writen to a file in a directory
         with the name of the inputfile and a time stamp above the directory of
@@ -903,37 +969,7 @@ def main(argv=None):
     set_up_output_paths(info)
 
     # GET RELATIVE POSITIONS!
-    d_values = []
-    # For single channel
-    if info["channels_analysed"] is None:
-        xyz_values = xyzc_values[:, 0 : info["dims"]]
-        d_values = getdistances(
-            xyz_values, info["filter_dist"], info["nns"], verbose=info["verbose"]
-        )[1]
-
-    if info["channels_analysed"] == 1:
-        xyz_values = xyzc_values[:, 0 : info["dims"]][
-            xyzc_values[:, -1] == info["start_channel"]
-        ]
-        d_values = getdistances(
-            xyz_values, info["filter_dist"], info["nns"], verbose=info["verbose"]
-        )[1]
-
-    # For two channels
-    if info["channels_analysed"] == 2:
-        xyz_values_start = xyzc_values[:, 0 : info["dims"]][
-            xyzc_values[:, -1] == info["start_channel"]
-        ]
-        xyz_values_end = xyzc_values[:, 0 : info["dims"]][
-            xyzc_values[:, -1] == info["end_channel"]
-        ]
-        d_values = getdistances_two_channels(
-            xyz_values_start,
-            info["filter_dist"],
-            xyz_values_end,
-            info["nns"],
-            verbose=info["verbose"],
-        )[1]
+    d_values = getdistances_allchanoptions(xyzc_values, info)
 
     # Draw scatterplot and zoomed region
     plotting.draw_2d_scatter_plots(xyzc_values, info["dims"], info, 0)
