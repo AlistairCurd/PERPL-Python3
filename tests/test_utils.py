@@ -815,7 +815,7 @@ class TestPrimaryFilenameAndPathSetup(unittest.TestCase):
         info["in_file_and_path"] = Path(
             "/localhome/joanna/PERPL_data/Nup107_SNAP_3D" "_GRROUPED_10nmZprec.csv"
         )
-        info["colours_analysed"] = None
+        info["channels_analysed"] = None
         info["nns"] = 0
         info["bin_size"] = 1
 

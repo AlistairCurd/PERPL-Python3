@@ -380,12 +380,12 @@ def write_rel_pos_html_report(info):
         f" which read in {str(info['values'])} localisations with "
         f"{str(info['columns'])} columns. "
     )
-    if info["colours_analysed"] is not None:
+    if info["channels_analysed"] is not None:
         report_info = report_info[0:-2] + (
             ", including "
-            + repr(len(info["unique_colour_values"]))
+            + repr(len(info["unique_channel_values"]))
             + " channels ("
-            + np.array2string(info["unique_colour_values"], separator=", ")
+            + np.array2string(info["unique_channel_values"], separator=", ")
             + "). "
         )
     report_info = report_info + (
@@ -394,12 +394,12 @@ def write_rel_pos_html_report(info):
         + " dimensions were selected, and the filter "
         "distance was set to " + str(info["filter_dist"]) + " nm. "
     )
-    if info["colours_analysed"] == 1:
+    if info["channels_analysed"] == 1:
         report_info = report_info + (
             "Relative positions were found between localisations "
             "in channel [" + repr(info["start_channel"]) + "]. "
         )
-    if info["colours_analysed"] == 2:
+    if info["channels_analysed"] == 2:
         report_info = report_info + (
             "Relative positions were found from localisations "
             "in channel ["
