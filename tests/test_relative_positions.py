@@ -27,6 +27,30 @@ import numpy as np
 import perpl.relative_positions as rp
 
 
+def make_test_grid_2chan_2d():
+    """
+    Create a simple grid for testing calculations on two-channel, 2D data (xyc).
+    """
+    return np.array(
+        [
+            [0.0, 0.0, 0],
+            [0.0, 4.0, 0],
+            [2.0, 2.0, 0],
+            [4.0, 0.0, 0],
+            [4.0, 4.0, 0],
+            [1.0, 1.0, 1],
+            [1.0, 2.0, 1],
+            [1.0, 3.0, 1],
+            [2.0, 1.0, 1],
+            [2.0, 2.0, 1],
+            [2.0, 3.0, 1],
+            [3.0, 1.0, 1],
+            [3.0, 2.0, 1],
+            [3.0, 3.0, 1],
+        ]
+    )
+
+
 class TestGetdistances(unittest.TestCase):
     """
     Test the getdistances function from the relative_positions library
