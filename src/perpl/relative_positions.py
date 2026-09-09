@@ -31,6 +31,7 @@ CONDITIONS OF ANY KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
 """
 
+import argparse
 import datetime
 import os
 import sys
@@ -47,20 +48,83 @@ from scipy import spatial
 from perpl.io import plotting, reports, utils
 
 
+def set_up_info(info: dict, args: argparse.Namespace) -> None:
+    """
+    Update the PERPL info dictionary for this data and analysis
+    based on CLI arguments.
+
+    Parameters
+    ----------
+    info : dict
+        Dictionary containing parameters for data reading, analysis and output.
+    args: argparse.Namespace
+        Arguments for setting up the dictionary.
+
+    Returns
+    -------
+    None
+        The info dict is modified in place.
+    """
+
+    if args.input_file is not None:
+        # When input file is supplied in the CLI command.
+        info["in_file_and_path"] = Path(args.input_file).resolve()
+        info["dims"] = args.dims
+        info["bin_size"] = args.bin_size
+        info["channels_analysed"] = args.num_channels
+        info["start_channel"] = args.start_channel
+        info["end_channel"] = args.end_channel
+        info["filter_dist"] = args.filter_dist
+        info["nns"] = args.nns
+        info["verbose"] = args.verbose
+
+    else:
+        # When input file not supplied in the CLI command.
+        # Supplies the info fields updated above.
+        get_inputs(info)
+
+    # Add these in both file input methods
+    info["xcol"] = args.xcol
+    info["ycol"] = args.ycol
+    info["zcol"] = args.zcol
+    info["ccol"] = args.ccol
+    if info["xcol"] is not None:
+        if info["ycol"] is None:
+            sys.exit("Cannot supply --xcol without --ycol.")
+    if info["ycol"] is not None:
+        if info["xcol"] is None:
+            sys.exit("Cannot supply --ycol without --xcol.")
+    if info["zcol"] is not None:
+        if info["xcol"] is None or info["ycol"] is None:
+            sys.exit("Cannot supply --zcol without --xcol and --ycol.")
+
+    info["zoom"] = args.zoom
+    info["short_names"] = args.short_names
+    info["host"], info["ip_address"], info["operating_system"] = (
+        utils.find_hostname_and_ip()
+    )
+
+
 def get_inputs(info):
     """Creates a file browser to read the filename of the input data. Then asks
     for takes other inputs as text from the command line. Puts these inputs
     parameters into the dictionary that is easy to pass to many functions.
     These are:
-        in_file_and_path (string):
+        in_file_and_path (str):
             The input filename and path.
         dims (int):
             The dimensions of the data ie 2D or 3D.
+        channel_analysed (str):
+            Whether acquisition channel information is to be used or not.
         filterdist (int):
             The distance within which relative positions were calculated.
-        zoom (int):
+        nns (int):
+            The number of nearest neighbour for which to calculate relative positions.
+        bin_size (int):
+            The width of the bins to use in output distance histograms.
+        zoom (int): *Currently removed*
             Magnification factor for the centre of the data in a scatter plot.
-        verbose (Boolean):
+        verbose (Bool):
             If True prints outputs to screen as program executes.
     Args:
         info (dict):
@@ -663,6 +727,53 @@ def get_vectors(d_values, dims):
     return d_values
 
 
+def set_up_output_paths(info: dict) -> None:
+    """
+    Set up paths for saving the output data, including creating output folders.
+    Will exit if the folders already exist.
+
+    Parameters
+    ----------
+    info : dict
+        Dictionary containing information about the data and analysis choices.
+
+    Returns
+    -------
+    None
+        Just creates new directories as storage locations.
+    """
+    utils.primary_filename_and_path_setup(info)
+
+    if info["short_names"] is True:
+        try:
+            info["short_results_dir"].mkdir()
+        except FileExistsError:
+            sys.exit(
+                "\nShort-name directory for the results already exists:\n"
+                f"{info['short_results_dir']}\n"
+                "Please rename it or move it elsewhere."
+            )
+        try:
+            os.makedirs(info["short_relpos_plots_report_dir"])
+        except OSError:
+            print("Unexpected error:", sys.exc_info()[0])
+            sys.exit(
+                "\nCould not create short-name directory for the plots and report:\n"
+                f"{info['short_relpos_plots_report_dir']}"
+            )
+    else:
+        try:
+            os.makedirs(info["results_dir"])
+        except OSError:
+            print("Unexpected error:", sys.exc_info()[0])
+            sys.exit("\nCould not create directory for the results.")
+        try:
+            os.makedirs(info["relpos_plots_report_dir"])
+        except OSError:
+            print("Unexpected error:", sys.exc_info()[0])
+            sys.exit("\nCould not create directory for the plots and reports.")
+
+
 def save_relative_positions(d_values, filterdist, dims, info, nns=0):
     """Saves the relative positions that have been found in a csv file. This
     function saves both 2D and 3D data.
@@ -752,14 +863,6 @@ def main(argv=None):
     prog_short_name = "rp"
     description = "Calculating the relative positions of points as vectors."
 
-    info = {
-        "prog": prog,
-        "prog_short_name": prog_short_name,
-        "description": description,
-    }
-
-    info["start"] = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
     args = utils.parse_relpos_cli_inputs(prog, description)
 
     if args.verbose:
@@ -768,42 +871,14 @@ def main(argv=None):
     if args.dims < 2 or args.dims > 3:
         sys.exit("ERROR; The data can only have 2 or 3 dimensions.")
 
-    info["dims"] = args.dims
-    info["bin_size"] = args.bin_size
-    info["channels_analysed"] = args.num_channels
-    info["start_channel"] = args.start_channel
-    info["end_channel"] = args.end_channel
-    info["filter_dist"] = args.filter_dist
-    info["nns"] = args.nns
+    info = {
+        "prog": prog,
+        "prog_short_name": prog_short_name,
+        "description": description,
+        "start": datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+    }
 
-    info["xcol"] = args.xcol
-    info["ycol"] = args.ycol
-    info["zcol"] = args.zcol
-    info["ccol"] = args.ccol
-    if info["xcol"] is not None:
-        if info["ycol"] is None:
-            sys.exit("Cannot supply --xcol without --ycol.")
-    if info["ycol"] is not None:
-        if info["xcol"] is None:
-            sys.exit("Cannot supply --ycol without --xcol.")
-    if info["zcol"] is not None:
-        if info["xcol"] is None or info["ycol"] is None:
-            sys.exit("Cannot supply --zcol without --xcol and --ycol.")
-
-    info["zoom"] = args.zoom
-    info["verbose"] = args.verbose
-    info["short_names"] = args.short_names
-
-    if args.input_file is None:
-        # print("Get the data from the command line as the program executes.")
-        get_inputs(info)
-        # print('Channels: ' + repr(info['channels_analysed'])) # Debug
-    else:
-        info["in_file_and_path"] = Path(args.input_file).resolve()
-
-    info["host"], info["ip_address"], info["operating_system"] = (
-        utils.find_hostname_and_ip()
-    )
+    set_up_info(info, args)
 
     # GET THE INPUT LOCALISATIONS with possible colour/other channels
     read_start = timeit.default_timer()
@@ -814,17 +889,10 @@ def main(argv=None):
     if info["verbose"]:
         print("\nInput file:")
         print(info["in_file_and_path"])
+        print(f"\nTime to read the input file was: {round(reading_time, 3)} minutes.\n")
         print(
-            "\nTime to read the input file was: "
-            + str(round(reading_time, 3))
-            + " minutes.\n"
-        )
-        print(
-            "This file contains "
-            + str(info["values"])
-            + " localisations with "
-            + str(info["columns"])
-            + " columns per localisation."
+            f'This file contains {info["values"]} localisations '
+            f'with {info["columns"]} columns per localisation.'
         )
 
     # For acquisition channel information, choose channel(s) to analyse,
@@ -832,36 +900,7 @@ def main(argv=None):
     if info["channels_analysed"] is not None and info["start_channel"] is None:
         info["start_channel"], info["end_channel"] = choose_channels(info)
 
-    utils.primary_filename_and_path_setup(info)
-
-    if info["short_names"] is True:
-        try:
-            info["short_results_dir"].mkdir()
-        except FileExistsError:
-            sys.exit(
-                "\nShort-name directory for the results already exists:\n"
-                f"{info['short_results_dir']}\n"
-                "Please rename it or move it elsewhere."
-            )
-        try:
-            os.makedirs(info["short_relpos_plots_report_dir"])
-        except OSError:
-            print("Unexpected error:", sys.exc_info()[0])
-            sys.exit(
-                "\nCould not create short-name directory for the plots and report:\n"
-                f"{info['short_relpos_plots_report_dir']}"
-            )
-    else:
-        try:
-            os.makedirs(info["results_dir"])
-        except OSError:
-            print("Unexpected error:", sys.exc_info()[0])
-            sys.exit("\nCould not create directory for the results.")
-        try:
-            os.makedirs(info["relpos_plots_report_dir"])
-        except OSError:
-            print("Unexpected error:", sys.exc_info()[0])
-            sys.exit("\nCould not create directory for the plots and reports.")
+    set_up_output_paths(info)
 
     # GET RELATIVE POSITIONS!
     d_values = []
