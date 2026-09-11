@@ -182,12 +182,10 @@ def primary_filename_and_path_setup(info):
     # Set results path
     filename_without_extension = info["in_file_and_path"].stem
 
+    # Include parameters and start time
     results_dir = (
-        info["in_file_and_path"].parent / "PERPL" / ("rel_posns_" + parameter_str)
+        info["in_file_and_path"].parent / f'PERPL_{parameter_str}_{info["start"]}'
     )
-
-    # Include start time
-    results_dir = results_dir.with_name(results_dir.name + f"_{info['start']}")
 
     ## Set up short directory name to save space
     short_filename_without_extension = filename_without_extension[:6]
