@@ -104,7 +104,10 @@ def set_up_info(info: dict, args: argparse.Namespace) -> None:
             or info["end_channel"] is not None
         ):
             sys.exit("Missing channel argument -c to go with other channel arguments.")
-    if info["start_channel"] == info["end_channel"]:
+    if (
+        info["start_channel"] == info["end_channel"]
+        and info["start_channel"] is not None
+    ):
         sys.exit(
             'You chose two-channel analysis '
             f'with identical -from and -to channels ({info["start_channel"]}).\n'
