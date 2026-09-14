@@ -829,16 +829,17 @@ class TestPrimaryFilenameAndPathSetup(unittest.TestCase):
 
         self.assertEqual(
             result1,
-            Path("/localhome/joanna/PERPL_data/PERPL/")
-            / "rel_posns_filter200_2D_bin1_2019-11-07_15-49-55",
+            Path(
+                "/localhome/joanna/PERPL_data/PERPL_filter200_2D_bin1_2019-11-07_15-49-55"
+            ),
         )
         self.assertIn(result2, "Nup107_SNAP_3D_GRROUPED_10nmZprec")
         self.assertIn(result3, "Nup107_SNAP_3D_GRROUPED_10nmZprec.csv")
         self.assertEqual(
             result4,
-            Path("/localhome/joanna/PERPL_data/PERPL") / "rel_posns_f200_2D_b1",
+            Path("/localhome/joanna/PERPL_data/PERPL_f200_2D_b1"),
         )
-        self.assertIn(result5, "Nup107")
+        self.assertIn("Nup107", result5)
 
 
 class TestSecondaryFilenameAndPathSetup(unittest.TestCase):

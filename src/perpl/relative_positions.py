@@ -104,7 +104,10 @@ def set_up_info(info: dict, args: argparse.Namespace) -> None:
             or info["end_channel"] is not None
         ):
             sys.exit("Missing channel argument -c to go with other channel arguments.")
-    if info["start_channel"] == info["end_channel"]:
+    if (
+        info["start_channel"] == info["end_channel"]
+        and info["start_channel"] is not None
+    ):
         sys.exit(
             'You chose two-channel analysis '
             f'with identical -from and -to channels ({info["start_channel"]}).\n'
@@ -879,18 +882,18 @@ def save_relative_positions(d_values, filterdist, dims, info, nns=0):
     if nns == 0:
         outpath = (
             info["results_dir"]
-            / f"{info['in_file_no_extension']}_PERPL-relpos_{filterdist:.1f}filter.csv"
+            / f"{info['in_file_no_extension']}_relpos_{filterdist:.1f}filter.csv"
         )
     else:
         outpath = (
-            info["results_dir"] / f"{info['in_file_no_extension']}_"
-            f"PERPL-relpos_{filterdist:.1f}filter_{nns}nn.csv"
+            info["results_dir"] / f"{info['in_file_no_extension']}"
+            f"_relpos_{filterdist:.1f}filter_{nns}nn.csv"
         )
 
     if info["short_names"]:
         outpath = (
             info["short_results_dir"] / f"{info['short_filename_without_extension']}"
-            f"_PERPL-relpos_{filterdist:.1f}filter.csv"
+            f"_relpos_{filterdist:.1f}filter.csv"
         )
 
     head = None
