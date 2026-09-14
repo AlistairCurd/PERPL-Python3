@@ -453,7 +453,8 @@ def parse_relpos_cli_inputs(prog: str, description: str):
         dest="filter_dist",
         type=int,
         default=150,
-        help="Filter distance.",
+        help="Distance within which relative positions are calculated "
+        "(same units as input data).",
     )
 
     parser.add_argument(
@@ -470,7 +471,7 @@ def parse_relpos_cli_inputs(prog: str, description: str):
         "--bin_size",
         type=int,
         default=1,
-        help="Bin size in distance histograms (nm).",
+        help="Bin size in distance histograms (same units as input data).",
     )
 
     parser.add_argument(
