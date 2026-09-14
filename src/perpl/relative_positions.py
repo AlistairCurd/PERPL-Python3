@@ -48,7 +48,7 @@ from scipy import spatial
 from perpl.io import plotting, reports, utils
 
 
-def set_up_from_from_cli_args(info: dict, args: argparse.Namespace) -> None:
+def set_up_info_from_cli_args(info: dict, args: argparse.Namespace) -> None:
     """
     Update the PERPL info dictionary for this data and analysis
     based on CLI arguments.
@@ -959,7 +959,7 @@ def main():
         "start": datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
     }
 
-    set_up_from_from_cli_args(info, args)
+    set_up_info_from_cli_args(info, args)
 
     # GET THE INPUT LOCALISATIONS with possible colour/other channels
     read_start = timeit.default_timer()
