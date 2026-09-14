@@ -185,7 +185,7 @@ def draw_2col_2d_scatter_plot(
             *scatterplot.legend_elements(), loc="upper right", title="Channel"
         )
         ax.add_artist(legend)
-    ax.set_title(title)
+    ax.set_title(f'{info["in_file_no_extension"]}\n{title}')
     ax.set_xlabel(x_label, {"fontsize": "14"})
     ax.set_ylabel(y_label, {"fontsize": "14"})
     # options on scaling are here
@@ -389,7 +389,10 @@ def plot_histogram(
         outpath = info["short_relpos_plots_report_dir"] / fig_name
 
     # Title and axis labels
-    title = r"Distance histogram of " + data_description.upper() + r" separations"
+    title = (
+        f'{info["in_file_no_path"]}\n'
+        + f"Distance histogram of {data_description.upper()} separations"
+    )
     if standardise is not None:
         title = title + ", " + standardise + " standardised"
 
