@@ -188,7 +188,9 @@ def primary_filename_and_path_setup(info):
     )
 
     ## Set up short directory name to save space
-    short_filename_without_extension = filename_without_extension[:6]
+    short_filename_without_extension = (
+        f"{filename_without_extension[:4]}_{filename_without_extension[-3:]}"
+    )
 
     # Include some parameters for short name
     short_parameter_str = "f" + str(info["filter_dist"]) + "_" + str(info["dims"]) + "D"
