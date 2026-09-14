@@ -25,6 +25,7 @@ from unittest import mock
 
 import matplotlib
 import numpy as np
+
 import perpl.io.plotting as plots
 
 
@@ -49,7 +50,7 @@ class TestDraw2dScatterPlot(unittest.TestCase):
         """
         Tests the getdistances function with an array representing 2
         localisations in 2d space (x and y coordinates) with values that are
-        relative close ie with a separation of less than 10nm.
+        relatively close, i.e. with a separation of less than 10 (position units).
         """
         print("Start TestDraw2dScatterPlot test_mock_inputs", flush=True)
 
@@ -66,7 +67,7 @@ class TestDraw2dScatterPlot(unittest.TestCase):
             filename,
             x_label,
             y_label,
-            info={"channels_analysed": None},
+            info={"channels_analysed": None, "in_file_no_extension": "input_name"},
         )
 
         x_values_dash = mock_scatter.call_args_list[0][0][0]
@@ -90,7 +91,10 @@ class TestDraw2dScatterPlot(unittest.TestCase):
 
         assert x_values_dash.shape == y_values_dash.shape
 
-        assert mock_set_title.call_args_list[0][0][0] == "2D Scatter Plot for Tests"
+        assert (
+            mock_set_title.call_args_list[0][0][0]
+            == "input_name\n2D Scatter Plot for Tests"
+        )
         assert mock_set_xlabel.call_args_list[0][0][0] == "X Label"
         assert mock_set_ylabel.call_args_list[0][0][0] == "Y Label"
 

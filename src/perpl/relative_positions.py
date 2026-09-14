@@ -219,23 +219,23 @@ def get_inputs(info):
 
     # Set filter distance to use for relative position calculations.
     print(
-        "\nWe will identify neighbouring localisations within a set distance "
+        "\nWe will identify neighbouring points within a set distance "
         "(filter distance). The smaller the distance the quicker the "
         "calculation."
     )
 
+    filterdist = input(
+        "What is the filter distance between "
+        "points that you want to apply (same units as the input data)? "
+    )
     try:
-        filterdist = int(
-            input(
-                "What is the filter distance between "
-                "localisations that you want to apply (nm)? "
-            )
-        )
+        if not isinstance(filterdist, int):
+            filterdist = int(filterdist)
+            print("Rounded down.")
     except ValueError:
-        print("This must be an integer.\n")
-        sys.exit("The filter distance must be an integer.\n")
+        sys.exit("The filter distance must be convertible to an integer.\n")
 
-    print("\n" + str(filterdist) + " nm filter distance was selected.")
+    print(f"\nUsing filter distance {filterdist}.")
 
     info["filter_dist"] = filterdist
 
@@ -251,7 +251,7 @@ def get_inputs(info):
 
     except ValueError:
         print("This must be an integer.\n")
-        sys.exit("The filter distance must be an integer.\n")
+        sys.exit("The number of nearest neighbours must be an integer.\n")
 
     if nns == 0:
         print("Using all neighbouring localisations.")
@@ -261,7 +261,7 @@ def get_inputs(info):
     info["nns"] = nns
 
     # Set histogram bin values for distance histograms.
-    print("\nWhat bin size (integer) do you want for the distance histograms (nm)?")
+    print("\nWhat bin size (integer) do you want for the distance histograms?")
     print(
         "...Choose 1 for old model curve fitting functions, "
         "e.g. still used in rot_2d_symm_fit.py..."
@@ -273,7 +273,7 @@ def get_inputs(info):
         )
     )
 
-    print("\n" + str(info["bin_size"]) + " nm bin size was selected.\n")
+    print(f'\nUsing bin size {info["bin_size"]}')
 
     # print('Scatter plots of the raw data are plotted. A zoom scatter plot of '
     #      'the centre is also plotted.')
