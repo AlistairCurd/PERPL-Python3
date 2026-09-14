@@ -193,6 +193,8 @@ def draw_2col_2d_scatter_plot(
     ax.axis("scaled")
     fig.savefig(outpath, bbox_inches="tight")
 
+    plt.close(fig)
+
 
 def find_thresholds(arr, zoom):
     """Calculates the thresholds for the zoom into the scatter plots and applies
@@ -431,6 +433,7 @@ def plot_histogram(
 
     fig_hist.savefig(outpath, bbox_inches="tight")
     # fig_hist.show()
+    plt.close(fig_hist)
 
     # Save histogram data
     histo_name_base = r"histogram_" + data_description.replace(" ", "_")

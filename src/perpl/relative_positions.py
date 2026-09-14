@@ -386,7 +386,7 @@ def read_data_in(info):
             sys.exit("Could not read the input file " + in_file + ".\n")
     else:
         xyzc_values = None
-        print(f"Skipping {in_file} (not .csv, .txt or .npy).\n")
+        print(f"Skipping {in_file} (not .csv, .txt or .npy)...")
         return xyzc_values
 
     info["values"] = xyzc_values.shape[0]
@@ -972,6 +972,7 @@ def main():
     # List individual input files - 1 if file input, can be more if directory input
     if info["batch"]:
         input_paths = list(info["input_path"].iterdir())
+        print(f'Processing files in {info["input_path"]}...\n')
     else:
         input_paths = [info["input_path"]]
 
