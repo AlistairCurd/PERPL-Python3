@@ -61,7 +61,7 @@ class TestGetdistances(unittest.TestCase):
         """
         Tests the getdistances function with an array representing 2
         localisations in 2d space (x and y coordinates) with values that are
-        relative close ie with a separation of less than 10nm.
+        relatively close, i.e. with a separation of less than 10 (position units).
         """
         print("Start TestGetdistances test_2d_array_of_2", flush=True)
         xyz_values = np.array([[20886.96, 30248.96], [20891.08, 30246.26]])
@@ -76,8 +76,8 @@ class TestGetdistances(unittest.TestCase):
         """
         Tests the getdistances function with an array representing 4
         localisations in 2d space (x and y coordinates) with 2 pairs of values
-        that are relative close ie with each pair having a separation of less
-        than 10nm but each pair being further than the 150 filterdistance.
+        that are relatively close, i.e. with a separation of less than 10
+        (position units) but each pair being further than the 150 filter distance.
         """
         print(
             "Start TestGetdistances test_2d_array_of_4_with_2_close_pairs", flush=True
@@ -101,8 +101,8 @@ class TestGetdistances(unittest.TestCase):
         """
         Tests the getdistances function with an array representing 4
         localisations in 2d space (x and y coordinates) with 2 candidate pairs
-        of localisations only 1 pair has a separation of less than 10nm. The
-        other pair of localisation are further than the 150 filterdistance.
+        of localisations only 1 pair has a separation of less than 10 (position units).
+        The other pair of localisation are further than the 150 filter distance.
         """
         print(
             (
@@ -130,9 +130,9 @@ class TestGetdistances(unittest.TestCase):
         """
         Tests the getdistances function with an array representing 4
         localisations in 2d space (x and y coordinates) with 2 candidate pairs
-        of localisations only 1 pair has a separation of less than 10nm. The
-        other pair of localisation are further than the 150 filterdistance but
-        this time a filterdistance of 200 is used.
+        of localisations only 1 pair has a separation of less than 10 (position units).
+        The other pair of localisation are further than the 150 filter distance but
+        this time a filter distance of 200 is used.
         """
         print(
             (
@@ -160,8 +160,8 @@ class TestGetdistances(unittest.TestCase):
         """
         Tests the getdistances function with an array representing 4
         localisations in 2d space (x and y coordinates) with 2 candidate pairs
-        of localisations only 1 pair has a separation of less than 10nm. The
-        other pair of localisation are further than the 150 filterdistance.
+        of localisations only 1 pair has a separation of less than 10 (position units).
+        The other pair of localisation are further than the 150 filter distance.
         """
         print(
             "Start TestGetdistances test_2d_array_of_4_1_close_pair_x_altered",

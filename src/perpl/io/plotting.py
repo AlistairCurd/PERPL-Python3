@@ -86,7 +86,7 @@ def draw_2d_scatter_plots(xyzc_values, dims, info, zoom):  # xyz_values
         outpath = info["relpos_plots_report_dir"] / fig_name
         if info["short_names"] is True:
             outpath = info["short_relpos_plots_report_dir"] / fig_name
-        draw_2col_2d_scatter_plot(xyzc_values, title, outpath, "X (nm)", "Y (nm)", info)
+        draw_2col_2d_scatter_plot(xyzc_values, title, outpath, "X", "Y", info)
 
         if dims == 3:
             title = "Scatter plot of localisations in XZ"
@@ -95,7 +95,7 @@ def draw_2d_scatter_plots(xyzc_values, dims, info, zoom):  # xyz_values
             if info["short_names"] is True:
                 outpath = info["short_relpos_plots_report_dir"] / fig_name
             draw_2col_2d_scatter_plot(
-                xyzc_values, title, outpath, "X (nm)", "Z (nm)", info, axes=(0, 2)
+                xyzc_values, title, outpath, "X", "Z", info, axes=(0, 2)
             )
 
             title = "Scatter plot of localisations in YZ"
@@ -104,7 +104,7 @@ def draw_2d_scatter_plots(xyzc_values, dims, info, zoom):  # xyz_values
             if info["short_names"] is True:
                 outpath = info["short_relpos_plots_report_dir"] / fig_name
             draw_2col_2d_scatter_plot(
-                xyzc_values, title, outpath, "X (nm)", "Z (nm)", info, axes=(1, 2)
+                xyzc_values, title, outpath, "X", "Z", info, axes=(1, 2)
             )
 
     # Zoomed-in xy-plot
@@ -135,20 +135,20 @@ def draw_2d_scatter_plots(xyzc_values, dims, info, zoom):  # xyz_values
         outpath = info["relpos_plots_report_dir"] / fig_name
         if info["short_names"] is True:
             outpath = info["short_relpos_plots_report_dir"] / fig_name
-        draw_2col_2d_scatter_plot(zoomed_xyzc, title, outpath, "X (nm)", "Y (nm)", info)
+        draw_2col_2d_scatter_plot(zoomed_xyzc, title, outpath, "X", "Y", info)
 
         # if dims == 3:
         # title = "Scatter Plot of XZ Locations: Center with Zoom of x{:d}".format(zoom)
         # fig_name = r'scatter_plot_xz_locations_x'+str(zoom)+'.png'
         # outpath = info['results_dir']+r'/'+fig_name
         # draw_2d_scatter_plot(x_values_masked, z_values_masked,
-        #                    title, outpath, 'x (nm)', 'z (nm)')
+        #                    title, outpath, 'x', 'z')
 
         # title = "Scatter Plot of YZ Locations: Center with Zoom of x{:d}".format(zoom)
         # fig_name = r'scatter_plot_yz_locations_x'+str(zoom)+'.png'
         # outpath = info['results_dir']+r'/'+fig_name
         # draw_2d_scatter_plot(y_values_masked, z_values_masked,
-        #                     title, outpath, 'y (nm)', 'z (nm)')
+        #                     title, outpath, 'y', 'z')
 
 
 def draw_2col_2d_scatter_plot(
@@ -379,9 +379,7 @@ def plot_histogram(
     axes = fig_hist.add_subplot(111)
 
     # Set up output path
-    fig_name_base = (
-        r"histogram_" + data_description.replace(" ", "_") + r"_separation_in_nm"
-    )
+    fig_name_base = r"histogram_" + data_description.replace(" ", "_") + r"_separation"
     # Include potential standardisation of histogram
     if standardise is not None:
         fig_name_base = fig_name_base + "_" + standardise + "_standardised"
@@ -397,12 +395,12 @@ def plot_histogram(
 
     plt.title(title)
 
-    plt.xlabel(data_description.upper() + r" separation (nm)")
+    plt.xlabel(data_description.upper() + r" separation (input units)")
     plt.ylabel("Counts")
     if standardise == "2d":
-        plt.ylabel("Counts / distance (nm)")
+        plt.ylabel("Counts / distance (input units)")
     if standardise == "3d":
-        plt.ylabel("Counts / distance ^ 2 (nm ^ 2)")
+        plt.ylabel("Counts / distance ^ 2 (inputs units ^ 2)")
 
     # Get histogram count values and bin positions
     bin_heights, bin_edges = np.histogram(data_values[data_values < filterdist], bins)
@@ -561,17 +559,17 @@ def estimate_rpd_churchman_2d(input_distances, calculation_points, combined_prec
 
 def create_histogram_3d(rel_pos_xyz, filterdist, smoothing=None):
     """Generates a 3D histogram of relative positions among localisations,
-    in bins of 1 nm^3.
+    in bins of (input unit)^3.
 
     Args:
         rel_pos_xyz (numpy array):
             At least three columns, where the first three columns are
-            X, Y, Z coordinates of relative positions (nm).
+            X, Y, Z coordinates of relative positions.
         filterdist (int):
-            The maximum distance (nm) in X, Y and Z upto which the histogram
+            The maximum distance in X, Y and Z upto which the histogram
             should be generated.
         smoothing (float):
-            Kernel size (SD, in nm) for isotropic 3D Gaussian smoothing
+            Kernel size (SD) for isotropic 3D Gaussian smoothing
             of the histogram.
 
     Returns:
@@ -589,7 +587,7 @@ def create_histogram_3d(rel_pos_xyz, filterdist, smoothing=None):
         smoothing_choice = input("").lower()
         print("")
         if smoothing_choice.startswith("y"):
-            print("Please provide the SD (in nm)")
+            print("Please provide the SD")
             smoothing = float(input(" for the Gaussian smoothing kernel: "))
         else:
             print("Ok, no smoothing.")
@@ -617,12 +615,13 @@ def save_tiff_histogram_3d(rel_pos_xyz, filterdist, smoothing=None):
     Args:
         rel_pos_xyz (numpy array):
             At least three columns, where the first three columns are
-            X, Y, Z coordinates of relative positions (nm).
+            X, Y, Z coordinates of relative positions
+            (units as in the original input point cloud data).
         filterdist (int):
-            The maximum distance (nm) in X, Y and Z upto which the histogram
+            The maximum distance in X, Y and Z upto which the histogram
             should be generated.
         smoothing (float):
-            Kernel size (SD, in nm) for isotropic 3D Gaussian smoothing
+            Kernel size (SD) for isotropic 3D Gaussian smoothing
             of the histogram.
 
     Returns:
@@ -676,7 +675,7 @@ def plot_histogram_with_curves(
         axes.plot(x_values, curve_values[i], label=line_label)
 
     plt.title("5-fold to 11-fold fits", fontsize=14, color="black")
-    plt.xlabel("XY separation (nm)", fontsize=14, color="black")
+    plt.xlabel("XY separation (input data units)", fontsize=14, color="black")
     plt.ylabel("Counts (scaled)", fontsize=14, color="black")
 
     plt.legend()

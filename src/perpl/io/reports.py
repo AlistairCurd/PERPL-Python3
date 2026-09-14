@@ -138,7 +138,8 @@ def write_rot_2d_html_report(info, symmetries, aiccs, weights, table_values):
         'models of experimental fluorescence super-resolution light '
         'microscopy data and their comparison to experimental data.</p>\n'
         f'The model {info["model_name"]} was fitted to the relative '
-        f'positions, up to a maximum of {info["filter_dist"]} nm. '
+        f'positions, up to a maximum distance of {info["filter_dist"]} '
+        '(units as in the input data). '
         f'The initial guesses for the parameter values were {info["p0"]} '
         ' and the bounds on them during optimisation '
         f'were {info["optimisation_bounds"]}.</p>\n'
@@ -392,7 +393,7 @@ def write_rel_pos_html_report(info):
         "For the analysis, "
         + str(info["dims"])
         + " dimensions were selected, and the filter "
-        "distance was set to " + str(info["filter_dist"]) + " nm. "
+        "distance was set to " + str(info["filter_dist"]) + ". "
     )
     if info["channels_analysed"] == 1:
         report_info = report_info + (
@@ -457,29 +458,27 @@ def write_rel_pos_html_report(info):
     )
 
     line_xx = line.replace("+++", "X")
-    fout.write(line_xx.replace("***", "histogram_x_separation_in_nm.png"))
+    fout.write(line_xx.replace("***", "histogram_x_separation.png"))
     line_yy = line.replace("+++", "Y")
-    fout.write(line_yy.replace("***", "histogram_y_separation_in_nm.png"))
+    fout.write(line_yy.replace("***", "histogram_y_separation.png"))
     if info["dims"] == 3:
         line_zz = line.replace("+++", "Z")
-        fout.write(line_zz.replace("***", "histogram_z_separation_in_nm.png"))
+        fout.write(line_zz.replace("***", "histogram_z_separation.png"))
 
     line_dim_0 = line.replace("+++", "XY")
-    fout.write(line_dim_0.replace("***", "histogram_xy_separation_in_nm.png"))
+    fout.write(line_dim_0.replace("***", "histogram_xy_separation.png"))
     # And standardised xy separations for 2D report
     if info["dims"] == 2:
         line_dim_1 = line_dim_0.replace("H", "Standardised h")
         fout.write(
-            line_dim_1.replace(
-                "***", "histogram_xy_separation_in_nm_2d_standardised.png"
-            )
+            line_dim_1.replace("***", "histogram_xy_separation_2d_standardised.png")
         )
     if info["dims"] == 3:
         line_dim_1 = line.replace("+++", "XZ")
-        fout.write(line_dim_1.replace("***", "histogram_xz_separation_in_nm.png"))
+        fout.write(line_dim_1.replace("***", "histogram_xz_separation.png"))
         line_dim_2 = line.replace("+++", "YZ")
-        fout.write(line_dim_2.replace("***", "histogram_yz_separation_in_nm.png"))
+        fout.write(line_dim_2.replace("***", "histogram_yz_separation.png"))
         line_dim_3 = line.replace("+++", "XYZ")
-        fout.write(line_dim_3.replace("***", "histogram_xyz_separation_in_nm.png"))
+        fout.write(line_dim_3.replace("***", "histogram_xyz_separation.png"))
 
     write_html_report_end(fout)
