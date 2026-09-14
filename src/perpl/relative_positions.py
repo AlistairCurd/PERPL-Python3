@@ -68,9 +68,9 @@ def set_up_info_from_cli_args(info: dict, args: argparse.Namespace) -> None:
 
     if args.input_path is not None:
         # When input file is supplied in the CLI command.
-        info["in_file_and_path"] = Path(args.input_path).resolve()
+        info["input_path"] = Path(args.input_path).resolve()
         # Processing multiple files in a folder?
-        info["batch"] = info["in_file_and_path"].is_dir()
+        info["batch"] = info["input_path"].is_dir()
         info["dims"] = args.dims
         info["bin_size"] = args.bin_size
         info["channels_analysed"] = args.num_channels
@@ -178,7 +178,7 @@ def get_inputs(info):
 
     print("The file you selected is: ", in_file, "\n")
 
-    info["in_file_and_path"] = in_file
+    info["input_path"] = in_file
 
     # Get spatial dimensionality.
     print("How many spatial dimensions shall we use (2 or 3)?")
@@ -315,7 +315,7 @@ def read_data_in(info):
         xyzc_values (numpy array): A numpy array of the x, y (and z) localisations.
     """
 
-    in_file = info["in_file_and_path"]
+    in_file = info["input_path"]
 
     if not os.path.exists(in_file):
         sys.exit("ERROR; The input file does not exist.")
@@ -327,7 +327,7 @@ def read_data_in(info):
             print("\n\nCould not read file: ", in_file)
             print("\n\n", type(exception))
             sys.exit("Could not read the input file " + in_file + ".\n")
-    elif in_file.name[-4:] == ".csv" or in_file[-4:] == ".txt":
+    elif in_file.name[-4:] == ".csv" or in_file.name[-4:] == ".txt":
         try:
             # Check whether a text header is present and set up for pandas reading
             with open(in_file, encoding="utf-8") as f:
@@ -342,8 +342,8 @@ def read_data_in(info):
                         break
                     else:
                         sys.exit(
-                            "The first line of the table cannot be read as "
-                            "numbers or strings."
+                            f"The first line of the table in {in_file} "
+                            "cannot be read as numbers or strings."
                         )
 
             # Read!
@@ -385,8 +385,9 @@ def read_data_in(info):
             print("\n\n", type(exception))
             sys.exit("Could not read the input file " + in_file + ".\n")
     else:
-        xyzc_values = "Ouch"
-        sys.exit("The input file " + in_file + " has the wrong format.\n")
+        xyzc_values = None
+        print(f"Skipping {in_file} (not .csv, .txt or .npy).\n")
+        return xyzc_values
 
     info["values"] = xyzc_values.shape[0]
     info["columns"] = xyzc_values.shape[1]
@@ -969,99 +970,108 @@ def main():
     output_folder_prepared = False
 
     # List individual input files - 1 if file input, can be more if directory input
+    if info["batch"]:
+        input_paths = list(info["input_path"].iterdir())
+    else:
+        input_paths = [info["input_path"]]
 
     # Process individual input files, including making output plots and reports folder
+    for input_path in input_paths:
+        info["input_path"] = input_path
 
-    # GET THE INPUT LOCALISATIONS with possible colour/other channels
-    read_start = timeit.default_timer()
-    xyzc_values = read_data_in(info)
-    read_end = timeit.default_timer()
-    reading_time = (read_end - read_start) / 60
+        # GET THE INPUT LOCALISATIONS with possible colour/other channels
+        read_start = timeit.default_timer()
+        xyzc_values = read_data_in(info)
+        if xyzc_values is None:
+            continue
+        read_end = timeit.default_timer()
+        reading_time = (read_end - read_start) / 60
 
-    if info["verbose"]:
-        print("\nInput file:")
-        print(info["in_file_and_path"])
-        print(f"\nTime to read the input file was: {round(reading_time, 3)} minutes.\n")
-        print(
-            f'This file contains {info["values"]} localisations '
-            f'with {info["columns"]} columns per localisation.'
+        if info["verbose"]:
+            print("\nInput file:")
+            print(info["input_path"])
+            print(
+                "\nTime to read the input file was: "
+                f"{round(reading_time, 3)} minutes.\n"
+            )
+            print(
+                f'This file contains {info["values"]} localisations '
+                f'with {info["columns"]} columns per localisation.'
+            )
+
+        # For acquisition channel information, choose channel(s) to analyse,
+        # if not given as arguments in the shell command
+        if info["channels_analysed"] is not None and info["start_channel"] is None:
+            info["start_channel"], info["end_channel"] = choose_channels(info)
+
+        # Create main output folder if not already present
+        if not output_folder_prepared:
+            set_up_output_paths(info, main_results_dir=True)
+            output_folder_prepared = True
+
+        # Create plots and report directory for this input file
+        set_up_output_paths(info, plots_report_dir=True)
+
+        # GET RELATIVE POSITIONS!
+        d_values = getdistances_allchanoptions(xyzc_values, info)
+
+        # Draw scatterplot and zoomed region
+        plotting.draw_2d_scatter_plots(xyzc_values, info["dims"], info, 0)
+        plotting.draw_2d_scatter_plots(xyzc_values, info["dims"], info, info["zoom"])
+
+        # Get distances in 2D and 3D for relative positions.
+        # Note, get_vectors() is an unhelpful name as it takes
+        # the vectors we already have and calculates distances.
+        if len(d_values) > 0:
+            # CURRENTLY NEED TO ADD ZEROS COLUMN TO 2D KDTREE VERSION:
+            if d_values.shape[1] == 2:
+                d_values = np.column_stack((d_values, np.zeros(d_values.shape[0])))
+            d_values = get_vectors(d_values, info["dims"])
+        else:
+            sys.exit("No data found so we are exiting.")
+
+        # Summarise
+        if info["verbose"]:
+            print(
+                "\n"
+                f"{len(d_values)} relative positions within the "
+                "filter distance in the chosen dimensions between localisations "
+                "in the selected channels. "
+                "Symmetric duplicates removed for single-channel analysis if "
+                "# nearest neighbours was unrestricted."
+            )
+
+        # Plot vector component results
+        plotting.plot_histograms(
+            d_values, info["dims"], info["filter_dist"], info, binsize=info["bin_size"]
         )
 
-    # For acquisition channel information, choose channel(s) to analyse,
-    # if not given as arguments in the shell command
-    if info["channels_analysed"] is not None and info["start_channel"] is None:
-        info["start_channel"], info["end_channel"] = choose_channels(info)
+        filter_end = timeit.default_timer()
+        filter_time = (filter_end - read_end) / 60
 
-    # Create main output folder if not already present
-    if not output_folder_prepared:
-        set_up_output_paths(info, main_results_dir=True)
-        output_folder_prepared = True
+        if info["verbose"]:
+            print(f"\nTime to filter the data was: {round(filter_time, 3)} minutes.")
 
-    # Create plots and report directory for this input file
-    set_up_output_paths(info, plots_report_dir=True)
-
-    # GET RELATIVE POSITIONS!
-    d_values = getdistances_allchanoptions(xyzc_values, info)
-
-    # Draw scatterplot and zoomed region
-    plotting.draw_2d_scatter_plots(xyzc_values, info["dims"], info, 0)
-    plotting.draw_2d_scatter_plots(xyzc_values, info["dims"], info, info["zoom"])
-
-    # Get distances in 2D and 3D for relative positions.
-    # Note, get_vectors() is an unhelpful name as it takes the vectors we already have
-    # and calculates distances.
-    if len(d_values) > 0:
-        # CURRENTLY NEED TO ADD ZEROS COLUMN TO 2D KDTREE VERSION:
-        if d_values.shape[1] == 2:
-            d_values = np.column_stack((d_values, np.zeros(d_values.shape[0])))
-        d_values = get_vectors(d_values, info["dims"])
-    else:
-        sys.exit("No data found so we are exiting.")
-
-    # Summarise
-    if info["verbose"]:
-        print(
-            "\n"
-            f"{len(d_values)} relative positions within the "
-            "filter distance in the chosen dimensions between localisations "
-            "in the selected channels. "
-            "Symmetric duplicates removed for single-channel analysis if "
-            "# nearest neighbours was unrestricted."
+        # Save relative positions and vector components.
+        xyz_outpath = save_relative_positions(
+            d_values, info["filter_dist"], info["dims"], info, info["nns"]
         )
 
-    # Plot vector component results
-    plotting.plot_histograms(
-        d_values, info["dims"], info["filter_dist"], info, binsize=info["bin_size"]
-    )
+        save_data_end = timeit.default_timer()
+        filtering_time = (save_data_end - filter_end) / 60
+        if info["verbose"]:
+            print(
+                "\nTime to write the data was: "
+                + str(round(filtering_time, 3))
+                + " minutes."
+            )
 
-    filter_end = timeit.default_timer()
-    filter_time = (filter_end - read_end) / 60
+        # Create html report.
+        reports.write_rel_pos_html_report(info)
 
-    if info["verbose"]:
-        print(
-            "\nTime to filter the data was: " + str(round(filter_time, 3)) + " minutes."
-        )
-
-    # Save relative positions and vector components.
-    xyz_outpath = save_relative_positions(
-        d_values, info["filter_dist"], info["dims"], info, info["nns"]
-    )
-
-    save_data_end = timeit.default_timer()
-    filtering_time = (save_data_end - filter_end) / 60
-    if info["verbose"]:
-        print(
-            "\nTime to write the data was: "
-            + str(round(filtering_time, 3))
-            + " minutes."
-        )
-
-    # Create html report.
-    reports.write_rel_pos_html_report(info)
-
-    # Direct user to the location of the output.
-    if info["verbose"]:
-        print(f"\nRelative positions are saved in the file:\n{xyz_outpath}")
+        # Direct user to the location of the output.
+        if info["verbose"]:
+            print(f"\nRelative positions are saved in the file:\n{xyz_outpath}")
 
 
 if __name__ == "__main__":

@@ -812,7 +812,7 @@ class TestPrimaryFilenameAndPathSetup(unittest.TestCase):
         info["filter_dist"] = 200
         info["zoom"] = 10
         info["verbose"] = True
-        info["in_file_and_path"] = Path(
+        info["input_path"] = Path(
             "/localhome/joanna/PERPL_data/Nup107_SNAP_3D" "_GRROUPED_10nmZprec.csv"
         )
         info["channels_analysed"] = None
@@ -868,7 +868,7 @@ class TestSecondaryFilenameAndPathSetup(unittest.TestCase):
         info["filter_dist"] = 200
         info["zoom"] = 10
         info["verbose"] = True
-        info["in_file_and_path"] = (
+        info["input_path"] = (
             "/localhome/joanna/PERPL_data/PERPL_relative"
             "_positions/Nup107_SNAP_3D_GRROUPED_10nmZprec/"
             "filter_200_2019-11-07_15-49-55"
