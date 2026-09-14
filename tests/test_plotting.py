@@ -67,7 +67,7 @@ class TestDraw2dScatterPlot(unittest.TestCase):
             filename,
             x_label,
             y_label,
-            info={"channels_analysed": None},
+            info={"channels_analysed": None, "in_file_no_extension": "input_name"},
         )
 
         x_values_dash = mock_scatter.call_args_list[0][0][0]
@@ -91,7 +91,10 @@ class TestDraw2dScatterPlot(unittest.TestCase):
 
         assert x_values_dash.shape == y_values_dash.shape
 
-        assert mock_set_title.call_args_list[0][0][0] == "2D Scatter Plot for Tests"
+        assert (
+            mock_set_title.call_args_list[0][0][0]
+            == "input_name\n2D Scatter Plot for Tests"
+        )
         assert mock_set_xlabel.call_args_list[0][0][0] == "X Label"
         assert mock_set_ylabel.call_args_list[0][0][0] == "Y Label"
 
