@@ -365,9 +365,10 @@ def parse_relpos_cli_inputs(prog: str, description: str):
 
     parser.add_argument(
         "-i",
-        "--input_file",
+        "--input_path",
         type=str,
-        help="Path to localisations file which is a .csv (or .txt "
+        help="Path to localisations file or folder containing these files. "
+        "They are .csv (or .txt "
         "with comma delimiters) or .npy and containing N "
         "localisations in N rows.",
     )

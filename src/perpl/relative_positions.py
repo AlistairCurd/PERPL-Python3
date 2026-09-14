@@ -66,9 +66,11 @@ def set_up_info_from_cli_args(info: dict, args: argparse.Namespace) -> None:
         The info dict is modified in place.
     """
 
-    if args.input_file is not None:
+    if args.input_path is not None:
         # When input file is supplied in the CLI command.
-        info["in_file_and_path"] = Path(args.input_file).resolve()
+        info["in_file_and_path"] = Path(args.input_path).resolve()
+        # Processing multiple files in a folder?
+        info["batch"] = info["in_file_and_path"].is_dir()
         info["dims"] = args.dims
         info["bin_size"] = args.bin_size
         info["channels_analysed"] = args.num_channels
@@ -808,7 +810,11 @@ def get_vectors(d_values, dims):
     return d_values
 
 
-def set_up_output_paths(info: dict) -> None:
+def set_up_output_paths(
+    info: dict,
+    main_results_dir: bool = False,
+    plots_report_dir: bool = False,
+) -> None:
     """
     Set up paths for saving the output data, including creating output folders.
     Will exit if the folders already exist.
@@ -817,6 +823,10 @@ def set_up_output_paths(info: dict) -> None:
     ----------
     info : dict
         Dictionary containing information about the data and analysis choices.
+    main_results_dir : bool
+        Choice whether to create the main output directory.
+    plots_report_dir : bool
+        Choice whether to create the subdirectory for plots and reports.
 
     Returns
     -------
@@ -826,33 +836,38 @@ def set_up_output_paths(info: dict) -> None:
     utils.primary_filename_and_path_setup(info)
 
     if info["short_names"] is True:
-        try:
-            info["short_results_dir"].mkdir()
-        except FileExistsError:
-            sys.exit(
-                "\nShort-name directory for the results already exists:\n"
-                f"{info['short_results_dir']}\n"
-                "Please rename it or move it elsewhere."
-            )
-        try:
-            os.makedirs(info["short_relpos_plots_report_dir"])
-        except OSError:
-            print("Unexpected error:", sys.exc_info()[0])
-            sys.exit(
-                "\nCould not create short-name directory for the plots and report:\n"
-                f"{info['short_relpos_plots_report_dir']}"
-            )
+        if main_results_dir:
+            try:
+                info["short_results_dir"].mkdir()
+            except FileExistsError:
+                sys.exit(
+                    "\nShort-name directory for the results already exists:\n"
+                    f"{info['short_results_dir']}\n"
+                    "Please rename it or move it elsewhere."
+                )
+        if plots_report_dir:
+            try:
+                os.makedirs(info["short_relpos_plots_report_dir"])
+            except OSError:
+                print("Unexpected error:", sys.exc_info()[0])
+                sys.exit(
+                    "\nCould not create short-name directory "
+                    "for the plots and report:\n"
+                    f"{info['short_relpos_plots_report_dir']}"
+                )
     else:
-        try:
-            os.makedirs(info["results_dir"])
-        except OSError:
-            print("Unexpected error:", sys.exc_info()[0])
-            sys.exit("\nCould not create directory for the results.")
-        try:
-            os.makedirs(info["relpos_plots_report_dir"])
-        except OSError:
-            print("Unexpected error:", sys.exc_info()[0])
-            sys.exit("\nCould not create directory for the plots and reports.")
+        if main_results_dir:
+            try:
+                os.makedirs(info["results_dir"])
+            except OSError:
+                print("Unexpected error:", sys.exc_info()[0])
+                sys.exit("\nCould not create directory for the results.")
+        if plots_report_dir:
+            try:
+                os.makedirs(info["relpos_plots_report_dir"])
+            except OSError:
+                print("Unexpected error:", sys.exc_info()[0])
+                sys.exit("\nCould not create directory for the plots and reports.")
 
 
 def save_relative_positions(d_values, filterdist, dims, info, nns=0):
@@ -918,25 +933,15 @@ def save_relative_positions(d_values, filterdist, dims, info, nns=0):
 
 
 def main():
-    """Reads input data of point density locations and calculates relative
-        poasitions as vectors. Outputs are writen to a file in a directory
-        with the name of the inputfile and a time stamp above the directory of
-        the input file. The files contains the x, y (and z) localisations.
-        If no input argments are provided inputs can be given from the command
-        line as it executes.
+    """
+    Reads input data of point density locations and calculates relative
+    positions as vectors. Outputs are writen to a file in a directory
+    with the name of the inputfile and a time stamp above the directory of
+    the input file. The files contains the x, y (and z) localisations.
+    If no input argments are provided inputs can be given from the command
+    line as it executes.
 
-    Args:
-        input_file (FILE): File of localisations which is a .csv (or .txt with
-                           comma delimiters) or .npy and containing N
-                           localisations in N rows.
-        dims (int): The dimensions of the data. This can be 2 or 3.
-        filter_dist (int): The filter distance.
-        zoom (int): A magnified scatter plot of the centre of the principal
-                    view is produced at this level of zoom. Default is 10.
-        verbose (Boolean): Increases the output to screen during execution.
-
-    Returns:
-        Nothing
+    Arguments are listed in perpl.io.utils.parse_relpos_cli_inputs.
     """
 
     # Handle any input arguments (flags) and set up info dictionary.
@@ -961,6 +966,12 @@ def main():
 
     set_up_info_from_cli_args(info, args)
 
+    output_folder_prepared = False
+
+    # List individual input files - 1 if file input, can be more if directory input
+
+    # Process individual input files, including making output plots and reports folder
+
     # GET THE INPUT LOCALISATIONS with possible colour/other channels
     read_start = timeit.default_timer()
     xyzc_values = read_data_in(info)
@@ -981,7 +992,13 @@ def main():
     if info["channels_analysed"] is not None and info["start_channel"] is None:
         info["start_channel"], info["end_channel"] = choose_channels(info)
 
-    set_up_output_paths(info)
+    # Create main output folder if not already present
+    if not output_folder_prepared:
+        set_up_output_paths(info, main_results_dir=True)
+        output_folder_prepared = True
+
+    # Create plots and report directory for this input file
+    set_up_output_paths(info, plots_report_dir=True)
 
     # GET RELATIVE POSITIONS!
     d_values = getdistances_allchanoptions(xyzc_values, info)
