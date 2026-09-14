@@ -99,7 +99,7 @@ def get_input(info):
         sys.exit("The input file " + infile + " has the wrong format.\n")
 
     info["results_dir"] = results_dir
-    info["in_file_and_path"] = infile
+    info["input_path"] = infile
     info["in_file_no_extension"] = filename_without_extension
     info["in_file_no_path"] = in_file_no_path
 
@@ -172,7 +172,7 @@ def log_file_header(log_file, info):
     # log_file.write('\nMatplotlib version is: '+plt.__version__)
     # log_file.write('\nScipy version is: '+scipy.__version__)
 
-    log_file.write("\n\nInput file: " + info["in_file_and_path"] + "\n")
+    log_file.write("\n\nInput file: " + info["input_path"] + "\n")
 
     # log_file.write('This files contains '+str(info['values'])+' locs with '\
     #               +str(info['columns'])+' columns.\n')

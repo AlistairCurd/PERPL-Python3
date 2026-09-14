@@ -131,7 +131,7 @@ def write_rot_2d_html_report(info, symmetries, aiccs, weights, table_values):
 
     fout.write(
         f'<p>This program ran at {info["start"]} on the {info["host"]} '
-        f' host system and the data file analysed was {info["in_file_and_path"]} '
+        f' host system and the data file analysed was {info["input_path"]} '
         f' which read in {info["values"]} relative positions with {info["columns"]} '
         'columns. '
         'This report provides images and information on simulated '
@@ -375,10 +375,10 @@ def write_rel_pos_html_report(info):
     fout = write_html_report_start(fout, info)
 
     report_info = (
-        f"<p>This program ran at {info['start']} on the {info['host']} "
-        f"host system and the data file analysed was {info['in_file_and_path']} "
-        f" which read in {str(info['values'])} localisations with "
-        f"{str(info['columns'])} columns. "
+        f'<p>This program ran at {info["start"]} on the {info["host"]} '
+        f'host system and the data file analysed was {info["input_path"]} '
+        f' which read in {str(info["values"])} localisations with '
+        f'{str(info["columns"])} columns. '
     )
     if info["channels_analysed"] is not None:
         report_info = report_info[0:-2] + (

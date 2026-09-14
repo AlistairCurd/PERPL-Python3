@@ -180,12 +180,10 @@ def primary_filename_and_path_setup(info):
         parameter_str = parameter_str + f'_{info["nns"]}nns'
 
     # Set results path
-    filename_without_extension = info["in_file_and_path"].stem
+    filename_without_extension = info["input_path"].stem
 
     # Include parameters and start time
-    results_dir = (
-        info["in_file_and_path"].parent / f'PERPL_{parameter_str}_{info["start"]}'
-    )
+    results_dir = info["input_path"].parent / f'PERPL_{parameter_str}_{info["start"]}'
 
     ## Set up short directory name to save space
     short_filename_without_extension = (
@@ -210,7 +208,7 @@ def primary_filename_and_path_setup(info):
     if info["nns"] > 0:
         short_parameter_str = short_parameter_str + f'_{info["nns"]}n'
 
-    short_results_dir = info["in_file_and_path"].parent / f"PERPL_{short_parameter_str}"
+    short_results_dir = info["input_path"].parent / f"PERPL_{short_parameter_str}"
 
     info["results_dir"] = results_dir
     info["in_file_no_extension"] = filename_without_extension
@@ -218,7 +216,7 @@ def primary_filename_and_path_setup(info):
         results_dir / f"plots_report_{filename_without_extension}"
     )
 
-    info["in_file_no_path"] = info["in_file_and_path"].stem
+    info["in_file_no_path"] = info["input_path"].stem
     # ^ This looks to be a duplicate of info["in_file_no_extension"]
 
     info["short_results_dir"] = short_results_dir
@@ -244,7 +242,7 @@ def secondary_filename_and_path_setup(info):
             the function as they can be seen in info in other functions.
     """
 
-    path, in_file_no_path = os.path.split(info["in_file_and_path"])
+    path, in_file_no_path = os.path.split(info["input_path"])
 
     index_of_dot = in_file_no_path.index(".")
     filename_without_extension = in_file_no_path[:index_of_dot]
@@ -304,7 +302,7 @@ def secondary_read_data_in(info):
             The x, y (and z) localisations.
     """
 
-    in_file = info["in_file_and_path"]
+    in_file = info["input_path"]
 
     if not os.path.exists(in_file):
         sys.exit("ERROR; The input file does not exist.")
@@ -365,9 +363,10 @@ def parse_relpos_cli_inputs(prog: str, description: str):
 
     parser.add_argument(
         "-i",
-        "--input_file",
+        "--input_path",
         type=str,
-        help="Path to localisations file which is a .csv (or .txt "
+        help="Path to localisations file or folder containing these files. "
+        "They are .csv (or .txt "
         "with comma delimiters) or .npy and containing N "
         "localisations in N rows.",
     )
@@ -412,7 +411,7 @@ def parse_relpos_cli_inputs(prog: str, description: str):
         type=str,
         default=None,
         help="Name of the column for z position in the localisation table, "
-        "if it has column names. If not provided, the third column (z) is used. "
+        "if it has column names. If not provided, the third column (2) is used. "
         "Must also give --xcol and --ycol.",
     )
 
@@ -486,7 +485,9 @@ def parse_relpos_cli_inputs(prog: str, description: str):
         "directories. While this makes the results less easy to"
         " navigate it can be particularly useful on Windows"
         " systems that do not allow long names and paths. "
-        "Uses the first 6 characters of the input filename.",
+        "Uses the first 6 characters and last 3 of the input filename. "
+        " Input filenames sharing these strings will cause an overwriting error "
+        "in batch processing when this option is used.",
         action="store_true",
     )
 

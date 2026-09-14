@@ -91,7 +91,7 @@ def get_inputs(info):
 
     print("The file you selected is: ", infile)
 
-    info["in_file_and_path"] = infile
+    info["input_path"] = infile
 
     # Set longest distance used between localisations when producing
     # distance histograms and fitting.
@@ -1424,7 +1424,7 @@ def main():
     if args.input_file is None:
         get_inputs(info)
     else:
-        info["in_file_and_path"] = Path(args.input_file).resolve()
+        info["input_path"] = Path(args.input_file).resolve()
 
     info["host"], info["ip_address"], info["operating_system"] = (
         utils.find_hostname_and_ip()
