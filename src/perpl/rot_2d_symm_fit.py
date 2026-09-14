@@ -1372,7 +1372,11 @@ def main():
 
     info["start"] = start
 
-    parser = argparse.ArgumentParser(prog, description)
+    parser = argparse.ArgumentParser(
+        prog,
+        description,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
 
     parser.add_argument(
         "-i",

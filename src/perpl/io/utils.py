@@ -359,7 +359,11 @@ def parse_relpos_cli_inputs(prog: str, description: str):
     Returns:
         args (argparse.ArgumentParser object)
     """
-    parser = argparse.ArgumentParser(prog, description)
+    parser = argparse.ArgumentParser(
+        prog,
+        description,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
 
     parser.add_argument(
         "-i",
