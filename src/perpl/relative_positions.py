@@ -848,13 +848,20 @@ def set_up_output_paths(
                 )
         if plots_report_dir:
             try:
-                os.makedirs(info["short_relpos_plots_report_dir"])
-            except OSError:
-                print("Unexpected error:", sys.exc_info()[0])
-                sys.exit(
+                info["short_relpos_plots_report_dir"].mkdir()
+            except FileExistsError:
+                # print("Unexpected error:", sys.exc_info()[0])
+                print(
                     "\nCould not create short-name directory "
                     "for the plots and report:\n"
-                    f"{info['short_relpos_plots_report_dir']}"
+                    f'{info["short_relpos_plots_report_dir"]}'
+                )
+                sys.exit(
+                    "The short names use the first 6 and last 3 characters "
+                    "of the full input filename. If files share these same "
+                    "start and end strings, rename them or use full filenames, "
+                    "not shortened (being careful of the resulting path length "
+                    "in Windows)."
                 )
     else:
         if main_results_dir:

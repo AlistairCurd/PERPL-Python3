@@ -411,7 +411,7 @@ def parse_relpos_cli_inputs(prog: str, description: str):
         type=str,
         default=None,
         help="Name of the column for z position in the localisation table, "
-        "if it has column names. If not provided, the third column (z) is used. "
+        "if it has column names. If not provided, the third column (2) is used. "
         "Must also give --xcol and --ycol.",
     )
 
@@ -485,7 +485,9 @@ def parse_relpos_cli_inputs(prog: str, description: str):
         "directories. While this makes the results less easy to"
         " navigate it can be particularly useful on Windows"
         " systems that do not allow long names and paths. "
-        "Uses the first 6 characters of the input filename.",
+        "Uses the first 6 characters and last 3 of the input filename. "
+        " Input filenames sharing these strings will cause an overwriting error "
+        "in batch processing when this option is used.",
         action="store_true",
     )
 
