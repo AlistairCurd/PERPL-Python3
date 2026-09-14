@@ -69,8 +69,6 @@ def set_up_info_from_cli_args(info: dict, args: argparse.Namespace) -> None:
     if args.input_path is not None:
         # When input file is supplied in the CLI command.
         info["input_path"] = Path(args.input_path).resolve()
-        # Processing multiple files in a folder?
-        info["batch"] = info["input_path"].is_dir()
         info["dims"] = args.dims
         info["bin_size"] = args.bin_size
         info["channels_analysed"] = args.num_channels
@@ -86,6 +84,8 @@ def set_up_info_from_cli_args(info: dict, args: argparse.Namespace) -> None:
         get_inputs(info)
 
     # Add these in both file input methods
+    # Processing multiple files in a folder?
+    info["batch"] = info["input_path"].is_dir()
     info["xcol"] = args.xcol
     info["ycol"] = args.ycol
     info["zcol"] = args.zcol
@@ -209,11 +209,14 @@ def get_inputs(info):
     else:
         sys.exit("\nYou must answer yes or no.\n")
 
-    # Set channel info to 'None' or not None.
+    # Set channel info to 'None' or not None
+    # and initialise start and end channel info keys
     if channel_answer.startswith("n"):
         info["channels_analysed"] = None
     if channel_answer.startswith("y"):
         info["channels_analysed"] = "Some"
+    info["start_channel"] = None
+    info["end_channel"] = None
 
     # print(info['channels_analysed']) # Debug
 
@@ -403,6 +406,8 @@ def read_data_in(info):
                 + repr(len(info["unique_channel_values"]))
                 + " unique values (channel values) in the final column of your data.\n"
                 "\nExiting because these are unlikely to be the correct channel values."
+                "\nIf you have a named channel column in your data, try using it "
+                "as an argument to the relpos command (type relpos -h for information)."
             )
         # Print channel options if not specified in shell command arguments.
         if info["start_channel"] is None:
@@ -458,6 +463,11 @@ def choose_channels(info):
     if info["channels_analysed"] == 2:
         start_channel = float(input("Which channel do you want to measure FROM? "))
         end_channel = float(input("Which channel do you want to measure TO? "))
+        if start_channel == end_channel:
+            sys.exit(
+                "Measuring from and to the same channel is not supported through this "
+                "command. It would give many zero distances."
+            )
 
     print("")
 
