@@ -177,7 +177,7 @@ def primary_filename_and_path_setup(info):
 
     # Include number of nearest neighbours, if used
     if info["nns"] > 0:
-        parameter_str = parameter_str + f'_{info["nns"]}nns_'
+        parameter_str = parameter_str + f'_{info["nns"]}nns'
 
     # Set results path
     filename_without_extension = info["in_file_and_path"].stem
@@ -208,18 +208,22 @@ def primary_filename_and_path_setup(info):
     if info["nns"] > 0:
         short_parameter_str = short_parameter_str + f'_{info["nns"]}n'
 
-    short_results_dir = (
-        info["in_file_and_path"].parent / "PERPL" / ("rel_posns_" + short_parameter_str)
-    )
+    short_results_dir = info["in_file_and_path"].parent / f"PERPL_{short_parameter_str}"
 
     info["results_dir"] = results_dir
     info["in_file_no_extension"] = filename_without_extension
-    info["relpos_plots_report_dir"] = results_dir / "histograms_and_report"
+    info["relpos_plots_report_dir"] = (
+        results_dir / f"plots_report_{filename_without_extension}"
+    )
 
     info["in_file_no_path"] = info["in_file_and_path"].stem
+    # ^ This looks to be a duplicate of info["in_file_no_extension"]
+
     info["short_results_dir"] = short_results_dir
     info["short_filename_without_extension"] = short_filename_without_extension
-    info["short_relpos_plots_report_dir"] = short_results_dir / "histograms_and_report"
+    info["short_relpos_plots_report_dir"] = (
+        short_results_dir / f"plots_report_{short_filename_without_extension}"
+    )
 
 
 def secondary_filename_and_path_setup(info):
