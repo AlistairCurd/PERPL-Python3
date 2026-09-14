@@ -27,8 +27,9 @@ CONDITIONS OF ANY KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
 """
 
-import numpy as np
 import sys
+
+import numpy as np
 
 
 def write_html_report_start(fout, info):
@@ -129,26 +130,19 @@ def write_rot_2d_html_report(info, symmetries, aiccs, weights, table_values):
     fout = write_html_report_start(fout, info)
 
     fout.write(
-        r"<p>This program ran at "
-        + info["start"]
-        + r" on the "
-        + info["host"]
-        + r" host system and the data file analysed was "
-        + info["in_file_and_path"]
-        + r" which read in "
-        + str(info["values"])
-        + " relative positions with "
-        + str(info["columns"])
-        + " columns. "
-        "This report provides images and information on simulated "
-        "models of experimental fluorescence super-resolution light "
-        "microscopy data and their comparison to experimental data.</p>\n"
-        "The model " + info["model_name"] + " is fitted to the relative "
-        "positions, up to a maximum of " + str(info["filter_dist"]) + " nm. "
-        "The initial guesses for the parameter values were "
-        + str(info["p0"])
-        + " and the bounds on them during optimisation "
-        "were " + str(info["optimisation_bounds"]) + " .</p>\n"
+        f'<p>This program ran at {info["start"]} on the {info["host"]} '
+        f' host system and the data file analysed was {info["input_path"]} '
+        f' which read in {info["values"]} relative positions with {info["columns"]} '
+        'columns. '
+        'This report provides images and information on simulated '
+        'models of experimental fluorescence super-resolution light '
+        'microscopy data and their comparison to experimental data.</p>\n'
+        f'The model {info["model_name"]} was fitted to the relative '
+        f'positions, up to a maximum distance of {info["filter_dist"]} '
+        '(units as in the input data). '
+        f'The initial guesses for the parameter values were {info["p0"]} '
+        ' and the bounds on them during optimisation '
+        f'were {info["optimisation_bounds"]}.</p>\n'
     )
 
     fout.write("<p></p>\n")
@@ -359,21 +353,14 @@ def write_rel_pos_html_report(info):
 
     html_outfile_name = (
         info["relpos_plots_report_dir"]
-        + r"/"
-        + info["in_file_no_extension"]
-        + r"_"
-        + info["prog"]
-        + r"_report.html"
+        / f"{info['in_file_no_extension']}_{info['prog']}_report.html"
     )
 
     if info["short_names"] is True:
         html_outfile_name = (
             info["short_relpos_plots_report_dir"]
-            + r"/"
-            + info["short_filename_without_extension"]
-            + r"_"
-            + info["prog_short_name"]
-            + r"_report.html"
+            / f"{info['short_filename_without_extension']}_{info['prog_short_name']}"
+            "_report.html"
         )
 
     try:
@@ -389,38 +376,31 @@ def write_rel_pos_html_report(info):
     fout = write_html_report_start(fout, info)
 
     report_info = (
-        r"<p>This program ran at "
-        + info["start"]
-        + r" on the "
-        + info["host"]
-        + r" host system and the data file analysed was "
-        + info["in_file_and_path"]
-        + r" which read in "
-        + str(info["values"])
-        + " localisations with "
-        + str(info["columns"])
-        + " columns. "
+        f'<p>This program ran at {info["start"]} on the {info["host"]} '
+        f'host system and the data file analysed was {info["input_path"]} '
+        f' which read in {str(info["values"])} localisations with '
+        f'{str(info["columns"])} columns. '
     )
-    if info["colours_analysed"] is not None:
+    if info["channels_analysed"] is not None:
         report_info = report_info[0:-2] + (
             ", including "
-            + repr(len(info["unique_colour_values"]))
+            + repr(len(info["unique_channel_values"]))
             + " channels ("
-            + np.array2string(info["unique_colour_values"], separator=", ")
+            + np.array2string(info["unique_channel_values"], separator=", ")
             + "). "
         )
     report_info = report_info + (
         "For the analysis, "
         + str(info["dims"])
         + " dimensions were selected, and the filter "
-        "distance was set to " + str(info["filter_dist"]) + " nm. "
+        "distance was set to " + str(info["filter_dist"]) + ". "
     )
-    if info["colours_analysed"] == 1:
+    if info["channels_analysed"] == 1:
         report_info = report_info + (
             "Relative positions were found between localisations "
             "in channel [" + repr(info["start_channel"]) + "]. "
         )
-    if info["colours_analysed"] == 2:
+    if info["channels_analysed"] == 2:
         report_info = report_info + (
             "Relative positions were found from localisations "
             "in channel ["
@@ -478,29 +458,27 @@ def write_rel_pos_html_report(info):
     )
 
     line_xx = line.replace("+++", "X")
-    fout.write(line_xx.replace("***", "histogram_x_separation_in_nm.png"))
+    fout.write(line_xx.replace("***", "histogram_x_separation.png"))
     line_yy = line.replace("+++", "Y")
-    fout.write(line_yy.replace("***", "histogram_y_separation_in_nm.png"))
+    fout.write(line_yy.replace("***", "histogram_y_separation.png"))
     if info["dims"] == 3:
         line_zz = line.replace("+++", "Z")
-        fout.write(line_zz.replace("***", "histogram_z_separation_in_nm.png"))
+        fout.write(line_zz.replace("***", "histogram_z_separation.png"))
 
     line_dim_0 = line.replace("+++", "XY")
-    fout.write(line_dim_0.replace("***", "histogram_xy_separation_in_nm.png"))
+    fout.write(line_dim_0.replace("***", "histogram_xy_separation.png"))
     # And standardised xy separations for 2D report
     if info["dims"] == 2:
         line_dim_1 = line_dim_0.replace("H", "Standardised h")
         fout.write(
-            line_dim_1.replace(
-                "***", "histogram_xy_separation_in_nm_2d_standardised.png"
-            )
+            line_dim_1.replace("***", "histogram_xy_separation_2d_standardised.png")
         )
     if info["dims"] == 3:
         line_dim_1 = line.replace("+++", "XZ")
-        fout.write(line_dim_1.replace("***", "histogram_xz_separation_in_nm.png"))
+        fout.write(line_dim_1.replace("***", "histogram_xz_separation.png"))
         line_dim_2 = line.replace("+++", "YZ")
-        fout.write(line_dim_2.replace("***", "histogram_yz_separation_in_nm.png"))
+        fout.write(line_dim_2.replace("***", "histogram_yz_separation.png"))
         line_dim_3 = line.replace("+++", "XYZ")
-        fout.write(line_dim_3.replace("***", "histogram_xyz_separation_in_nm.png"))
+        fout.write(line_dim_3.replace("***", "histogram_xyz_separation.png"))
 
     write_html_report_end(fout)

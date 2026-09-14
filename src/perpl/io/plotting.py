@@ -67,7 +67,7 @@ if _platform == "darwin":
     matplotlib.use("MacOSX")
 
 
-def draw_2d_scatter_plots(xyzcolour_values, dims, info, zoom):  # xyz_values
+def draw_2d_scatter_plots(xyzc_values, dims, info, zoom):  # xyz_values
     """Farms out the scatter plots that need to be plotted to the
     draw_2d_scatter_plot function.
 
@@ -83,39 +83,37 @@ def draw_2d_scatter_plots(xyzcolour_values, dims, info, zoom):  # xyz_values
     if zoom == 0:
         title = "Scatter plot of localisations in XY"
         fig_name = r"scatter_plot_xy_localisations.png"
-        filename = info["relpos_plots_report_dir"] + r"/" + fig_name
+        outpath = info["relpos_plots_report_dir"] / fig_name
         if info["short_names"] is True:
-            filename = info["short_relpos_plots_report_dir"] + r"/" + fig_name
-        draw_2col_2d_scatter_plot(
-            xyzcolour_values, title, filename, "X (nm)", "Y (nm)", info
-        )
+            outpath = info["short_relpos_plots_report_dir"] / fig_name
+        draw_2col_2d_scatter_plot(xyzc_values, title, outpath, "X", "Y", info)
 
         if dims == 3:
             title = "Scatter plot of localisations in XZ"
             fig_name = r"scatter_plot_xz_localisations.png"
-            filename = info["relpos_plots_report_dir"] + r"/" + fig_name
+            outpath = info["relpos_plots_report_dir"] / fig_name
             if info["short_names"] is True:
-                filename = info["short_relpos_plots_report_dir"] + r"/" + fig_name
+                outpath = info["short_relpos_plots_report_dir"] / fig_name
             draw_2col_2d_scatter_plot(
-                xyzcolour_values, title, filename, "X (nm)", "Z (nm)", info, axes=(0, 2)
+                xyzc_values, title, outpath, "X", "Z", info, axes=(0, 2)
             )
 
             title = "Scatter plot of localisations in YZ"
             fig_name = r"scatter_plot_yz_localisations.png"
-            filename = info["relpos_plots_report_dir"] + r"/" + fig_name
+            outpath = info["relpos_plots_report_dir"] / fig_name
             if info["short_names"] is True:
-                filename = info["short_relpos_plots_report_dir"] + r"/" + fig_name
+                outpath = info["short_relpos_plots_report_dir"] / fig_name
             draw_2col_2d_scatter_plot(
-                xyzcolour_values, title, filename, "X (nm)", "Z (nm)", info, axes=(1, 2)
+                xyzc_values, title, outpath, "X", "Z", info, axes=(1, 2)
             )
 
     # Zoomed-in xy-plot
     if zoom > 0:  # FIX ZOOM!!!!!
         # Find total data ranges, zoom area and data subset
-        x_range = np.max(xyzcolour_values[:, 0]) - np.min(xyzcolour_values[:, 0])
-        x_centre = np.min(xyzcolour_values[:, 0] + x_range / 2)
-        y_range = np.max(xyzcolour_values[:, 1]) - np.min(xyzcolour_values[:, 1])
-        y_centre = np.min(xyzcolour_values[:, 1] + y_range / 2)
+        x_range = np.max(xyzc_values[:, 0]) - np.min(xyzc_values[:, 0])
+        x_centre = np.min(xyzc_values[:, 0] + x_range / 2)
+        y_range = np.max(xyzc_values[:, 1]) - np.min(xyzc_values[:, 1])
+        y_centre = np.min(xyzc_values[:, 1] + y_range / 2)
 
         zoomed_xmin = x_centre - x_range / zoom / 2
         zoomed_xmax = x_centre + x_range / zoom / 2
@@ -123,7 +121,7 @@ def draw_2d_scatter_plots(xyzcolour_values, dims, info, zoom):  # xyz_values
         zoomed_ymax = y_centre + y_range / zoom / 2
 
         # Filter in x and y
-        zoomed_xyzc = xyzcolour_values[xyzcolour_values[:, 0] > zoomed_xmin]
+        zoomed_xyzc = xyzc_values[xyzc_values[:, 0] > zoomed_xmin]
         zoomed_xyzc = zoomed_xyzc[zoomed_xyzc[:, 0] < zoomed_xmax]
         zoomed_xyzc = zoomed_xyzc[zoomed_xyzc[:, 1] > zoomed_ymin]
         zoomed_xyzc = zoomed_xyzc[zoomed_xyzc[:, 1] < zoomed_ymax]
@@ -134,38 +132,36 @@ def draw_2d_scatter_plots(xyzcolour_values, dims, info, zoom):  # xyz_values
             )
         )
         fig_name = r"scatter_plot_xy_localisations_x" + str(zoom) + ".png"
-        filename = info["relpos_plots_report_dir"] + r"/" + fig_name
+        outpath = info["relpos_plots_report_dir"] / fig_name
         if info["short_names"] is True:
-            filename = info["short_relpos_plots_report_dir"] + r"/" + fig_name
-        draw_2col_2d_scatter_plot(
-            zoomed_xyzc, title, filename, "X (nm)", "Y (nm)", info
-        )
+            outpath = info["short_relpos_plots_report_dir"] / fig_name
+        draw_2col_2d_scatter_plot(zoomed_xyzc, title, outpath, "X", "Y", info)
 
         # if dims == 3:
         # title = "Scatter Plot of XZ Locations: Center with Zoom of x{:d}".format(zoom)
         # fig_name = r'scatter_plot_xz_locations_x'+str(zoom)+'.png'
-        # filename = info['results_dir']+r'/'+fig_name
+        # outpath = info['results_dir']+r'/'+fig_name
         # draw_2d_scatter_plot(x_values_masked, z_values_masked,
-        #                    title, filename, 'x (nm)', 'z (nm)')
+        #                    title, outpath, 'x', 'z')
 
         # title = "Scatter Plot of YZ Locations: Center with Zoom of x{:d}".format(zoom)
         # fig_name = r'scatter_plot_yz_locations_x'+str(zoom)+'.png'
-        # filename = info['results_dir']+r'/'+fig_name
+        # outpath = info['results_dir']+r'/'+fig_name
         # draw_2d_scatter_plot(y_values_masked, z_values_masked,
-        #                     title, filename, 'y (nm)', 'z (nm)')
+        #                     title, outpath, 'y', 'z')
 
 
 def draw_2col_2d_scatter_plot(
-    xyzcolour_values, title, filename, x_label, y_label, info, axes=(0, 1)
+    xyzc_values, title, outpath, x_label, y_label, info, axes=(0, 1)
 ):
     """Creates a scatter plot and saves it to a .png file.
 
     Args:
-        xyzcolour_values (numpy array): xy(and z)-coordinates of the
+        xyzc_values (numpy array): xy(and z)-coordinates of the
             localizations (first 2 or 3 columns)
-            and their colour channels (final column).
+            and their acquisition channels (final column).
         title (str): the text string that has the title for the plot.
-        filename (str): The output file has all the text of the input
+        outpath (pathlib.Path): The output filename has all the text of the input
             file plus some more information so it is easy to recognise which
             it has been derived from.
         info (dict): A python dictionary containing a collection of useful parameters
@@ -176,26 +172,28 @@ def draw_2col_2d_scatter_plot(
        Nothing is returned.
     """
     fig, ax = plt.subplots(figsize=(10, 8), dpi=200, facecolor="w", edgecolor="k")
-    if info["colours_analysed"] is None:
-        ax.scatter(xyzcolour_values[:, axes[0]], xyzcolour_values[:, axes[1]], s=1)
+    if info["channels_analysed"] is None:
+        ax.scatter(xyzc_values[:, axes[0]], xyzc_values[:, axes[1]], s=1)
     else:
         scatterplot = ax.scatter(
-            xyzcolour_values[:, axes[0]],
-            xyzcolour_values[:, axes[1]],
-            c=xyzcolour_values[:, -1],
+            xyzc_values[:, axes[0]],
+            xyzc_values[:, axes[1]],
+            c=xyzc_values[:, -1],
             s=1,
         )
         legend = ax.legend(
             *scatterplot.legend_elements(), loc="upper right", title="Channel"
         )
         ax.add_artist(legend)
-    ax.set_title(title)
+    ax.set_title(f'{info["in_file_no_extension"]}\n{title}')
     ax.set_xlabel(x_label, {"fontsize": "14"})
     ax.set_ylabel(y_label, {"fontsize": "14"})
     # options on scaling are here
     # https://matplotlib.org/devdocs/api/_as_gen/matplotlib.axes.Axes.set_aspect.html
     ax.axis("scaled")
-    fig.savefig(filename, bbox_inches="tight")
+    fig.savefig(outpath, bbox_inches="tight")
+
+    plt.close(fig)
 
 
 def find_thresholds(arr, zoom):
@@ -380,31 +378,32 @@ def plot_histogram(
     )
     axes = fig_hist.add_subplot(111)
 
-    # Set up filename
-    fig_name_base = (
-        r"histogram_" + data_description.replace(" ", "_") + r"_separation_in_nm"
-    )
+    # Set up output path
+    fig_name_base = r"histogram_" + data_description.replace(" ", "_") + r"_separation"
     # Include potential standardisation of histogram
     if standardise is not None:
         fig_name_base = fig_name_base + "_" + standardise + "_standardised"
     fig_name = fig_name_base + ".png"
-    filename = info["relpos_plots_report_dir"] + r"/" + fig_name
+    outpath = info["relpos_plots_report_dir"] / fig_name
     if info["short_names"] is True:
-        filename = info["short_relpos_plots_report_dir"] + r"/" + fig_name
+        outpath = info["short_relpos_plots_report_dir"] / fig_name
 
     # Title and axis labels
-    title = r"Distance histogram of " + data_description.upper() + r" separations"
+    title = (
+        f'{info["in_file_no_path"]}\n'
+        + f"Distance histogram of {data_description.upper()} separations"
+    )
     if standardise is not None:
         title = title + ", " + standardise + " standardised"
 
     plt.title(title)
 
-    plt.xlabel(data_description.upper() + r" separation (nm)")
+    plt.xlabel(data_description.upper() + r" separation (input units)")
     plt.ylabel("Counts")
     if standardise == "2d":
-        plt.ylabel("Counts / distance (nm)")
+        plt.ylabel("Counts / distance (input units)")
     if standardise == "3d":
-        plt.ylabel("Counts / distance ^ 2 (nm ^ 2)")
+        plt.ylabel("Counts / distance ^ 2 (inputs units ^ 2)")
 
     # Get histogram count values and bin positions
     bin_heights, bin_edges = np.histogram(data_values[data_values < filterdist], bins)
@@ -433,8 +432,9 @@ def plot_histogram(
         color="lightgrey",
     )
 
-    fig_hist.savefig(filename, bbox_inches="tight")
+    fig_hist.savefig(outpath, bbox_inches="tight")
     # fig_hist.show()
+    plt.close(fig_hist)
 
     # Save histogram data
     histo_name_base = r"histogram_" + data_description.replace(" ", "_")
@@ -442,9 +442,9 @@ def plot_histogram(
     if standardise is not None:
         histo_name_base = histo_name_base + "_" + standardise + "_standardised"
     histo_name = histo_name_base + r".csv"
-    filename1 = info["relpos_plots_report_dir"] + r"/" + histo_name
+    outpath1 = info["relpos_plots_report_dir"] / histo_name
     if info["short_names"] is True:
-        filename1 = info["short_relpos_plots_report_dir"] + r"/" + histo_name
+        outpath1 = info["short_relpos_plots_report_dir"] / histo_name
 
     data_values = pd.concat(
         [pd.DataFrame(bin_heights), pd.DataFrame(bin_edges)], axis=1
@@ -453,10 +453,13 @@ def plot_histogram(
     head = "normalised probability density,bin edges"
 
     try:
-        np.savetxt(filename1, data_values, delimiter=",", header=head, comments="")
+        np.savetxt(outpath1, data_values, delimiter=",", header=head, comments="")
     except (EOFError, IOError, OSError):
         print("Unexpected error:", sys.exc_info()[0])
-        sys.exit("Could not create and open the output data file.")
+        sys.exit(
+            "Could not create and open the output data file for saving the "
+            f"histogram data:\n{outpath1}"
+        )
 
     return bin_heights
 
@@ -559,17 +562,17 @@ def estimate_rpd_churchman_2d(input_distances, calculation_points, combined_prec
 
 def create_histogram_3d(rel_pos_xyz, filterdist, smoothing=None):
     """Generates a 3D histogram of relative positions among localisations,
-    in bins of 1 nm^3.
+    in bins of (input unit)^3.
 
     Args:
         rel_pos_xyz (numpy array):
             At least three columns, where the first three columns are
-            X, Y, Z coordinates of relative positions (nm).
+            X, Y, Z coordinates of relative positions.
         filterdist (int):
-            The maximum distance (nm) in X, Y and Z upto which the histogram
+            The maximum distance in X, Y and Z upto which the histogram
             should be generated.
         smoothing (float):
-            Kernel size (SD, in nm) for isotropic 3D Gaussian smoothing
+            Kernel size (SD) for isotropic 3D Gaussian smoothing
             of the histogram.
 
     Returns:
@@ -587,7 +590,7 @@ def create_histogram_3d(rel_pos_xyz, filterdist, smoothing=None):
         smoothing_choice = input("").lower()
         print("")
         if smoothing_choice.startswith("y"):
-            print("Please provide the SD (in nm)")
+            print("Please provide the SD")
             smoothing = float(input(" for the Gaussian smoothing kernel: "))
         else:
             print("Ok, no smoothing.")
@@ -615,12 +618,13 @@ def save_tiff_histogram_3d(rel_pos_xyz, filterdist, smoothing=None):
     Args:
         rel_pos_xyz (numpy array):
             At least three columns, where the first three columns are
-            X, Y, Z coordinates of relative positions (nm).
+            X, Y, Z coordinates of relative positions
+            (units as in the original input point cloud data).
         filterdist (int):
-            The maximum distance (nm) in X, Y and Z upto which the histogram
+            The maximum distance in X, Y and Z upto which the histogram
             should be generated.
         smoothing (float):
-            Kernel size (SD, in nm) for isotropic 3D Gaussian smoothing
+            Kernel size (SD) for isotropic 3D Gaussian smoothing
             of the histogram.
 
     Returns:
@@ -674,7 +678,7 @@ def plot_histogram_with_curves(
         axes.plot(x_values, curve_values[i], label=line_label)
 
     plt.title("5-fold to 11-fold fits", fontsize=14, color="black")
-    plt.xlabel("XY separation (nm)", fontsize=14, color="black")
+    plt.xlabel("XY separation (input data units)", fontsize=14, color="black")
     plt.ylabel("Counts (scaled)", fontsize=14, color="black")
 
     plt.legend()

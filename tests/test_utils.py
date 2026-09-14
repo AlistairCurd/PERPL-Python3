@@ -21,6 +21,7 @@ specific language governing permissions and limitations under the License.
 """
 
 import unittest
+from pathlib import Path
 
 import perpl.io.utils as ut
 
@@ -811,10 +812,10 @@ class TestPrimaryFilenameAndPathSetup(unittest.TestCase):
         info["filter_dist"] = 200
         info["zoom"] = 10
         info["verbose"] = True
-        info["in_file_and_path"] = (
+        info["input_path"] = Path(
             "/localhome/joanna/PERPL_data/Nup107_SNAP_3D" "_GRROUPED_10nmZprec.csv"
         )
-        info["colours_analysed"] = None
+        info["channels_analysed"] = None
         info["nns"] = 0
         info["bin_size"] = 1
 
@@ -826,17 +827,19 @@ class TestPrimaryFilenameAndPathSetup(unittest.TestCase):
         result4 = info["short_results_dir"]
         result5 = info["short_filename_without_extension"]
 
-        self.assertIn(
+        self.assertEqual(
             result1,
-            "/localhome/joanna/PERPL_data/PERPL/"
-            "rel_posns_filter200_2D_bin1_2019-11-07_15-49-55",
+            Path(
+                "/localhome/joanna/PERPL_data/PERPL_filter200_2D_bin1_2019-11-07_15-49-55"
+            ),
         )
         self.assertIn(result2, "Nup107_SNAP_3D_GRROUPED_10nmZprec")
         self.assertIn(result3, "Nup107_SNAP_3D_GRROUPED_10nmZprec.csv")
-        self.assertIn(
-            result4, "/localhome/joanna/PERPL_data/PERPL/rel_posns_f200_2D_b1"
+        self.assertEqual(
+            result4,
+            Path("/localhome/joanna/PERPL_data/PERPL_f200_2D_b1"),
         )
-        self.assertIn(result5, "Nup107")
+        self.assertIn("Nup107", result5)
 
 
 class TestSecondaryFilenameAndPathSetup(unittest.TestCase):
@@ -865,7 +868,7 @@ class TestSecondaryFilenameAndPathSetup(unittest.TestCase):
         info["filter_dist"] = 200
         info["zoom"] = 10
         info["verbose"] = True
-        info["in_file_and_path"] = (
+        info["input_path"] = (
             "/localhome/joanna/PERPL_data/PERPL_relative"
             "_positions/Nup107_SNAP_3D_GRROUPED_10nmZprec/"
             "filter_200_2019-11-07_15-49-55"

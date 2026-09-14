@@ -29,19 +29,20 @@ CONDITIONS OF ANY KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
 """
 
-import os
-import sys
-import platform
 import datetime
+import os
+import platform
+import sys
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
-from scipy.optimize import curve_fit
-import numpy as np
+
 import matplotlib.pyplot as plt
-from perpl.modelling.background_models import exponential_decay_1d_pair_corr as expo_bg
-from perpl.modelling.modelling_general import pairwise_correlation_1d
-from perpl.modelling.modelling_general import stdev_of_model
+import numpy as np
+from scipy.optimize import curve_fit
+
 from perpl.io.utils import find_hostname_and_ip
+from perpl.modelling.background_models import exponential_decay_1d_pair_corr as expo_bg
+from perpl.modelling.modelling_general import pairwise_correlation_1d, stdev_of_model
 
 
 def get_input(info):
@@ -98,7 +99,7 @@ def get_input(info):
         sys.exit("The input file " + infile + " has the wrong format.\n")
 
     info["results_dir"] = results_dir
-    info["in_file_and_path"] = infile
+    info["input_path"] = infile
     info["in_file_no_extension"] = filename_without_extension
     info["in_file_no_path"] = in_file_no_path
 
@@ -163,14 +164,15 @@ def log_file_header(log_file, info):
         log_file.write("Python " + platform.version() + " and Anaconda, Inc.")
     else:
         log_file.write("Python " + platform.version())
-    #    log_file.write('\n\nPython {0} and {1}'.format((platform.version).split('|')[0],\
+    #    log_file.write('\n\nPython {0} and {1}'
+    #                   .format((platform.version).split('|')[0],\
     #                   (sys.version).split('|')[1]))
 
     log_file.write("\nnumpy version is: " + np.__version__)
     # log_file.write('\nMatplotlib version is: '+plt.__version__)
     # log_file.write('\nScipy version is: '+scipy.__version__)
 
-    log_file.write("\n\nInput file: " + info["in_file_and_path"] + "\n")
+    log_file.write("\n\nInput file: " + info["input_path"] + "\n")
 
     # log_file.write('This files contains '+str(info['values'])+' locs with '\
     #               +str(info['columns'])+' columns.\n')

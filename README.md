@@ -78,6 +78,8 @@ The following commands are available:
 
 * `relpos`/relative_positions.py generates the set of 2D/3D relative positions, plots of distance histograms and an HTML report.
 
+  `relpos` can also be given a directory location as input, in which case it will generate this output for all suitable input files in the directory.
+
   Here is one of the distance histograms for data from a nuclear pore complex protein (located around a ring of approx. 100 nm diameter):
 
   ![Example](images/histogram_xy_separation_in_nm_300.png)
