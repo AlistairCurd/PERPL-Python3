@@ -1,0 +1,5 @@
+other,xnm,znm,chan,ynm,extra
+a,0,3,chan 0,0,b
+a,1,0,chan 0,2,b
+a,0,0,chan 1,0,b
+a,1,3,chan 1,2,b
