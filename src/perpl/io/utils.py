@@ -371,7 +371,7 @@ def parse_relpos_cli_inputs(prog: str, description: str):
         type=str,
         help="Path to localisations file or folder containing these files. "
         "They are .csv (or .txt "
-        "with comma delimiters) or .npy and containing N "
+        "with comma delimiters) tables containing N "
         "localisations in N rows.",
     )
 

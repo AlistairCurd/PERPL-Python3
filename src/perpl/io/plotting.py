@@ -700,7 +700,6 @@ def plot_rot_2d_geometry(sym, diameter, info):
                      parameters such as the filenames and paths.
     Returns:
         nothing
-
     """
 
     # small_font = 6

@@ -165,8 +165,8 @@ def get_inputs(info):
 
     # Find input file.
     print(
-        "\n\nPlease select a localisations file. This should be a .csv "
-        "(or .txt with comma delimiters) or .npy, containing one "
+        "\n\nPlease select a localisations file. This should be a .csv table "
+        "(or .txt with comma delimiters), containing one "
         "localisation per row."
         "\nThe first two or three columns, assumed to be X and Y "
         "(and Z, if 3D is chosen later), will be used for analysis.\n"
@@ -253,7 +253,6 @@ def get_inputs(info):
         )
 
     except ValueError:
-        print("This must be an integer.\n")
         sys.exit("The number of nearest neighbours must be an integer.\n")
 
     if nns == 0:
@@ -323,14 +322,7 @@ def read_data_in(info):
     if not os.path.exists(in_file):
         sys.exit("ERROR; The input file does not exist.")
 
-    if in_file.name[-4:] == ".npy":
-        try:
-            xyzc_values = np.load(in_file)
-        except (EOFError, IOError, OSError) as exception:
-            print("\n\nCould not read file: ", in_file)
-            print("\n\n", type(exception))
-            sys.exit("Could not read the input file " + in_file + ".\n")
-    elif in_file.name[-4:] == ".csv" or in_file.name[-4:] == ".txt":
+    if in_file.name[-4:] == ".csv" or in_file.name[-4:] == ".txt":
         try:
             # Check whether a text header is present and set up for pandas reading
             with open(in_file, encoding="utf-8") as f:
@@ -389,7 +381,7 @@ def read_data_in(info):
             sys.exit("Could not read the input file " + in_file + ".\n")
     else:
         xyzc_values = None
-        print(f"Skipping {in_file} (not .csv, .txt or .npy)...")
+        print(f"Skipping {in_file} (not .csv or .txt)...")
         return xyzc_values
 
     info["values"] = xyzc_values.shape[0]
