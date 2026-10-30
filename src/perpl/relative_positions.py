@@ -309,12 +309,15 @@ def read_data_in(info):
     with info for later use.
 
     Args:
-        info (dict): A python dictionary containing a collection of useful parameters
+        info (dict):
+            A python dictionary containing a collection of useful parameters
             such as the filenames and paths.
             This dictionary is modified to contain information about the data read
             during the function.
     Returns:
         xyzc_values (numpy array): A numpy array of the x, y (and z) localisations.
+        xyzc_df (pandas DataFrame):
+            A dataframe of x, y(, z) and channel for the localisations.
     """
 
     in_file = info["input_path"]
@@ -342,15 +345,15 @@ def read_data_in(info):
                         )
 
             # Read!
-            xyzc_df = pd.read_csv(in_file, header=header_mode, index_col=False)
+            in_df = pd.read_csv(in_file, header=header_mode, index_col=False)
 
             # Convert to numpy array with columns in expected places (channel last)
             if info["xcol"] is None:
-                xyzc_values = xyzc_df.iloc[:, 0 : info["dims"]].to_numpy()
+                xyzc_values = in_df.iloc[:, 0 : info["dims"]].to_numpy()
             elif info["dims"] == 2:
-                xyzc_values = xyzc_df[[info["xcol"], info["ycol"]]].to_numpy()
+                xyzc_values = in_df[[info["xcol"], info["ycol"]]].to_numpy()
             elif info["dims"] == 3:
-                xyzc_values = xyzc_df[
+                xyzc_values = in_df[
                     [info["xcol"], info["ycol"], info["zcol"]]
                 ].to_numpy()
             else:
@@ -361,9 +364,9 @@ def read_data_in(info):
             # Add channel column if required
             if info["channels_analysed"] is not None:
                 if info["ccol"] is None:
-                    col_values = xyzc_df.iloc[:, -1].to_numpy()[:, np.newaxis]
+                    col_values = in_df.iloc[:, -1].to_numpy()[:, np.newaxis]
                 else:
-                    col_values = xyzc_df[[info["ccol"]]].to_numpy()
+                    col_values = in_df[[info["ccol"]]].to_numpy()
 
                 # Stop if channels are not all numbers
                 if isinstance(col_values[0][0], str):

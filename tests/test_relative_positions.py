@@ -24,6 +24,7 @@ specific language governing permissions and limitations under the License.
 import unittest
 
 import numpy as np
+import pandas as pd
 
 import perpl.relative_positions as rp
 
@@ -50,6 +51,14 @@ def make_test_grid_2chan_2d():
             [3.0, 3.0, 1],
         ]
     )
+
+
+def make_test_grid_2chan_2d_df():
+    """
+    Create dataframe for testing calculations on two-channel, 2D data (xyc).
+    """
+    array = make_test_grid_2chan_2d()
+    return pd.DataFrame(array, columns=["x", "y", "channel"])
 
 
 class TestGetdistances(unittest.TestCase):
