@@ -323,7 +323,7 @@ def read_data_in(info: dict):
     in_file = info["input_path"]
 
     if not os.path.exists(in_file):
-        sys.exit("ERROR; The input file does not exist.")
+        sys.exit(f"ERROR: {in_file} does not exist.")
 
     if in_file.name[-4:] != ".csv" and in_file.name[-4:] != ".txt":
         # xyzc_values = None
@@ -349,7 +349,7 @@ def read_data_in(info: dict):
                 except ValueError:
                     if isinstance(cell, str):
                         sys.exit(
-                            "You gave no --xcol or --ycol, but there is a non-numeric"
+                            "You gave no -xcol or -ycol, but there is a non-numeric"
                             " value at the start of at least one of the first two"
                             " columns."
                             "\nIf there are column headers in your input file,"
@@ -371,26 +371,28 @@ def read_data_in(info: dict):
         if info["channels_analysed"] is not None and info["ccol"] is None:
             info["ccol"] = xyzc_df.columns[-1]
 
-    info["values"] = xyzc_df.shape[0]
-    info["columns"] = xyzc_df.shape[1]
-    info["total_values"] = xyzc_df.shape[0]
-    info["total_columns"] = xyzc_df.shape[1]
+        info["values"] = xyzc_df.shape[0]
+        info["columns"] = xyzc_df.shape[1]
+        info["total_values"] = xyzc_df.shape[0]
+        info["total_columns"] = xyzc_df.shape[1]
 
-    # Get the unique channel numbers in use
-    if info["channels_analysed"] is not None:
-        # info["unique_channel_values"] = np.unique(xyzc_values[:, -1])
-        info["unique_channel_values"] = xyzc_df[info["ccol"]].unique()
-        if len(info["unique_channel_values"]) > 100:
-            sys.exit(
-                f'\nThere are {len(info["unique_channel_values"])} unique values'
-                + " (channel values) in the channel column of your data.\n"
-                "\nExiting because these are unlikely to be the correct channel values."
-                "\nIf you have a named channel column in your data, try using it "
-                "as an argument to the relpos command (type relpos -h for information)."
-            )
-        # Print channel options if not specified in shell command arguments.
-        if info["start_channel"] is None:
-            print(f'\nThe channels present are: {info["unique_channel_values"]}')
+        # Get the unique channel numbers in use
+        if info["channels_analysed"] is not None:
+            # info["unique_channel_values"] = np.unique(xyzc_values[:, -1])
+            info["unique_channel_values"] = xyzc_df[info["ccol"]].unique()
+            if len(info["unique_channel_values"]) > 100:
+                sys.exit(
+                    f'\nThere are {len(info["unique_channel_values"])} unique values'
+                    " (channel values) in the channel column of your data.\n"
+                    "\nExiting because these are unlikely to be the correct channel"
+                    " values."
+                    "\nIf you have a named channel column in your data, try using it "
+                    "as an argument to the relpos command"
+                    " (type relpos -h for information)."
+                )
+            # Print channel options if not specified in shell command arguments.
+            if info["start_channel"] is None:
+                print(f'\nThe channels present are: {info["unique_channel_values"]}')
 
     return xyzc_df
 
@@ -437,8 +439,8 @@ def choose_channels(info):
         end_channel = None
 
     if info["channels_analysed"] == 2:
-        start_channel = float(input("Which channel do you want to measure FROM? "))
-        end_channel = float(input("Which channel do you want to measure TO? "))
+        start_channel = input("Which channel do you want to measure FROM? ")
+        end_channel = input("Which channel do you want to measure TO? ")
         if start_channel == end_channel:
             sys.exit(
                 "Measuring from and to the same channel is not supported through this "
@@ -974,8 +976,8 @@ def main():
 
         # GET THE INPUT LOCALISATIONS with possible colour/other channels
         read_start = timeit.default_timer()
-        xyzc_values = read_data_in(info)
-        if xyzc_values is None:
+        xyzc_df = read_data_in(info)
+        if xyzc_df is None:
             continue
         read_end = timeit.default_timer()
         reading_time = (read_end - read_start) / 60
@@ -1006,11 +1008,11 @@ def main():
         set_up_output_paths(info, plots_report_dir=True)
 
         # GET RELATIVE POSITIONS!
-        d_values = getdistances_allchanoptions(xyzc_values, info)
+        d_values = getdistances_allchanoptions(xyzc_df, info)
 
         # Draw scatterplot and zoomed region
-        plotting.draw_2d_scatter_plots(xyzc_values, info["dims"], info, 0)
-        plotting.draw_2d_scatter_plots(xyzc_values, info["dims"], info, info["zoom"])
+        plotting.draw_2d_scatter_plots(xyzc_df, info["dims"], info, 0)
+        plotting.draw_2d_scatter_plots(xyzc_df, info["dims"], info, info["zoom"])
 
         # Get distances in 2D and 3D for relative positions.
         # Note, get_vectors() is an unhelpful name as it takes
