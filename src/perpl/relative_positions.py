@@ -43,6 +43,7 @@ from tkinter.filedialog import askopenfilename
 
 import numpy as np
 import pandas as pd
+from pandas import DataFrame
 from scipy import spatial
 
 from perpl.io import plotting, reports, utils
@@ -687,16 +688,17 @@ def getdistances_two_channels(
     return loc_pairs, separation_values
 
 
-def getdistances_allchanoptions(xyzc_values: np.ndarray, info: dict) -> np.ndarray:
+def getdistances_allchanoptions(xyzc_df: DataFrame, info: dict) -> np.ndarray:
     """
     Calculate the relative positions between points in the selected channels.
     Will use the single- or two-channel calculation according to the input selection.
 
     Parameters
     ----------
-    xyzc_values : Numpy array
-        Point data table, one row per data, including spatial coordinates in first
-        columns (x, y and possibly z) and channel values in final column if present.
+    xyzc_df: pandas DataFrame
+        Localisations dataframe, one row per point,
+        including at least spatial coordinates x, y and possibly z
+        and channel values if present.
     info : dict
         Dictionary of parameters for data selection, analysis and output.
 
@@ -707,29 +709,27 @@ def getdistances_allchanoptions(xyzc_values: np.ndarray, info: dict) -> np.ndarr
         number of nearest neighbours and channels selected.
         One relative position per row.
     """
+    # xy(z):
+    xyz_values = xyzc_df[[info["xcol"], info["ycol"]]].to_numpy()
+    if info["dims"] == 3:
+        xyz_values = np.hstack(xyz_values, xyzc_df[info["zcol"]])
+
     # Single-channel, all localisations
     if info["channels_analysed"] is None:
-        xyz_values = xyzc_values[:, 0 : info["dims"]]
         d_values = getdistances(
             xyz_values, info["filter_dist"], info["nns"], verbose=info["verbose"]
         )[1]
 
     elif info["channels_analysed"] == 1:
-        xyz_values = xyzc_values[:, 0 : info["dims"]][
-            xyzc_values[:, -1] == info["start_channel"]
-        ]
+        xyz_values = xyz_values[xyzc_df[info["ccol"]] == info["start_channel"]]
         d_values = getdistances(
             xyz_values, info["filter_dist"], info["nns"], verbose=info["verbose"]
         )[1]
 
     # For two channels
     elif info["channels_analysed"] == 2:
-        xyz_values_start = xyzc_values[:, 0 : info["dims"]][
-            xyzc_values[:, -1] == info["start_channel"]
-        ]
-        xyz_values_end = xyzc_values[:, 0 : info["dims"]][
-            xyzc_values[:, -1] == info["end_channel"]
-        ]
+        xyz_values_start = xyz_values[xyzc_df[info["ccol"]] == info["start_channel"]]
+        xyz_values_end = xyz_values[xyzc_df[info["ccol"]] == info["end_channel"]]
         d_values = getdistances_two_channels(
             xyz_values_start,
             info["filter_dist"],

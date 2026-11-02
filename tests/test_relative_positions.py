@@ -283,7 +283,7 @@ class TestGetdistances_AllChanOptions(unittest.TestCase):
         Test getdistances_allchanoptions() when data has two different channel values
         and relative positions are requested within one channel.
         """
-        input_data = make_test_grid_2chan_2d()
+        input_data = make_test_grid_2chan_2d_df()
         info = {
             "channels_analysed": 1,
             "dims": 2,
@@ -291,6 +291,9 @@ class TestGetdistances_AllChanOptions(unittest.TestCase):
             "nns": 0,
             "start_channel": 0,
             "verbose": False,
+            "xcol": "x",
+            "ycol": "y",
+            "ccol": "channel",
         }
         expected_result = np.array(
             [
@@ -314,15 +317,18 @@ class TestGetdistances_AllChanOptions(unittest.TestCase):
         Test getdistances_allchanoptions() when data has two different channel values
         and relative positions are requested between the channels.
         """
-        input_data = make_test_grid_2chan_2d()
+        input_data = make_test_grid_2chan_2d_df()
         info = {
             "channels_analysed": 2,
             "dims": 2,
             "filter_dist": 10,
             "nns": 0,
+            "ccol": "channel",
             "start_channel": 0,
             "end_channel": 1,
             "verbose": False,
+            "xcol": "x",
+            "ycol": "y",
         }
         expected_result = np.array(
             [
@@ -382,15 +388,18 @@ class TestGetdistances_AllChanOptions(unittest.TestCase):
         and relative positions to the nearest neighbour
         are requested between the channels.
         """
-        input_data = make_test_grid_2chan_2d()
+        input_data = make_test_grid_2chan_2d_df()
         info = {
             "channels_analysed": 2,
             "dims": 2,
             "filter_dist": 10,
             "nns": 1,
+            "ccol": "channel",
             "start_channel": 0,
             "end_channel": 1,
             "verbose": False,
+            "xcol": "x",
+            "ycol": "y",
         }
         expected_result = np.array(
             [[1.0, 1.0], [1.0, -1.0], [0.0, 0.0], [-1.0, 1.0], [-1.0, -1.0]]
