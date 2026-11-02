@@ -505,3 +505,33 @@ def parse_relpos_cli_inputs(prog: str, description: str):
     )
 
     return parser.parse_args()
+
+
+def standardise_channel(input_ch):
+    """
+    Transforms numbers and strings to a standard string:
+    0.0 -> "0"
+    0 -> "0"
+    "0" -> "0",
+    "0.0" -> "0",
+    1.0 -> "1",
+    2.2 -> "2.2",
+    " AF647 " -> "AF647",
+    "marker 1" -> "marker 1"
+
+    This will help to reconcile data reading quirks and command line input.
+
+    Args:
+        input_ch (str, int or float):
+            Input channel index
+
+    Returns:
+        Standardised channel name (str)
+    """
+    try:
+        f = float(input_ch)
+        if f.is_integer():
+            return str(int(f))
+        return str(f)
+    except (ValueError, TypeError):
+        return str(input_ch).strip()

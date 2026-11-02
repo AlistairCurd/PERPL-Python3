@@ -371,6 +371,9 @@ def read_data_in(info: dict):
         if info["channels_analysed"] is not None and info["ccol"] is None:
             info["ccol"] = xyzc_df.columns[-1]
 
+        # Cast channel values to strings help match with CLI
+        xyzc_df[info["ccol"]] = xyzc_df[info["ccol"]].map(utils.standardise_channel)
+
         info["values"] = xyzc_df.shape[0]
         info["columns"] = xyzc_df.shape[1]
         info["total_values"] = xyzc_df.shape[0]
@@ -378,7 +381,6 @@ def read_data_in(info: dict):
 
         # Get the unique channel numbers in use
         if info["channels_analysed"] is not None:
-            # info["unique_channel_values"] = np.unique(xyzc_values[:, -1])
             info["unique_channel_values"] = xyzc_df[info["ccol"]].unique()
             if len(info["unique_channel_values"]) > 100:
                 sys.exit(
@@ -393,6 +395,25 @@ def read_data_in(info: dict):
             # Print channel options if not specified in shell command arguments.
             if info["start_channel"] is None:
                 print(f'\nThe channels present are: {info["unique_channel_values"]}')
+            # Exit if chosen a channel not present
+            else:
+                if info["start_channel"] not in info["unique_channel_values"]:
+                    sys.exit(
+                        f"\"From\" channel {info['start_channel']} is not present"
+                        " in the data."
+                        "\nThe channels present are:"
+                        f" {info['unique_channel_values']}"
+                    )
+                if (
+                    info["end_channel"] is not None
+                    and info["end_channel"] not in info["unique_channel_values"]
+                ):
+                    sys.exit(
+                        f"\"To\" channel {info['end_channel']} is not present"
+                        " in the data."
+                        "\nThe channels present are:"
+                        f" {info['unique_channel_values']}"
+                    )
 
     return xyzc_df
 
@@ -435,7 +456,7 @@ def choose_channels(info):
 
     # Get the acquisition channel values.
     if info["channels_analysed"] == 1:
-        start_channel = float(input("Which channel do you want to analyse? "))
+        start_channel = input("Which channel do you want to analyse? ")
         end_channel = None
 
     if info["channels_analysed"] == 2:
