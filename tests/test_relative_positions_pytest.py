@@ -110,7 +110,7 @@ def test_read_data_in_named_columns(
 
 def test_read_non_numeric_first_columns_without_xcol(info_def_col_posns: dict):
     info = info_def_col_posns
-    with pytest.raises(SystemExit, match="gave no --xcol"):
+    with pytest.raises(SystemExit, match="gave no -xcol"):
         rp.read_data_in(info)
 
 
