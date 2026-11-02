@@ -372,7 +372,9 @@ def parse_relpos_cli_inputs(prog: str, description: str):
         help="Path to localisations file or folder containing these files. "
         "They are .csv (or .txt "
         "with comma delimiters) tables containing N "
-        "localisations in N rows.",
+        "localisations in N rows. "
+        "If column names are not provided in other arguments, we assume that the first "
+        "row is the first localisation.",
     )
 
     parser.add_argument(
@@ -398,7 +400,9 @@ def parse_relpos_cli_inputs(prog: str, description: str):
         type=str,
         default=None,
         help="Name of the column for x position in the localisation table, "
-        "if it has column names. If not provided, the first column (0) is used.",
+        "if it has column names. If not provided, we assume that there is no header "
+        "in the input file and the first row is the first localisation. "
+        "If not provided, the first column (0) is used as the x positions.",
     )
 
     parser.add_argument(

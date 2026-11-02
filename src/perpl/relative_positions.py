@@ -304,7 +304,7 @@ def get_inputs(info):
     info["verbose"] = silent
 
 
-def read_data_in(info):
+def read_data_in(info: dict):
     """Reads localisation data from a file. Also modifies the input dictionary
     with info for later use.
 
@@ -315,7 +315,7 @@ def read_data_in(info):
             This dictionary is modified to contain information about the data read
             during the function.
     Returns:
-        xyzc_values (numpy array): A numpy array of the x, y (and z) localisations.
+        # xyzc_values (numpy array): A numpy array of the x, y (and z) localisations.
         xyzc_df (pandas DataFrame):
             A dataframe of x, y(, z) and channel for the localisations.
     """
@@ -325,93 +325,74 @@ def read_data_in(info):
     if not os.path.exists(in_file):
         sys.exit("ERROR; The input file does not exist.")
 
-    if in_file.name[-4:] == ".csv" or in_file.name[-4:] == ".txt":
+    if in_file.name[-4:] != ".csv" and in_file.name[-4:] != ".txt":
+        # xyzc_values = None
+        xyzc_df = None
+        print(f"Skipping {in_file} (not .csv or .txt)...")
+        # return xyzc_values  # Returns anyway
+    else:  # With a file of the expected type:
         try:
-            # Check whether a text header is present and set up for pandas reading
+            # Check whether a text header is present
             with open(in_file, encoding="utf-8") as f:
                 line = f.readline()
-            for cell in line.split(","):
-                try:
-                    float(cell)
-                    header_mode = None
-                except ValueError:
-                    if isinstance(cell, str):
-                        header_mode = "infer"
-                        break
-                    else:
-                        sys.exit(
-                            f"The first line of the table in {in_file} "
-                            "cannot be read as numbers or strings."
-                        )
-
-            # Read!
-            in_df = pd.read_csv(in_file, header=header_mode, index_col=False)
-
-            # Convert to numpy array with columns in expected places (channel last)
-            if info["xcol"] is None:
-                xyzc_values = in_df.iloc[:, 0 : info["dims"]].to_numpy()
-            elif info["dims"] == 2:
-                xyzc_values = in_df[[info["xcol"], info["ycol"]]].to_numpy()
-            elif info["dims"] == 3:
-                xyzc_values = in_df[
-                    [info["xcol"], info["ycol"], info["zcol"]]
-                ].to_numpy()
-            else:
-                sys.exit(
-                    "Column labels were given and dimensions (dims) was not 2 or 3."
-                )
-
-            # Add channel column if required
-            if info["channels_analysed"] is not None:
-                if info["ccol"] is None:
-                    col_values = in_df.iloc[:, -1].to_numpy()[:, np.newaxis]
-                else:
-                    col_values = in_df[[info["ccol"]]].to_numpy()
-
-                # Stop if channels are not all numbers
-                if isinstance(col_values[0][0], str):
-                    sys.exit(
-                        "\nChannel values contain strings, "
-                        "which are currently unsupported."
-                    )
-
-                # Combine position and channel columns
-                xyzc_values = np.hstack((xyzc_values, col_values))
-
         except (EOFError, IOError, OSError) as exception:
             print("\n\nCould not read file: ", in_file)
             print("\n\n", type(exception))
             sys.exit("Could not read the input file " + in_file + ".\n")
-    else:
-        xyzc_values = None
-        print(f"Skipping {in_file} (not .csv or .txt)...")
-        return xyzc_values
 
-    info["values"] = xyzc_values.shape[0]
-    info["columns"] = xyzc_values.shape[1]
-    info["total_values"] = xyzc_values.shape[0]
-    info["total_columns"] = xyzc_values.shape[1]
+        # Expect no header if no column names given
+        # First row will be first localisation
+        if info["xcol"] is None:
+            for cell in line.split(",")[0:2]:
+                try:
+                    float(cell)
+                except ValueError:
+                    if isinstance(cell, str):
+                        sys.exit(
+                            "You gave no --xcol or --ycol, but there is a non-numeric"
+                            " value at the start of at least one of the first two"
+                            " columns."
+                            "\nIf there are column headers in your input file,"
+                            " please use them to specify the coordinate columns."
+                        )
+            header_mode = None
+        else:
+            header_mode = "infer"
+
+        # Read!
+        xyzc_df = pd.read_csv(in_file, header=header_mode, index_col=False)
+
+        # Prepare to use set column indices if no column information provided
+        if info["xcol"] is None:
+            info["xcol"] = xyzc_df.columns[0]
+            info["ycol"] = xyzc_df.columns[1]
+            if info["dims"] == 3:
+                info["zcol"] = xyzc_df.columns[2]
+        if info["channels_analysed"] is not None and info["ccol"] is None:
+            info["ccol"] = xyzc_df.columns[-1]
+
+    info["values"] = xyzc_df.shape[0]
+    info["columns"] = xyzc_df.shape[1]
+    info["total_values"] = xyzc_df.shape[0]
+    info["total_columns"] = xyzc_df.shape[1]
 
     # Get the unique channel numbers in use
     if info["channels_analysed"] is not None:
-        info["unique_channel_values"] = np.unique(xyzc_values[:, -1])
+        # info["unique_channel_values"] = np.unique(xyzc_values[:, -1])
+        info["unique_channel_values"] = xyzc_df[info["ccol"]].unique()
         if len(info["unique_channel_values"]) > 100:
             sys.exit(
-                "\nThere are "
-                + repr(len(info["unique_channel_values"]))
-                + " unique values (channel values) in the final column of your data.\n"
+                f'\nThere are {len(info["unique_channel_values"])} unique values'
+                + " (channel values) in the channel column of your data.\n"
                 "\nExiting because these are unlikely to be the correct channel values."
                 "\nIf you have a named channel column in your data, try using it "
                 "as an argument to the relpos command (type relpos -h for information)."
             )
         # Print channel options if not specified in shell command arguments.
         if info["start_channel"] is None:
-            print(
-                "\nThe channels present are: "
-                + repr(info["unique_channel_values"].tolist())
-            )
+            print(f'\nThe channels present are: {info["unique_channel_values"]}')
 
-    return xyzc_values
+    return xyzc_df
 
 
 def choose_channels(info):
