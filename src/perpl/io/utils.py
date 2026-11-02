@@ -434,7 +434,7 @@ def parse_relpos_cli_inputs(prog: str, description: str):
     parser.add_argument(
         "-from",
         dest="start_channel",
-        type=int,
+        type=str,
         default=None,
         help="Acquisition channel to measure FROM. "
         "Use to specify channel for single-channel data, "
@@ -444,7 +444,7 @@ def parse_relpos_cli_inputs(prog: str, description: str):
     parser.add_argument(
         "-to",
         dest="end_channel",
-        type=int,
+        type=str,
         default=None,
         help="Acquisition channel to measure TO. "
         "Use to specify channel for localisations to measure TO "
