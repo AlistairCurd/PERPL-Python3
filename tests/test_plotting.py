@@ -25,6 +25,7 @@ from unittest import mock
 
 import matplotlib
 import numpy as np
+import pandas as pd
 
 import perpl.io.plotting as plots
 
@@ -56,18 +57,25 @@ class TestDraw2dScatterPlot(unittest.TestCase):
 
         x_values = np.arange(10)
         y_values = np.linspace(0, 200, num=10)
+        df = pd.DataFrame({"x": x_values, "y": y_values})
         title = "2D Scatter Plot for Tests"
         filename = "./2dScatterTest.png"
         x_label = "X Label"
         y_label = "Y Label"
 
         plots.draw_2col_2d_scatter_plot(
-            np.column_stack((x_values, y_values)),
+            # np.column_stack((x_values, y_values)),
+            df,
             title,
             filename,
             x_label,
             y_label,
-            info={"channels_analysed": None, "in_file_no_extension": "input_name"},
+            info={
+                "xcol": "x",
+                "ycol": "y",
+                "channels_analysed": None,
+                "in_file_no_extension": "input_name",
+            },
         )
 
         x_values_dash = mock_scatter.call_args_list[0][0][0]

@@ -32,12 +32,14 @@ specific language governing permissions and limitations under the License.
 
 import math
 import sys
+from pathlib import Path
 from sys import platform as _platform
 
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from pandas import DataFrame
 from scipy.ndimage import gaussian_filter, gaussian_filter1d
 from tifffile import TiffWriter
 
@@ -67,12 +69,12 @@ if _platform == "darwin":
     matplotlib.use("MacOSX")
 
 
-def draw_2d_scatter_plots(xyzc_values, dims, info, zoom):  # xyz_values
+def draw_2d_scatter_plots(xyzc_df: DataFrame, dims: int, info: dict, zoom: int):
     """Farms out the scatter plots that need to be plotted to the
     draw_2d_scatter_plot function.
 
     Args:
-       xyz_values (numpy array): A numpy array of the localizations.
+       xyzc_df (pandas DataFrame): Localisations dataframe.
        dims (int): The dimensions of the data ie 2D or 3D.
        info (dict): A python dictionary containing a collection of useful parameters.
        zoom (int): A zoom of the central region can be created to this zoom factor.
@@ -86,7 +88,7 @@ def draw_2d_scatter_plots(xyzc_values, dims, info, zoom):  # xyz_values
         outpath = info["relpos_plots_report_dir"] / fig_name
         if info["short_names"] is True:
             outpath = info["short_relpos_plots_report_dir"] / fig_name
-        draw_2col_2d_scatter_plot(xyzc_values, title, outpath, "X", "Y", info)
+        draw_2col_2d_scatter_plot(xyzc_df, title, outpath, "X", "Y", info)
 
         if dims == 3:
             title = "Scatter plot of localisations in XZ"
@@ -94,26 +96,22 @@ def draw_2d_scatter_plots(xyzc_values, dims, info, zoom):  # xyz_values
             outpath = info["relpos_plots_report_dir"] / fig_name
             if info["short_names"] is True:
                 outpath = info["short_relpos_plots_report_dir"] / fig_name
-            draw_2col_2d_scatter_plot(
-                xyzc_values, title, outpath, "X", "Z", info, axes=(0, 2)
-            )
+            draw_2col_2d_scatter_plot(xyzc_df, title, outpath, "X", "Z", info)
 
             title = "Scatter plot of localisations in YZ"
             fig_name = r"scatter_plot_yz_localisations.png"
             outpath = info["relpos_plots_report_dir"] / fig_name
             if info["short_names"] is True:
                 outpath = info["short_relpos_plots_report_dir"] / fig_name
-            draw_2col_2d_scatter_plot(
-                xyzc_values, title, outpath, "X", "Z", info, axes=(1, 2)
-            )
+            draw_2col_2d_scatter_plot(xyzc_df, title, outpath, "X", "Z", info)
 
     # Zoomed-in xy-plot
     if zoom > 0:  # FIX ZOOM!!!!!
         # Find total data ranges, zoom area and data subset
-        x_range = np.max(xyzc_values[:, 0]) - np.min(xyzc_values[:, 0])
-        x_centre = np.min(xyzc_values[:, 0] + x_range / 2)
-        y_range = np.max(xyzc_values[:, 1]) - np.min(xyzc_values[:, 1])
-        y_centre = np.min(xyzc_values[:, 1] + y_range / 2)
+        x_range = xyzc_df[info["xcol"]].max() - xyzc_df[info["xcol"]].min()
+        x_centre = xyzc_df[info["xcol"]].min() + x_range / 2
+        y_range = xyzc_df[info["ycol"]].max() - xyzc_df[info["ycol"]].min()
+        y_centre = xyzc_df[info["ycol"]].min() + y_range / 2
 
         zoomed_xmin = x_centre - x_range / zoom / 2
         zoomed_xmax = x_centre + x_range / zoom / 2
@@ -121,10 +119,12 @@ def draw_2d_scatter_plots(xyzc_values, dims, info, zoom):  # xyz_values
         zoomed_ymax = y_centre + y_range / zoom / 2
 
         # Filter in x and y
-        zoomed_xyzc = xyzc_values[xyzc_values[:, 0] > zoomed_xmin]
-        zoomed_xyzc = zoomed_xyzc[zoomed_xyzc[:, 0] < zoomed_xmax]
-        zoomed_xyzc = zoomed_xyzc[zoomed_xyzc[:, 1] > zoomed_ymin]
-        zoomed_xyzc = zoomed_xyzc[zoomed_xyzc[:, 1] < zoomed_ymax]
+        zoomed_xyzc = xyzc_df[
+            (xyzc_df[info["xcol"]] > zoomed_xmin)
+            & (xyzc_df[info["xcol"]] < zoomed_xmax)
+            & (xyzc_df[info["ycol"]] > zoomed_ymin)
+            & (xyzc_df[info["ycol"]] < zoomed_ymax)
+        ]
 
         title = (
             "Scatter plot of localisations in XY: zoom x{:d} on central region".format(
@@ -152,39 +152,43 @@ def draw_2d_scatter_plots(xyzc_values, dims, info, zoom):  # xyz_values
 
 
 def draw_2col_2d_scatter_plot(
-    xyzc_values, title, outpath, x_label, y_label, info, axes=(0, 1)
+    xyzc_df: DataFrame,
+    title: str,
+    outpath: Path,
+    x_label: str,
+    y_label: str,
+    info: dict,
 ):
     """Creates a scatter plot and saves it to a .png file.
 
     Args:
-        xyzc_values (numpy array): xy(and z)-coordinates of the
-            localizations (first 2 or 3 columns)
-            and their acquisition channels (final column).
+        xyzc_df (pandas DataFrame): Localisation dataframe with spatial coordinates
+            and acquisition channels if used.
         title (str): the text string that has the title for the plot.
         outpath (pathlib.Path): The output filename has all the text of the input
             file plus some more information so it is easy to recognise which
             it has been derived from.
         info (dict): A python dictionary containing a collection of useful parameters
             such as the filenames and paths.
-        axes (tuple): Axis indices for the coordinates to be plotted.
 
     Returns:
        Nothing is returned.
     """
     fig, ax = plt.subplots(figsize=(10, 8), dpi=200, facecolor="w", edgecolor="k")
     if info["channels_analysed"] is None:
-        ax.scatter(xyzc_values[:, axes[0]], xyzc_values[:, axes[1]], s=1)
+        ax.scatter(xyzc_df[info["xcol"]], xyzc_df[info["ycol"]], s=1)
     else:
-        scatterplot = ax.scatter(
-            xyzc_values[:, axes[0]],
-            xyzc_values[:, axes[1]],
-            c=xyzc_values[:, -1],
-            s=1,
-        )
-        legend = ax.legend(
-            *scatterplot.legend_elements(), loc="upper right", title="Channel"
-        )
+        for chan in xyzc_df[info["ccol"]].unique():
+            ax.scatter(
+                xyzc_df[xyzc_df[info["ccol"]] == chan][info["xcol"]],
+                xyzc_df[xyzc_df[info["ccol"]] == chan][info["ycol"]],
+                s=1,
+                label=chan,
+            )
+        legend = ax.legend(loc="upper right", title="Channel")
+
         ax.add_artist(legend)
+
     ax.set_title(f'{info["in_file_no_extension"]}\n{title}')
     ax.set_xlabel(x_label, {"fontsize": "14"})
     ax.set_ylabel(y_label, {"fontsize": "14"})
