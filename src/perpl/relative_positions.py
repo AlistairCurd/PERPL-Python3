@@ -315,9 +315,8 @@ def read_data_in(info: dict):
             This dictionary is modified to contain information about the data read
             during the function.
     Returns:
-        # xyzc_values (numpy array): A numpy array of the x, y (and z) localisations.
         xyzc_df (pandas DataFrame):
-            A dataframe of x, y(, z) and channel for the localisations.
+            A dataframe of the localisations.
     """
 
     in_file = info["input_path"]
